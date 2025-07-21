@@ -98,7 +98,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">87.2%</div>
             <p className="text-xs text-muted-foreground">
-              <Badge variant="secondary" className="text-success">+2.1%</Badge> dari bulan lalu
+              <Badge variant="positive">+2.1%</Badge> dari bulan lalu
             </p>
           </CardContent>
         </Card>
@@ -111,7 +111,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">89.5%</div>
             <p className="text-xs text-muted-foreground">
-              <Badge variant="secondary" className="text-success">+1.8%</Badge> dari bulan lalu
+              <Badge variant="positive">+1.8%</Badge> dari bulan lalu
             </p>
           </CardContent>
         </Card>
@@ -124,7 +124,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">1.6 hari</div>
             <p className="text-xs text-muted-foreground">
-              <Badge variant="secondary" className="text-success">-0.3</Badge> dari bulan lalu
+              <Badge variant="positive">-0.3</Badge> dari bulan lalu
             </p>
           </CardContent>
         </Card>
@@ -137,7 +137,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">1,284</div>
             <p className="text-xs text-muted-foreground">
-              <Badge variant="secondary" className="text-success">+5.2%</Badge> dari bulan lalu
+              <Badge variant="positive">+5.2%</Badge> dari bulan lalu
             </p>
           </CardContent>
         </Card>
