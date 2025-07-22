@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from "recharts";
 import { Activity, TrendingUp, Users, FileCheck } from "lucide-react";
 
 // Dummy data for charts
@@ -174,39 +174,26 @@ export default function Dashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-sm font-medium mb-4">Kepatuhan LOS & CP (%)</h4>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={monthlyComplianceData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Bar dataKey="losCompliance" fill="hsl(var(--primary))" name="LOS (%)" />
-                  <Bar dataKey="cpCompliance" fill="hsl(var(--primary-light))" name="CP (%)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium mb-4">Rata-rata LOS (hari)</h4>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={monthlyComplianceData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis domain={[0, 6]} />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="avgLos" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={3}
-                    name="Avg LOS (hari)"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          <ResponsiveContainer width="100%" height={400}>
+            <ComposedChart data={monthlyComplianceData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis yAxisId="left" domain={[0, 100]} label={{ value: 'Kepatuhan (%)', angle: -90, position: 'insideLeft' }} />
+              <YAxis yAxisId="right" orientation="right" domain={[0, 6]} label={{ value: 'Rata-rata LOS (hari)', angle: 90, position: 'insideRight' }} />
+              <Tooltip />
+              <Bar yAxisId="left" dataKey="losCompliance" fill="hsl(var(--primary))" name="LOS (%)" />
+              <Bar yAxisId="left" dataKey="cpCompliance" fill="hsl(var(--primary-light))" name="CP (%)" />
+              <Line 
+                yAxisId="right"
+                type="monotone" 
+                dataKey="avgLos" 
+                stroke="hsl(var(--destructive))" 
+                strokeWidth={3}
+                name="Avg LOS (hari)"
+                dot={{ fill: "hsl(var(--destructive))", strokeWidth: 2, r: 4 }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
 
