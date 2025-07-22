@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ClinicalPathway from "./pages/ClinicalPathway";
+import ClinicalPathwayForm from "./pages/ClinicalPathwayForm";
+import ClinicalPathwayChecklist from "./pages/ClinicalPathwayChecklist";
 import RekapData from "./pages/RekapData";
 import Pengaturan from "./pages/Pengaturan";
 import Register from "./pages/Register";
@@ -30,6 +32,8 @@ const App = () => (
           {/* Protected Routes with Layout */}
           <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
           <Route path="/clinical-pathway" element={<Layout><ClinicalPathway /></Layout>} />
+          <Route path="/clinical-pathway-form" element={<Layout><ClinicalPathwayForm /></Layout>} />
+          <Route path="/clinical-pathway-checklist" element={<Layout><ClinicalPathwayChecklist /></Layout>} />
           <Route path="/rekap-data" element={<Layout><RekapData /></Layout>} />
           <Route path="/pengaturan" element={<Layout><Pengaturan /></Layout>} />
           

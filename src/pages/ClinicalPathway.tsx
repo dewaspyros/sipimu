@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -44,6 +45,7 @@ const dummyData = [
 ];
 
 export default function ClinicalPathway() {
+  const navigate = useNavigate();
   const [selectedData, setSelectedData] = useState<typeof dummyData[0] | null>(null);
 
   return (
@@ -56,7 +58,10 @@ export default function ClinicalPathway() {
             Kelola data input Clinical Pathways RS PKU Muhammadiyah Wonosobo
           </p>
         </div>
-        <Button className="medical-transition">
+        <Button 
+          className="medical-transition"
+          onClick={() => navigate('/clinical-pathway-form')}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Tambah Data CP
         </Button>
@@ -185,7 +190,11 @@ export default function ClinicalPathway() {
                 </div>
 
                 <div className="flex justify-center">
-                  <Button className="medical-transition" size="lg">
+                  <Button 
+                    className="medical-transition" 
+                    size="lg"
+                    onClick={() => navigate('/clinical-pathway-form')}
+                  >
                     Mengerti, Lanjut ke Form Input
                   </Button>
                 </div>
