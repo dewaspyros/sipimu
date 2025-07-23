@@ -206,32 +206,22 @@ export default function Dashboard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={componentComplianceData} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 100]} />
-                <YAxis dataKey="month" type="category" />
-                <Tooltip />
-                <Bar dataKey="dokter" fill="hsl(var(--primary))" name="Dokter" />
-                <Bar dataKey="perawat" fill="hsl(var(--primary-light))" name="Perawat" />
-                <Bar dataKey="penunjang" fill="hsl(var(--secondary))" name="Penunjang" />
-                <Bar dataKey="laboratorium" fill="hsl(var(--accent))" name="Lab" />
-              </BarChart>
-            </ResponsiveContainer>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={componentComplianceData} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 100]} />
-                <YAxis dataKey="month" type="category" />
-                <Tooltip />
-                <Bar dataKey="obat" fill="hsl(var(--success))" name="Obat" />
-                <Bar dataKey="nutrisi" fill="hsl(var(--warning))" name="Nutrisi" />
-                <Bar dataKey="fisioterapi" fill="hsl(var(--primary-dark))" name="Fisioterapi" />
-                <Bar dataKey="edukasi" fill="hsl(var(--destructive))" name="Edukasi" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <ResponsiveContainer width="100%" height={500}>
+            <BarChart data={componentComplianceData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis domain={[0, 100]} label={{ value: 'Kepatuhan (%)', angle: -90, position: 'insideLeft' }} />
+              <Tooltip />
+              <Bar dataKey="dokter" fill="hsl(var(--primary))" name="Dokter" />
+              <Bar dataKey="perawat" fill="hsl(var(--secondary))" name="Perawat" />
+              <Bar dataKey="penunjang" fill="hsl(var(--accent))" name="Penunjang" />
+              <Bar dataKey="laboratorium" fill="hsl(var(--success))" name="Lab" />
+              <Bar dataKey="obat" fill="hsl(var(--warning))" name="Obat" />
+              <Bar dataKey="nutrisi" fill="hsl(var(--destructive))" name="Nutrisi" />
+              <Bar dataKey="fisioterapi" fill="#8B5CF6" name="Fisioterapi" />
+              <Bar dataKey="edukasi" fill="#F59E0B" name="Edukasi" />
+            </BarChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
     </div>
