@@ -25,14 +25,17 @@ const CustomBarLabel = (props: any) => {
 
   const componentName = componentNames[dataKey] || dataKey;
   
+  if (!value || value === 0) return null;
+  
   return (
     <text
       x={x + width / 2}
-      y={y - 5}
+      y={y - 8}
       fill="hsl(var(--foreground))"
       textAnchor="middle"
-      fontSize="10"
-      fontWeight="500"
+      fontSize="9"
+      fontWeight="600"
+      transform={`rotate(-45, ${x + width / 2}, ${y - 8})`}
     >
       {`${componentName}: ${value}%`}
     </text>
