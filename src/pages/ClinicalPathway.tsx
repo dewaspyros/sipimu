@@ -62,8 +62,9 @@ export default function ClinicalPathway() {
       </div>
 
       <Tabs defaultValue="data-list" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-1">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="data-list">Daftar Data</TabsTrigger>
+          <TabsTrigger value="add-data">Tambah Data Clinical Pathways</TabsTrigger>
         </TabsList>
 
         <TabsContent value="data-list">
@@ -174,7 +175,7 @@ export default function ClinicalPathway() {
         <TabsContent value="add-data">
           <Card className="medical-card">
             <CardHeader>
-              <CardTitle>Tambah Data Clinical Pathways</CardTitle>
+              <CardTitle>Petunjuk Pengisian Clinical Pathways</CardTitle>
               <CardDescription>
                 Ikuti petunjuk pengisian untuk menambah data Clinical Pathways baru
               </CardDescription>
@@ -212,63 +213,13 @@ export default function ClinicalPathway() {
                     size="lg"
                     onClick={() => navigate('/clinical-pathway-form')}
                   >
-                    Mengerti, Lanjut ke Form Input
+                    Mengerti, Lanjut ke Clinical Pathway Form
                   </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
 
-        <TabsContent value="edit-data">
-          <Card className="medical-card">
-            <CardHeader>
-              <CardTitle>Edit Data Clinical Pathways</CardTitle>
-              <CardDescription>
-                {selectedData 
-                  ? `Edit data untuk pasien ${selectedData.namaPasien} (${selectedData.noRm})`
-                  : "Pilih data dari daftar untuk mengedit"
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {selectedData ? (
-                <div className="space-y-4">
-                  <div className="bg-muted/30 rounded-lg p-4">
-                    <h3 className="font-medium mb-2">Informasi Pasien:</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">No. RM:</span> {selectedData.noRm}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Nama Pasien:</span> {selectedData.namaPasien}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Diagnosis:</span> {selectedData.diagnosis}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">DPJP:</span> {selectedData.dpjp}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Tanggal Masuk:</span> {new Date(selectedData.tanggalMasuk).toLocaleDateString('id-ID')}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Tanggal Keluar:</span> {new Date(selectedData.tanggalKeluar).toLocaleDateString('id-ID')}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Button className="medical-transition">
-                    Buka Form Edit
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  Silakan pilih data dari tab "Daftar Data" untuk mengedit
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>
