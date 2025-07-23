@@ -5,6 +5,40 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from "recharts";
 import { Activity, TrendingUp, Users, FileCheck } from "lucide-react";
 
+// Custom label function for bars
+const CustomBarLabel = (props: any) => {
+  const { x, y, width, height, value, payload, dataKey } = props;
+  
+  // Get component name mapping
+  const componentNames: { [key: string]: string } = {
+    losCompliance: "LOS",
+    cpCompliance: "CP", 
+    dokter: "Dokter",
+    perawat: "Perawat",
+    penunjang: "Penunjang",
+    laboratorium: "Lab",
+    obat: "Obat",
+    nutrisi: "Nutrisi",
+    fisioterapi: "Fisio",
+    edukasi: "Edukasi"
+  };
+
+  const componentName = componentNames[dataKey] || dataKey;
+  
+  return (
+    <text
+      x={x + width / 2}
+      y={y - 5}
+      fill="hsl(var(--foreground))"
+      textAnchor="middle"
+      fontSize="10"
+      fontWeight="500"
+    >
+      {`${componentName}: ${value}%`}
+    </text>
+  );
+};
+
 // Dummy data for charts
 const monthlyComplianceData = [
   { month: "Jan", losCompliance: 78, cpCompliance: 82, avgLos: 1.8 },
@@ -181,8 +215,8 @@ export default function Dashboard() {
               <YAxis yAxisId="left" domain={[0, 100]} label={{ value: 'Kepatuhan (%)', angle: -90, position: 'insideLeft' }} />
               <YAxis yAxisId="right" orientation="right" domain={[0, 6]} label={{ value: 'Rata-rata LOS (hari)', angle: 90, position: 'insideRight' }} />
               <Tooltip />
-              <Bar yAxisId="left" dataKey="losCompliance" fill="hsl(var(--primary))" name="LOS (%)" />
-              <Bar yAxisId="left" dataKey="cpCompliance" fill="hsl(var(--primary-light))" name="CP (%)" />
+              <Bar yAxisId="left" dataKey="losCompliance" fill="hsl(var(--primary))" name="LOS (%)" label={<CustomBarLabel />} />
+              <Bar yAxisId="left" dataKey="cpCompliance" fill="hsl(var(--primary-light))" name="CP (%)" label={<CustomBarLabel />} />
               <Line 
                 yAxisId="right"
                 type="monotone" 
@@ -212,14 +246,14 @@ export default function Dashboard() {
               <XAxis dataKey="month" />
               <YAxis domain={[0, 100]} label={{ value: 'Kepatuhan (%)', angle: -90, position: 'insideLeft' }} />
               <Tooltip />
-              <Bar dataKey="dokter" fill="hsl(var(--primary))" name="Dokter" />
-              <Bar dataKey="perawat" fill="hsl(var(--secondary))" name="Perawat" />
-              <Bar dataKey="penunjang" fill="hsl(var(--accent))" name="Penunjang" />
-              <Bar dataKey="laboratorium" fill="hsl(var(--success))" name="Lab" />
-              <Bar dataKey="obat" fill="hsl(var(--warning))" name="Obat" />
-              <Bar dataKey="nutrisi" fill="hsl(var(--destructive))" name="Nutrisi" />
-              <Bar dataKey="fisioterapi" fill="#8B5CF6" name="Fisioterapi" />
-              <Bar dataKey="edukasi" fill="#F59E0B" name="Edukasi" />
+              <Bar dataKey="dokter" fill="hsl(var(--primary))" name="Dokter" label={<CustomBarLabel />} />
+              <Bar dataKey="perawat" fill="hsl(var(--secondary))" name="Perawat" label={<CustomBarLabel />} />
+              <Bar dataKey="penunjang" fill="hsl(var(--accent))" name="Penunjang" label={<CustomBarLabel />} />
+              <Bar dataKey="laboratorium" fill="hsl(var(--success))" name="Lab" label={<CustomBarLabel />} />
+              <Bar dataKey="obat" fill="hsl(var(--warning))" name="Obat" label={<CustomBarLabel />} />
+              <Bar dataKey="nutrisi" fill="hsl(var(--destructive))" name="Nutrisi" label={<CustomBarLabel />} />
+              <Bar dataKey="fisioterapi" fill="#8B5CF6" name="Fisioterapi" label={<CustomBarLabel />} />
+              <Bar dataKey="edukasi" fill="#F59E0B" name="Edukasi" label={<CustomBarLabel />} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
