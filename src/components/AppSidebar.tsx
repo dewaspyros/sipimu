@@ -88,7 +88,7 @@ export function AppSidebar() {
                         `flex items-center gap-3 rounded-lg px-3 py-2 transition-all medical-transition hover:bg-accent ${
                           isActive 
                             ? "bg-primary text-primary-foreground shadow-sm" 
-                            : "text-muted-foreground hover:text-foreground"
+                            : "text-black hover:text-foreground"
                         }`
                       }
                     >
@@ -112,7 +112,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <button className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all medical-transition hover:bg-accent hover:text-foreground w-full">
+                  <button className="flex items-center gap-3 rounded-lg px-3 py-2 text-black transition-all medical-transition hover:bg-accent hover:text-foreground w-full">
                     <LogOut className="h-4 w-4" />
                     {!collapsed && <span className="text-sm">Keluar</span>}
                   </button>

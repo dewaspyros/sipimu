@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Edit, Trash2, Eye, FileText } from "lucide-react";
 
 const dummyData = [
@@ -58,20 +59,11 @@ export default function ClinicalPathway() {
             Kelola data input Clinical Pathways RS PKU Muhammadiyah Wonosobo
           </p>
         </div>
-        <Button 
-          className="medical-transition"
-          onClick={() => navigate('/clinical-pathway-form')}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Tambah Data CP
-        </Button>
       </div>
 
       <Tabs defaultValue="data-list" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="data-list">Daftar Data</TabsTrigger>
-          <TabsTrigger value="add-data">Tambah Data</TabsTrigger>
-          <TabsTrigger value="edit-data" disabled={!selectedData}>Edit Data</TabsTrigger>
         </TabsList>
 
         <TabsContent value="data-list">
@@ -81,6 +73,31 @@ export default function ClinicalPathway() {
               <CardDescription>
                 Daftar semua data Clinical Pathways yang telah diinput
               </CardDescription>
+              <div className="flex items-center gap-4 mt-4">
+                <div className="w-48">
+                  <label className="text-sm font-medium mb-2 block">Filter Bulan:</label>
+                  <Select defaultValue="">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih bulan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Semua Bulan</SelectItem>
+                      <SelectItem value="januari">Januari</SelectItem>
+                      <SelectItem value="februari">Februari</SelectItem>
+                      <SelectItem value="maret">Maret</SelectItem>
+                      <SelectItem value="april">April</SelectItem>
+                      <SelectItem value="mei">Mei</SelectItem>
+                      <SelectItem value="juni">Juni</SelectItem>
+                      <SelectItem value="juli">Juli</SelectItem>
+                      <SelectItem value="agustus">Agustus</SelectItem>
+                      <SelectItem value="september">September</SelectItem>
+                      <SelectItem value="oktober">Oktober</SelectItem>
+                      <SelectItem value="november">November</SelectItem>
+                      <SelectItem value="desember">Desember</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">

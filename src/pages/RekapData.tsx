@@ -240,7 +240,8 @@ export default function RekapData() {
                     <th className="text-left p-3">LOS</th>
                     <th className="text-left p-3">Sesuai Target</th>
                     <th className="text-left p-3">Kepatuhan CP</th>
-                    <th className="text-left p-3">Kepatuhan Avg LOS</th>
+                    <th className="text-left p-3">Kepatuhan Penunjang</th>
+                    <th className="text-left p-3">Kepatuhan Terapi</th>
                     <th className="text-left p-3">Kepatuhan DPJP</th>
                   </tr>
                 </thead>
@@ -283,8 +284,21 @@ export default function RekapData() {
                             {item.kepatuhanCP}
                           </Badge>
                         </td>
-                        <td className="p-3 text-center font-medium">
-                          {item.avgLOS} hari
+                        <td className="p-3">
+                          <Badge 
+                            variant="outline"
+                            className="bg-primary/10 text-primary border-primary/20"
+                          >
+                            85%
+                          </Badge>
+                        </td>
+                        <td className="p-3">
+                          <Badge 
+                            variant="outline"
+                            className="bg-secondary/10 text-secondary border-secondary/20"
+                          >
+                            92%
+                          </Badge>
                         </td>
                         <td className="p-3">
                           <Badge 

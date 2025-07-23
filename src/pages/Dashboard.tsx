@@ -35,7 +35,7 @@ const CustomBarLabel = (props: any) => {
       textAnchor="middle"
       fontSize="9"
       fontWeight="600"
-      transform={`rotate(-45, ${x + width / 2}, ${y - 8})`}
+      transform={`rotate(-90, ${x + width / 2}, ${y - 8})`}
     >
       {`${componentName}: ${value}%`}
     </text>
@@ -64,7 +64,13 @@ const componentComplianceData = [
   { month: "Mar", dokter: 90, perawat: 88, penunjang: 85, laboratorium: 94, obat: 89, nutrisi: 80, fisioterapi: 85, edukasi: 82 },
   { month: "Apr", dokter: 92, perawat: 90, penunjang: 88, laboratorium: 96, obat: 91, nutrisi: 83, fisioterapi: 88, edukasi: 85 },
   { month: "May", dokter: 89, perawat: 87, penunjang: 90, laboratorium: 93, obat: 93, nutrisi: 85, fisioterapi: 90, edukasi: 87 },
-  { month: "Jun", dokter: 91, perawat: 89, penunjang: 87, laboratorium: 95, obat: 88, nutrisi: 82, fisioterapi: 87, edukasi: 84 }
+  { month: "Jun", dokter: 91, perawat: 89, penunjang: 87, laboratorium: 95, obat: 88, nutrisi: 82, fisioterapi: 87, edukasi: 84 },
+  { month: "Jul", dokter: 88, perawat: 91, penunjang: 89, laboratorium: 97, obat: 85, nutrisi: 78, fisioterapi: 92, edukasi: 88 },
+  { month: "Aug", dokter: 94, perawat: 86, penunjang: 91, laboratorium: 94, obat: 90, nutrisi: 84, fisioterapi: 89, edukasi: 91 },
+  { month: "Sep", dokter: 87, perawat: 93, penunjang: 85, laboratorium: 98, obat: 87, nutrisi: 81, fisioterapi: 94, edukasi: 86 },
+  { month: "Oct", dokter: 91, perawat: 88, penunjang: 93, laboratorium: 95, obat: 92, nutrisi: 86, fisioterapi: 88, edukasi: 93 },
+  { month: "Nov", dokter: 89, perawat: 95, penunjang: 87, laboratorium: 99, obat: 89, nutrisi: 83, fisioterapi: 91, edukasi: 89 },
+  { month: "Dec", dokter: 93, perawat: 90, penunjang: 94, laboratorium: 96, obat: 94, nutrisi: 88, fisioterapi: 93, edukasi: 95 }
 ];
 
 const dpjpComplianceData = {
