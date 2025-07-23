@@ -81,7 +81,7 @@ export default function ClinicalPathway() {
                       <SelectValue placeholder="Pilih bulan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Semua Bulan</SelectItem>
+                      <SelectItem value="semua">Semua Bulan</SelectItem>
                       <SelectItem value="januari">Januari</SelectItem>
                       <SelectItem value="februari">Februari</SelectItem>
                       <SelectItem value="maret">Maret</SelectItem>
