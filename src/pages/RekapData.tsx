@@ -274,7 +274,7 @@ export default function RekapData() {
             </div>
             
             {summary && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{summary.totalPatients}</div>
                   <div className="text-xs text-muted-foreground">Total Pasien</div>
@@ -286,6 +286,14 @@ export default function RekapData() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{summary.avgKepatuhanCP}%</div>
                   <div className="text-xs text-muted-foreground">Kepatuhan CP</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{summary.persentaseKepatuhanPenunjang}%</div>
+                  <div className="text-xs text-muted-foreground">Kepatuhan Penunjang</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{summary.persentaseKepatuhanTerapi}%</div>
+                  <div className="text-xs text-muted-foreground">Kepatuhan Terapi</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-warning">{summary.avgLOS}</div>
