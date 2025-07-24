@@ -32,7 +32,7 @@ export default function Login() {
         navigate("/dashboard");
       }, 1500);
     } else {
-      setError("Silakan lengkapi NIK Rumah Sakit dan password");
+      setError("Silakan lengkapi NIK dan password");
       setLoading(false);
     }
   };
@@ -63,7 +63,7 @@ export default function Login() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Masuk</CardTitle>
             <CardDescription className="text-center">
-              Masukkan NIK Rumah Sakit dan password Anda
+              Masukkan NIK dan password Anda
             </CardDescription>
           </CardHeader>
           
@@ -76,11 +76,11 @@ export default function Login() {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="nik">NIK Rumah Sakit</Label>
+                <Label htmlFor="nik">NIK </Label>
                 <Input
                   id="nik"
                   type="text"
-                  placeholder="Masukkan NIK Rumah Sakit"
+                  placeholder="Masukkan NIK"
                   value={formData.nik}
                   onChange={(e) => setFormData({ ...formData, nik: e.target.value })}
                   className="medical-transition"
