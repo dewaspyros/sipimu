@@ -172,14 +172,19 @@ export default function RekapData() {
     
     const totalPatients = data.length;
     const sesuaiTarget = data.filter(item => item.sesuaiTarget).length;
-    const avgKepatuhanCP = (data.filter(item => item.kepatuhanCP).length / totalPatients) * 100;
+    const kepatuhanCP = data.filter(item => item.kepatuhanCP).length;
+    const kepatuhanPenunjang = data.filter(item => item.kepatuhanPenunjang).length;
+    const kepatuhanTerapi = data.filter(item => item.kepatuhanTerapi).length;
     const totalLOS = data.reduce((acc, item) => acc + item.los, 0);
     const avgLOS = totalLOS / totalPatients;
 
     return {
       totalPatients,
       persentaseSesuaiTarget: ((sesuaiTarget / totalPatients) * 100).toFixed(1),
-      avgKepatuhanCP: avgKepatuhanCP.toFixed(1),
+      persentaseKepatuhanCP: ((kepatuhanCP / totalPatients) * 100).toFixed(1),
+      persentaseKepatuhanPenunjang: ((kepatuhanPenunjang / totalPatients) * 100).toFixed(1),
+      persentaseKepatuhanTerapi: ((kepatuhanTerapi / totalPatients) * 100).toFixed(1),
+      avgKepatuhanCP: ((kepatuhanCP / totalPatients) * 100).toFixed(1),
       avgLOS: avgLOS.toFixed(1)
     };
   };
@@ -463,6 +468,40 @@ export default function RekapData() {
                       </tr>
                     );
                   })}
+                  {/* Summary Row */}
+                  {summary && (
+                    <tr className="border-t-2 border-primary/20 bg-muted/30 font-semibold">
+                      <td className="p-3" colSpan={5}>
+                        <span className="text-primary">PERSENTASE KEPATUHAN (%)</span>
+                      </td>
+                      <td className="p-3 text-center">
+                        <span className="text-sm text-muted-foreground">-</span>
+                      </td>
+                      <td className="p-3 text-center">
+                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
+                          {summary.persentaseSesuaiTarget}%
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-center">
+                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
+                          {summary.persentaseKepatuhanCP}%
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-center">
+                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
+                          {summary.persentaseKepatuhanPenunjang}%
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-center">
+                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
+                          {summary.persentaseKepatuhanTerapi}%
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-center">
+                        <span className="text-sm text-muted-foreground">-</span>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
