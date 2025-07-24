@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, FileText, TrendingUp, Download } from "lucide-react";
+import { Calendar, FileText, TrendingUp, Download, Edit, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 
 // Dummy data for monthly recap
 const monthlyData = {
@@ -11,76 +13,82 @@ const monthlyData = {
     {
       no: 1,
       namaPasien: "Siti Aminah / 28 th",
-      tanggalMasuk: "2024-01-15",
-      tanggalKeluar: "2024-01-17",
+      tanggalMasuk: "2024-01-15T08:30:00",
+      tanggalKeluar: "2024-01-17T14:20:00",
       diagnosis: "Sectio Caesaria",
       los: 2,
       sesuaiTarget: true,
-      kepatuhanCP: "85%",
-      avgLOS: 1.8,
-      kepatuhanDPJP: "90%"
+      kepatuhanCP: true,
+      kepatuhanPenunjang: true,
+      kepatuhanTerapi: false,
+      avgLOS: 1.8
     },
     {
       no: 2,
       namaPasien: "Dewi Sartika / 32 th",
-      tanggalMasuk: "2024-01-20",
-      tanggalKeluar: "2024-01-21",
+      tanggalMasuk: "2024-01-20T10:15:00",
+      tanggalKeluar: "2024-01-21T16:45:00",
       diagnosis: "Sectio Caesaria",
       los: 1,
       sesuaiTarget: true,
-      kepatuhanCP: "92%",
-      avgLOS: 1.6,
-      kepatuhanDPJP: "88%"
+      kepatuhanCP: true,
+      kepatuhanPenunjang: true,
+      kepatuhanTerapi: true,
+      avgLOS: 1.6
     },
     {
       no: 3,
       namaPasien: "Budi Santoso / 45 th",
-      tanggalMasuk: "2024-01-22",
-      tanggalKeluar: "2024-01-27",
+      tanggalMasuk: "2024-01-22T12:00:00",
+      tanggalKeluar: "2024-01-27T09:30:00",
       diagnosis: "Pneumonia",
       los: 5,
       sesuaiTarget: true,
-      kepatuhanCP: "78%",
-      avgLOS: 5.2,
-      kepatuhanDPJP: "82%"
+      kepatuhanCP: false,
+      kepatuhanPenunjang: true,
+      kepatuhanTerapi: true,
+      avgLOS: 5.2
     },
     {
       no: 4,
       namaPasien: "Ahmad Wijaya / 55 th",
-      tanggalMasuk: "2024-01-25",
-      tanggalKeluar: "2024-01-30",
+      tanggalMasuk: "2024-01-25T07:45:00",
+      tanggalKeluar: "2024-01-30T13:15:00",
       diagnosis: "Stroke Non Hemoragik",
       los: 5,
       sesuaiTarget: true,
-      kepatuhanCP: "89%",
-      avgLOS: 4.8,
-      kepatuhanDPJP: "94%"
+      kepatuhanCP: true,
+      kepatuhanPenunjang: false,
+      kepatuhanTerapi: true,
+      avgLOS: 4.8
     }
   ],
   "februari": [
     {
       no: 1,
       namaPasien: "Ratna Sari / 35 th",
-      tanggalMasuk: "2024-02-05",
-      tanggalKeluar: "2024-02-07",
+      tanggalMasuk: "2024-02-05T11:20:00",
+      tanggalKeluar: "2024-02-07T15:30:00",
       diagnosis: "Sectio Caesaria",
       los: 2,
       sesuaiTarget: true,
-      kepatuhanCP: "88%",
-      avgLOS: 1.9,
-      kepatuhanDPJP: "91%"
+      kepatuhanCP: true,
+      kepatuhanPenunjang: true,
+      kepatuhanTerapi: true,
+      avgLOS: 1.9
     },
     {
       no: 2,
       namaPasien: "Joko Susilo / 40 th",
-      tanggalMasuk: "2024-02-10",
-      tanggalKeluar: "2024-02-14",
+      tanggalMasuk: "2024-02-10T09:00:00",
+      tanggalKeluar: "2024-02-14T17:00:00",
       diagnosis: "Pneumonia",
       los: 4,
       sesuaiTarget: true,
-      kepatuhanCP: "85%",
-      avgLOS: 4.5,
-      kepatuhanDPJP: "87%"
+      kepatuhanCP: true,
+      kepatuhanPenunjang: false,
+      kepatuhanTerapi: true,
+      avgLOS: 4.5
     }
   ]
 };
@@ -100,13 +108,47 @@ const monthOptions = [
   { value: "desember", label: "Desember" }
 ];
 
+const pathwayOptions = [
+  { value: "all", label: "Semua Clinical Pathway" },
+  { value: "sectio-caesaria", label: "Sectio Caesaria" },
+  { value: "stroke-hemoragik", label: "Stroke Hemoragik" },
+  { value: "stroke-non-hemoragik", label: "Stroke Non Hemoragik" },
+  { value: "pneumonia", label: "Pneumonia" },
+  { value: "dengue-fever", label: "Dengue Fever" }
+];
+
 export default function RekapData() {
   const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedPathway, setSelectedPathway] = useState("all");
   const [data, setData] = useState<typeof monthlyData["januari"]>([]);
+  const [editingRows, setEditingRows] = useState<{[key: string]: boolean}>({});
+
+  const filterDataByPathway = (data: typeof monthlyData["januari"], pathway: string) => {
+    if (pathway === "all") return data;
+    
+    const pathwayMap: {[key: string]: string} = {
+      "sectio-caesaria": "Sectio Caesaria",
+      "stroke-hemoragik": "Stroke Hemoragik", 
+      "stroke-non-hemoragik": "Stroke Non Hemoragik",
+      "pneumonia": "Pneumonia",
+      "dengue-fever": "Dengue Fever"
+    };
+    
+    return data.filter(item => item.diagnosis === pathwayMap[pathway]);
+  };
 
   const handleMonthChange = (month: string) => {
     setSelectedMonth(month);
-    setData(monthlyData[month as keyof typeof monthlyData] || []);
+    const monthData = monthlyData[month as keyof typeof monthlyData] || [];
+    setData(filterDataByPathway(monthData, selectedPathway));
+  };
+
+  const handlePathwayChange = (pathway: string) => {
+    setSelectedPathway(pathway);
+    if (selectedMonth) {
+      const monthData = monthlyData[selectedMonth as keyof typeof monthlyData] || [];
+      setData(filterDataByPathway(monthData, pathway));
+    }
   };
 
   const getTargetInfo = (diagnosis: string) => {
@@ -130,7 +172,7 @@ export default function RekapData() {
     
     const totalPatients = data.length;
     const sesuaiTarget = data.filter(item => item.sesuaiTarget).length;
-    const avgKepatuhanCP = data.reduce((acc, item) => acc + parseInt(item.kepatuhanCP), 0) / totalPatients;
+    const avgKepatuhanCP = (data.filter(item => item.kepatuhanCP).length / totalPatients) * 100;
     const totalLOS = data.reduce((acc, item) => acc + item.los, 0);
     const avgLOS = totalLOS / totalPatients;
 
@@ -140,6 +182,25 @@ export default function RekapData() {
       avgKepatuhanCP: avgKepatuhanCP.toFixed(1),
       avgLOS: avgLOS.toFixed(1)
     };
+  };
+
+  const toggleEdit = (rowKey: string) => {
+    setEditingRows(prev => ({
+      ...prev,
+      [rowKey]: !prev[rowKey]
+    }));
+  };
+
+  const updateLOS = (index: number, newLOS: number) => {
+    setData(prev => prev.map((item, i) => 
+      i === index ? { ...item, los: newLOS } : item
+    ));
+  };
+
+  const updateCheckbox = (index: number, field: string, value: boolean) => {
+    setData(prev => prev.map((item, i) => 
+      i === index ? { ...item, [field]: value } : item
+    ));
   };
 
   const summary = calculateSummary();
@@ -183,6 +244,22 @@ export default function RekapData() {
                 </SelectTrigger>
                 <SelectContent>
                   {monthOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="w-full md:w-64">
+              <label className="text-sm font-medium mb-2 block">Jenis Clinical Pathway:</label>
+              <Select value={selectedPathway} onValueChange={handlePathwayChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih jenis" />
+                </SelectTrigger>
+                <SelectContent>
+                  {pathwayOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -242,74 +319,146 @@ export default function RekapData() {
                     <th className="text-left p-3">Kepatuhan CP</th>
                     <th className="text-left p-3">Kepatuhan Penunjang</th>
                     <th className="text-left p-3">Kepatuhan Terapi</th>
-                    <th className="text-left p-3">Kepatuhan DPJP</th>
+                    <th className="text-left p-3">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.map((item, index) => {
                     const targetInfo = getTargetInfo(item.diagnosis);
+                    const rowKey = `${selectedMonth}-${index}`;
+                    const isEditing = editingRows[rowKey];
+                    
                     return (
                       <tr key={index} className="border-b hover:bg-muted/50 medical-transition">
                         <td className="p-3">{item.no}</td>
                         <td className="p-3">{item.namaPasien}</td>
-                        <td className="p-3">{new Date(item.tanggalMasuk).toLocaleDateString('id-ID')}</td>
-                        <td className="p-3">{new Date(item.tanggalKeluar).toLocaleDateString('id-ID')}</td>
+                        <td className="p-3">
+                          {new Date(item.tanggalMasuk).toLocaleString('id-ID', {
+                            year: 'numeric',
+                            month: '2-digit', 
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </td>
+                        <td className="p-3">
+                          {new Date(item.tanggalKeluar).toLocaleString('id-ID', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit', 
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </td>
                         <td className="p-3">
                           <Badge variant="outline" className="bg-primary/10 text-primary">
                             {item.diagnosis}
                           </Badge>
                         </td>
-                        <td className="p-3 text-center font-semibold">
-                          {item.los} hari
+                        <td className="p-3 text-center">
+                          {isEditing ? (
+                            <Input
+                              type="number"
+                              value={item.los}
+                              onChange={(e) => updateLOS(index, parseInt(e.target.value) || 0)}
+                              className="w-20 text-center"
+                              min="0"
+                            />
+                          ) : (
+                            <span className="font-semibold">{item.los} hari</span>
+                          )}
                         </td>
                         <td className="p-3">
-                          <Badge 
-                            variant={item.sesuaiTarget ? "secondary" : "destructive"}
-                            className={item.sesuaiTarget 
-                              ? "bg-success/10 text-success border-success/20" 
-                              : "bg-destructive/10 text-destructive border-destructive/20"
-                            }
-                          >
-                            {item.sesuaiTarget ? `✓ ≤ ${targetInfo.target} ${targetInfo.unit}` : `✗ > ${targetInfo.target} ${targetInfo.unit}`}
-                          </Badge>
+                          {isEditing ? (
+                            <Checkbox
+                              checked={item.sesuaiTarget}
+                              onCheckedChange={(checked) => updateCheckbox(index, 'sesuaiTarget', !!checked)}
+                            />
+                          ) : (
+                            <Badge 
+                              variant={item.sesuaiTarget ? "secondary" : "destructive"}
+                              className={item.sesuaiTarget 
+                                ? "bg-success/10 text-success border-success/20" 
+                                : "bg-destructive/10 text-destructive border-destructive/20"
+                              }
+                            >
+                              {item.sesuaiTarget ? `✓ ≤ ${targetInfo.target} ${targetInfo.unit}` : `✗ > ${targetInfo.target} ${targetInfo.unit}`}
+                            </Badge>
+                          )}
                         </td>
                         <td className="p-3">
-                          <Badge 
-                            variant="outline"
-                            className={parseInt(item.kepatuhanCP) >= 75
-                              ? "bg-success/10 text-success border-success/20"
-                              : "bg-warning/10 text-warning border-warning/20"
-                            }
-                          >
-                            {item.kepatuhanCP}
-                          </Badge>
+                          {isEditing ? (
+                            <Checkbox
+                              checked={item.kepatuhanCP}
+                              onCheckedChange={(checked) => updateCheckbox(index, 'kepatuhanCP', !!checked)}
+                            />
+                          ) : (
+                            <Badge 
+                              variant="outline"
+                              className={item.kepatuhanCP
+                                ? "bg-success/10 text-success border-success/20"
+                                : "bg-warning/10 text-warning border-warning/20"
+                              }
+                            >
+                              {item.kepatuhanCP ? "✓ Patuh" : "✗ Tidak Patuh"}
+                            </Badge>
+                          )}
                         </td>
                         <td className="p-3">
-                          <Badge 
-                            variant="outline"
-                            className="bg-primary/10 text-primary border-primary/20"
-                          >
-                            85%
-                          </Badge>
+                          {isEditing ? (
+                            <Checkbox
+                              checked={item.kepatuhanPenunjang}
+                              onCheckedChange={(checked) => updateCheckbox(index, 'kepatuhanPenunjang', !!checked)}
+                            />
+                          ) : (
+                            <Badge 
+                              variant="outline"
+                              className={item.kepatuhanPenunjang
+                                ? "bg-success/10 text-success border-success/20"
+                                : "bg-warning/10 text-warning border-warning/20"
+                              }
+                            >
+                              {item.kepatuhanPenunjang ? "✓ Patuh" : "✗ Tidak Patuh"}
+                            </Badge>
+                          )}
                         </td>
                         <td className="p-3">
-                          <Badge 
-                            variant="outline"
-                            className="bg-secondary/10 text-secondary border-secondary/20"
-                          >
-                            92%
-                          </Badge>
+                          {isEditing ? (
+                            <Checkbox
+                              checked={item.kepatuhanTerapi}
+                              onCheckedChange={(checked) => updateCheckbox(index, 'kepatuhanTerapi', !!checked)}
+                            />
+                          ) : (
+                            <Badge 
+                              variant="outline"
+                              className={item.kepatuhanTerapi
+                                ? "bg-success/10 text-success border-success/20"
+                                : "bg-warning/10 text-warning border-warning/20"
+                              }
+                            >
+                              {item.kepatuhanTerapi ? "✓ Patuh" : "✗ Tidak Patuh"}
+                            </Badge>
+                          )}
                         </td>
                         <td className="p-3">
-                          <Badge 
-                            variant="outline"
-                            className={parseInt(item.kepatuhanDPJP) >= 75
-                              ? "bg-success/10 text-success border-success/20"
-                              : "bg-warning/10 text-warning border-warning/20"
-                            }
+                          <Button
+                            size="sm"
+                            variant={isEditing ? "default" : "outline"}
+                            onClick={() => toggleEdit(rowKey)}
+                            className="medical-transition"
                           >
-                            {item.kepatuhanDPJP}
-                          </Badge>
+                            {isEditing ? (
+                              <>
+                                <Save className="h-4 w-4 mr-1" />
+                                Simpan
+                              </>
+                            ) : (
+                              <>
+                                <Edit className="h-4 w-4 mr-1" />
+                                Edit
+                              </>
+                            )}
+                          </Button>
                         </td>
                       </tr>
                     );
