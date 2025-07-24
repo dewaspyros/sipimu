@@ -162,7 +162,7 @@ export default function Login() {
 
         <div className="text-center">
           <p className="text-white/70 text-xs">
-            © 2024 RS PKU Muhammadiyah Wonosobo. Semua hak dilindungi.
+            © 2025 RS PKU Muhammadiyah Wonosobo. Semua hak dilindungi.
           </p>
         </div>
       </div>
