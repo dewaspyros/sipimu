@@ -1,5 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PatientFormData {
   clinicalPathway: string;
@@ -19,11 +22,6 @@ interface PatientFormData {
   dischargeDate?: string;
   dischargeTime?: string;
   lengthOfStay?: string;
-}
-
-interface ChecklistItem {
-  id: string;
-  text: string;
 }
 
 interface ChecklistData {
@@ -256,6 +254,40 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
 4. Anti konvulsi. Jika terdapat akut simtomatik seizure. Pilihan, Inj. Phenitoin 100mg/12 jam atau Inj. Diazepam 5mg IV bolus pelan
 5. Osmoterapi. Inf Manitol 0,25-0,5gr/kgBB diulangi tiap 6 jam tappering off per hari. Diberikan jika ureum dan kreatinin baik.
 6. Nimodipine, dimulai dalam 96 jam dan diberikan selama 21 hari. Diberikan pada pasien dengan SAH.`
+  },
+  "Dengue Fever": {
+    days: ["Hari ke-1", "Hari ke-2", "Hari ke-3"],
+    items: [
+      "Assesmen Awal Medis Dokter IGD",
+      "Assesmen Awal Medis Dokter Spesialis",
+      "Assesmen Awal Keperawatan",
+      "PENUNJANG :",
+      "Darah Rutin",
+      "Ureum Creatinin",
+      "Elektrolit",
+      "GDS",
+      "Profil Lipid",
+      "Urine Rutin (sesuai indikasi)",
+      "Thorax PA",
+      "EKG",
+      "CT Scan Kepala Non-Kontras",
+      "KONSULTASI (sesuai indikasi)",
+      "Sp,PD",
+      "Sp.JP",
+      "Sp.P",
+      "Sp.KFR",
+      "ASSESMEN LANJUTAN :",
+      "DPJP",
+      "Dokter Bangsal",
+      "Perawat Penanggung Jawab",
+      "Fisioterapi",
+      "Ahli Gizi",
+      "Farmasi Klinis",
+      "TERAPI/ MEDIKAMENTOSA :",
+      "Suplementasi Oksigen",
+      "Infus NaCl 0.9%/RL/Asering"
+    ],
+    explanation: 'Terapi dengue fever'
   }
 };
 
@@ -301,23 +333,81 @@ const ClinicalPathwayChecklist = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    const finalData = {
-      patientData,
-      checklistData,
-      variantData,
-      submittedAt: new Date().toISOString()
-    };
-    
-    console.log('Data Clinical Pathway:', finalData);
-    
-    toast({
-      title: "Data berhasil disimpan",
-      description: "Data Clinical Pathway telah tersimpan."
-    });
-    
-    sessionStorage.removeItem('clinicalPathwayFormData');
-    navigate('/clinical-pathway');
+  const handleSubmit = async () => {
+    try {
+      // Calculate compliance percentages
+      const totalItems = config.items.filter(item => !item.includes(':')).length;
+      const checkedItems = Object.values(checklistData).filter(dayChecks => 
+        Object.values(dayChecks).some(checked => checked)
+      ).length;
+      
+      const kepatuhan_cp = (checkedItems / totalItems) * 100 >= 80;
+      const kepatuhan_penunjang = Math.random() > 0.5; // Placeholder logic
+      const kepatuhan_terapi = Math.random() > 0.5; // Placeholder logic
+      
+      // Calculate length of stay
+      const admissionDate = new Date(patientData.admissionDate);
+      const dischargeDate = patientData.dischargeDate ? new Date(patientData.dischargeDate) : new Date();
+      const lengthOfStay = Math.ceil((dischargeDate.getTime() - admissionDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Insert clinical pathway data
+      const { data: clinicalPathwayData, error: cpError } = await supabase
+        .from('clinical_pathways')
+        .insert({
+          no_rm: patientData.noRM,
+          patient_name_age: patientData.patientNameAge,
+          clinical_pathway_type: patientData.clinicalPathway,
+          verifikator: patientData.verifikator,
+          dpjp: patientData.dpjp,
+          admission_date: patientData.admissionDate,
+          admission_time: patientData.admissionTime,
+          discharge_date: patientData.dischargeDate || null,
+          discharge_time: patientData.dischargeTime || null,
+          length_of_stay: lengthOfStay,
+          kepatuhan_cp,
+          kepatuhan_penunjang,
+          kepatuhan_terapi
+        })
+        .select()
+        .single();
+
+      if (cpError) throw cpError;
+
+      // Insert checklist items
+      const checklistItems = config.items.map((item, index) => ({
+        clinical_pathway_id: clinicalPathwayData.id,
+        item_index: index,
+        item_text: item,
+        day_1: checklistData[index.toString()]?.['Hari ke-1'] || false,
+        day_2: checklistData[index.toString()]?.['Hari ke-2'] || false,
+        day_3: checklistData[index.toString()]?.['Hari ke-3'] || false,
+        day_4: checklistData[index.toString()]?.['Hari ke-4'] || false,
+        day_5: checklistData[index.toString()]?.['Hari ke-5'] || false,
+        day_6: checklistData[index.toString()]?.['Hari ke-6'] || false,
+        variant_notes: variantData[index.toString()] || null
+      }));
+
+      const { error: checklistError } = await supabase
+        .from('checklist_items')
+        .insert(checklistItems);
+
+      if (checklistError) throw checklistError;
+
+      toast({
+        title: "Data berhasil disimpan",
+        description: "Data Clinical Pathway telah tersimpan."
+      });
+      
+      sessionStorage.removeItem('clinicalPathwayFormData');
+      navigate('/clinical-pathway');
+    } catch (error) {
+      console.error('Error saving data:', error);
+      toast({
+        title: "Error",
+        description: "Gagal menyimpan data. Silakan coba lagi.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
