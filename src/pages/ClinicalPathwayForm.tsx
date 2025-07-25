@@ -1,16 +1,12 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 interface PatientFormData {
   clinicalPathway: string;
@@ -25,9 +21,39 @@ interface PatientFormData {
   lengthOfStay?: string;
 }
 
+const clinicalPathways = [
+  "Sectio Caesaria",
+  "Stroke Hemoragik", 
+  "Stroke Non Hemoragik",
+  "Pneumonia",
+  "Dengue Fever"
+];
+
+const verifikators = [
+  "dr. Ivan Jazid Adam",
+  "Aulia Paramedika, S.Kep, Ns",
+  "Fita Dhiah Andari, S.Kep, Ns", 
+  "Heni Indriastuti, S.Kep, Ns",
+  "Zayid Al Amin, S.Kep, Ns",
+  "Suratman, S.Kep, Ns",
+  "Ami Tri Agustin, S.Kep"
+];
+
+const dpjpOptions = [
+  "dr. Dia Irawati, Sp.PD (DPJP DI)",
+  "dr. Kurniawan Agung Yuwono, Sp.PD (DPJP KA)",
+  "dr. Irla Yudha Saputra, Sp.PD (DPJP IY)",
+  "dr. Fitria Nurul Hidayah, Sp.PD (DPJP FN)",
+  "dr. Lusiana Susio Utami, Sp.P (DPJP LS)",
+  "dr. Waskitho Nugroho, MMR, Sp.N (DPJP WN)",
+  "dr. Ardiansyah, Sp.S (DPJP MA)",
+  "dr. Raden Bayu, Sp.OG (DPJP RB)",
+  "dr. Mira Maulina, Sp.OG (DPJP MM)",
+  "dr. Arinil Haque, Sp.OG, M.Ked, Klin (DPJP AH)"
+];
+
 const ClinicalPathwayForm = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [customVerifikator, setCustomVerifikator] = useState("");
   const [customDPJP, setCustomDPJP] = useState("");
   
@@ -43,50 +69,6 @@ const ClinicalPathwayForm = () => {
       dischargeDate: "",
       dischargeTime: "",
       lengthOfStay: ""
-    }
-  });
-
-  // Fetch verifikators from database
-  const { data: verifikators = [] } = useQuery({
-    queryKey: ['verifikators'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('verifikators')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Fetch DPJP doctors from database
-  const { data: dpjpDoctors = [] } = useQuery({
-    queryKey: ['dpjp_doctors'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('dpjp_doctors')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Fetch clinical pathway templates
-  const { data: clinicalPathways = [] } = useQuery({
-    queryKey: ['clinical_pathway_templates'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinical_pathway_templates')
-        .select('*')
-        .order('pathway_type');
-      
-      if (error) throw error;
-      return data;
     }
   });
 
@@ -135,8 +117,8 @@ const ClinicalPathwayForm = () => {
                           </FormControl>
                           <SelectContent>
                             {clinicalPathways.map((pathway) => (
-                              <SelectItem key={pathway.id} value={pathway.pathway_type}>
-                                {pathway.pathway_type}
+                              <SelectItem key={pathway} value={pathway}>
+                                {pathway}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -168,8 +150,8 @@ const ClinicalPathwayForm = () => {
                           </FormControl>
                           <SelectContent>
                             {verifikators.map((verifikator) => (
-                              <SelectItem key={verifikator.id} value={verifikator.name}>
-                                {verifikator.name}
+                              <SelectItem key={verifikator} value={verifikator}>
+                                {verifikator}
                               </SelectItem>
                             ))}
                             <SelectItem value="custom">Lainnya (isi manual)</SelectItem>
@@ -211,9 +193,9 @@ const ClinicalPathwayForm = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {dpjpDoctors.map((dpjp) => (
-                              <SelectItem key={dpjp.id} value={dpjp.name}>
-                                {dpjp.name}
+                            {dpjpOptions.map((dpjp) => (
+                              <SelectItem key={dpjp} value={dpjp}>
+                                {dpjp}
                               </SelectItem>
                             ))}
                             <SelectItem value="custom">Lainnya (isi manual)</SelectItem>

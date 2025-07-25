@@ -1,65 +1,57 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Edit, Trash2, Eye, FileText } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
+const dummyData = [
+  {
+    id: 1,
+    noRm: "001234",
+    namaPasien: "Siti Aminah / 28 th",
+    tanggalMasuk: "2024-01-15",
+    tanggalKeluar: "2024-01-17",
+    diagnosis: "Sectio Caesaria",
+    dpjp: "dr. Mira Maulina, Sp.OG",
+    verifikator: "Aulia Paramedika, S.Kep, Ns",
+    los: 2,
+    kepatuhan: "85%"
+  },
+  {
+    id: 2,
+    noRm: "001235",
+    namaPasien: "Budi Santoso / 45 th",
+    tanggalMasuk: "2024-01-20",
+    tanggalKeluar: "2024-01-25",
+    diagnosis: "Pneumonia",
+    dpjp: "dr. Dia Irawati, Sp.PD",
+    verifikator: "Fita Dhiah Andari, S.Kep, Ns",
+    los: 5,
+    kepatuhan: "92%"
+  },
+  {
+    id: 3,
+    noRm: "001236",
+    namaPasien: "Ahmad Wijaya / 55 th",
+    tanggalMasuk: "2024-01-22",
+    tanggalKeluar: "2024-01-27",
+    diagnosis: "Stroke Non Hemoragik",
+    dpjp: "dr. Waskitho Nugroho, MMR, Sp.N",
+    verifikator: "Heni Indriastuti, S.Kep, Ns",
+    los: 5,
+    kepatuhan: "78%"
+  }
+];
 
 export default function ClinicalPathway() {
   const navigate = useNavigate();
-  const [selectedData, setSelectedData] = useState<any>(null);
-  const [selectedMonth, setSelectedMonth] = useState("");
-
-  // Fetch clinical pathways data
-  const { data: clinicalPathways = [], isLoading } = useQuery({
-    queryKey: ['clinical_pathways', selectedMonth],
-    queryFn: async () => {
-      let query = supabase
-        .from('clinical_pathways')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (selectedMonth) {
-        const monthNumber = parseInt(selectedMonth);
-        query = query.filter('admission_date', 'gte', `2024-${monthNumber.toString().padStart(2, '0')}-01`)
-                     .filter('admission_date', 'lt', `2024-${(monthNumber + 1).toString().padStart(2, '0')}-01`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  const handleDelete = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('clinical_pathways')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-      
-      // Refresh data
-      window.location.reload();
-    } catch (error) {
-      console.error('Error deleting record:', error);
-    }
-  };
-
-  const calculateKepatuhan = (item: any) => {
-    const compliance = (item.kepatuhan_cp ? 1 : 0) + 
-                      (item.kepatuhan_penunjang ? 1 : 0) + 
-                      (item.kepatuhan_terapi ? 1 : 0);
-    return Math.round((compliance / 3) * 100);
-  };
+  const [selectedData, setSelectedData] = useState<typeof dummyData[0] | null>(null);
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
         <div>
           <h1 className="text-3xl font-bold">Clinical Pathway</h1>
@@ -85,102 +77,97 @@ export default function ClinicalPathway() {
               <div className="flex items-center gap-4 mt-4">
                 <div className="w-48">
                   <label className="text-sm font-medium mb-2 block">Filter Bulan:</label>
-                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <Select defaultValue="">
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih bulan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Semua Bulan</SelectItem>
-                      <SelectItem value="1">Januari</SelectItem>
-                      <SelectItem value="2">Februari</SelectItem>
-                      <SelectItem value="3">Maret</SelectItem>
-                      <SelectItem value="4">April</SelectItem>
-                      <SelectItem value="5">Mei</SelectItem>
-                      <SelectItem value="6">Juni</SelectItem>
-                      <SelectItem value="7">Juli</SelectItem>
-                      <SelectItem value="8">Agustus</SelectItem>
-                      <SelectItem value="9">September</SelectItem>
-                      <SelectItem value="10">Oktober</SelectItem>
-                      <SelectItem value="11">November</SelectItem>
-                      <SelectItem value="12">Desember</SelectItem>
+                      <SelectItem value="semua">Semua Bulan</SelectItem>
+                      <SelectItem value="januari">Januari</SelectItem>
+                      <SelectItem value="februari">Februari</SelectItem>
+                      <SelectItem value="maret">Maret</SelectItem>
+                      <SelectItem value="april">April</SelectItem>
+                      <SelectItem value="mei">Mei</SelectItem>
+                      <SelectItem value="juni">Juni</SelectItem>
+                      <SelectItem value="juli">Juli</SelectItem>
+                      <SelectItem value="agustus">Agustus</SelectItem>
+                      <SelectItem value="september">September</SelectItem>
+                      <SelectItem value="oktober">Oktober</SelectItem>
+                      <SelectItem value="november">November</SelectItem>
+                      <SelectItem value="desember">Desember</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <div>Loading...</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-4">No. RM</th>
-                        <th className="text-left p-4">Nama Pasien</th>
-                        <th className="text-left p-4">Tanggal Masuk</th>
-                        <th className="text-left p-4">Tanggal Keluar</th>
-                        <th className="text-left p-4">Diagnosis</th>
-                        <th className="text-left p-4">DPJP</th>
-                        <th className="text-left p-4">LOS</th>
-                        <th className="text-left p-4">Kepatuhan</th>
-                        <th className="text-left p-4">Aksi</th>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-4">No. RM</th>
+                      <th className="text-left p-4">Nama Pasien</th>
+                      <th className="text-left p-4">Tanggal Masuk</th>
+                      <th className="text-left p-4">Tanggal Keluar</th>
+                      <th className="text-left p-4">Diagnosis</th>
+                      <th className="text-left p-4">DPJP</th>
+                      <th className="text-left p-4">LOS</th>
+                      <th className="text-left p-4">Kepatuhan</th>
+                      <th className="text-left p-4">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dummyData.map((item) => (
+                      <tr key={item.id} className="border-b hover:bg-muted/50 medical-transition">
+                        <td className="p-4 font-mono">{item.noRm}</td>
+                        <td className="p-4">{item.namaPasien}</td>
+                        <td className="p-4">{new Date(item.tanggalMasuk).toLocaleDateString('id-ID')}</td>
+                        <td className="p-4">{new Date(item.tanggalKeluar).toLocaleDateString('id-ID')}</td>
+                        <td className="p-4">
+                          <span className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm">
+                            {item.diagnosis}
+                          </span>
+                        </td>
+                        <td className="p-4 text-sm">{item.dpjp}</td>
+                        <td className="p-4 text-center">{item.los} hari</td>
+                        <td className="p-4">
+                          <span className={`px-2 py-1 rounded-md text-sm ${
+                            parseInt(item.kepatuhan) >= 80 
+                              ? 'bg-success/10 text-success' 
+                              : 'bg-warning/10 text-warning'
+                          }`}>
+                            {item.kepatuhan}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => setSelectedData(item)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => setSelectedData(item)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {clinicalPathways.map((item) => (
-                        <tr key={item.id} className="border-b hover:bg-muted/50 medical-transition">
-                          <td className="p-4 font-mono">{item.no_rm}</td>
-                          <td className="p-4">{item.patient_name_age}</td>
-                          <td className="p-4">{new Date(item.admission_date).toLocaleDateString('id-ID')}</td>
-                          <td className="p-4">{item.discharge_date ? new Date(item.discharge_date).toLocaleDateString('id-ID') : '-'}</td>
-                          <td className="p-4">
-                            <span className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm">
-                              {item.clinical_pathway_type}
-                            </span>
-                          </td>
-                          <td className="p-4 text-sm">{item.dpjp}</td>
-                          <td className="p-4 text-center">{item.length_of_stay || 0} hari</td>
-                          <td className="p-4">
-                            <span className={`px-2 py-1 rounded-md text-sm ${
-                              calculateKepatuhan(item) >= 80 
-                                ? 'bg-success/10 text-success' 
-                                : 'bg-warning/10 text-warning'
-                            }`}>
-                              {calculateKepatuhan(item)}%
-                            </span>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex gap-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => setSelectedData(item)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => setSelectedData(item)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="destructive"
-                                onClick={() => handleDelete(item.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -232,6 +219,7 @@ export default function ClinicalPathway() {
               </div>
             </CardContent>
           </Card>
+
         </TabsContent>
       </Tabs>
     </div>
