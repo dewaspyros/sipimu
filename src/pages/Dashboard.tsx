@@ -28,7 +28,7 @@ const Dashboard = () => {
 
   // Fetch dashboard statistics
   const { data: dashboardStats = [] } = useQuery({
-    queryKey: ['dashboard_stats', selectedPathway],
+    queryKey: ['dashboard_stats', selectedPathway, selectedMonth],
     queryFn: async () => {
       let query = supabase
         .from('v_monthly_stats')
@@ -37,7 +37,8 @@ const Dashboard = () => {
       if (selectedPathway !== 'all') {
         query = query.eq('pathway_type', selectedPathway as any);
       }
-
+      if (selectedMonth) {
+        query = query.eq('month', parseInt(selectedMonth));
       const { data, error } = await query;
       if (error) throw error;
       return data || [];
