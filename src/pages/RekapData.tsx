@@ -95,7 +95,7 @@ const RekapData = () => {
               <SelectValue placeholder="Pilih Clinical Pathway" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Semua Pathway</SelectItem>
+              <SelectItem value="all">Semua Pathway</SelectItem>
               <SelectItem value="Sectio Caesaria">Sectio Caesaria</SelectItem>
               <SelectItem value="Stroke Hemoragik">Stroke Hemoragik</SelectItem>
               <SelectItem value="Stroke Non Hemoragik">Stroke Non Hemoragik</SelectItem>
@@ -108,7 +108,7 @@ const RekapData = () => {
               <SelectValue placeholder="Bulan" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Semua</SelectItem>
+              <SelectItem value="all">Semua</SelectItem>
               <SelectItem value="1">Januari</SelectItem>
               <SelectItem value="2">Februari</SelectItem>
               <SelectItem value="3">Maret</SelectItem>
