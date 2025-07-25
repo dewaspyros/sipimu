@@ -13,14 +13,8 @@ const CustomBarLabel = (props: any) => {
   const componentNames: { [key: string]: string } = {
     losCompliance: "LOS",
     cpCompliance: "CP", 
-    dokter: "Dokter",
-    perawat: "Perawat",
-    penunjang: "Penunjang",
-    laboratorium: "Lab",
-    obat: "Obat",
-    nutrisi: "Nutrisi",
-    fisioterapi: "Fisio",
-    edukasi: "Edukasi"
+    kepatuhanTerapi: "Terapi",
+    kepatuhanPenunjang: "Penunjang"
   };
 
   const componentName = componentNames[dataKey] || dataKey;
@@ -58,20 +52,78 @@ const monthlyComplianceData = [
   { month: "Dec", losCompliance: 91, cpCompliance: 88, avgLos: 1.5 }
 ];
 
-const componentComplianceData = [
-  { month: "Jan", dokter: 85, perawat: 82, penunjang: 78, laboratorium: 90, obat: 88, nutrisi: 75, fisioterapi: 80, edukasi: 77 },
-  { month: "Feb", dokter: 88, perawat: 85, penunjang: 82, laboratorium: 92, obat: 90, nutrisi: 78, fisioterapi: 83, edukasi: 80 },
-  { month: "Mar", dokter: 90, perawat: 88, penunjang: 85, laboratorium: 94, obat: 89, nutrisi: 80, fisioterapi: 85, edukasi: 82 },
-  { month: "Apr", dokter: 92, perawat: 90, penunjang: 88, laboratorium: 96, obat: 91, nutrisi: 83, fisioterapi: 88, edukasi: 85 },
-  { month: "May", dokter: 89, perawat: 87, penunjang: 90, laboratorium: 93, obat: 93, nutrisi: 85, fisioterapi: 90, edukasi: 87 },
-  { month: "Jun", dokter: 91, perawat: 89, penunjang: 87, laboratorium: 95, obat: 88, nutrisi: 82, fisioterapi: 87, edukasi: 84 },
-  { month: "Jul", dokter: 88, perawat: 91, penunjang: 89, laboratorium: 97, obat: 85, nutrisi: 78, fisioterapi: 92, edukasi: 88 },
-  { month: "Aug", dokter: 94, perawat: 86, penunjang: 91, laboratorium: 94, obat: 90, nutrisi: 84, fisioterapi: 89, edukasi: 91 },
-  { month: "Sep", dokter: 87, perawat: 93, penunjang: 85, laboratorium: 98, obat: 87, nutrisi: 81, fisioterapi: 94, edukasi: 86 },
-  { month: "Oct", dokter: 91, perawat: 88, penunjang: 93, laboratorium: 95, obat: 92, nutrisi: 86, fisioterapi: 88, edukasi: 93 },
-  { month: "Nov", dokter: 89, perawat: 95, penunjang: 87, laboratorium: 99, obat: 89, nutrisi: 83, fisioterapi: 91, edukasi: 89 },
-  { month: "Dec", dokter: 93, perawat: 90, penunjang: 94, laboratorium: 96, obat: 94, nutrisi: 88, fisioterapi: 93, edukasi: 95 }
-];
+const componentComplianceData = {
+  "sectio-caesaria": [
+    { month: "Jan", kepatuhanTerapi: 92, kepatuhanPenunjang: 87 },
+    { month: "Feb", kepatuhanTerapi: 94, kepatuhanPenunjang: 89 },
+    { month: "Mar", kepatuhanTerapi: 91, kepatuhanPenunjang: 85 },
+    { month: "Apr", kepatuhanTerapi: 95, kepatuhanPenunjang: 91 },
+    { month: "May", kepatuhanTerapi: 93, kepatuhanPenunjang: 88 },
+    { month: "Jun", kepatuhanTerapi: 96, kepatuhanPenunjang: 90 },
+    { month: "Jul", kepatuhanTerapi: 92, kepatuhanPenunjang: 86 },
+    { month: "Aug", kepatuhanTerapi: 97, kepatuhanPenunjang: 92 },
+    { month: "Sep", kepatuhanTerapi: 94, kepatuhanPenunjang: 88 },
+    { month: "Oct", kepatuhanTerapi: 98, kepatuhanPenunjang: 94 },
+    { month: "Nov", kepatuhanTerapi: 95, kepatuhanPenunjang: 89 },
+    { month: "Dec", kepatuhanTerapi: 99, kepatuhanPenunjang: 95 }
+  ],
+  "pneumonia": [
+    { month: "Jan", kepatuhanTerapi: 88, kepatuhanPenunjang: 83 },
+    { month: "Feb", kepatuhanTerapi: 90, kepatuhanPenunjang: 85 },
+    { month: "Mar", kepatuhanTerapi: 87, kepatuhanPenunjang: 81 },
+    { month: "Apr", kepatuhanTerapi: 91, kepatuhanPenunjang: 87 },
+    { month: "May", kepatuhanTerapi: 89, kepatuhanPenunjang: 84 },
+    { month: "Jun", kepatuhanTerapi: 92, kepatuhanPenunjang: 86 },
+    { month: "Jul", kepatuhanTerapi: 88, kepatuhanPenunjang: 82 },
+    { month: "Aug", kepatuhanTerapi: 93, kepatuhanPenunjang: 88 },
+    { month: "Sep", kepatuhanTerapi: 90, kepatuhanPenunjang: 84 },
+    { month: "Oct", kepatuhanTerapi: 94, kepatuhanPenunjang: 90 },
+    { month: "Nov", kepatuhanTerapi: 91, kepatuhanPenunjang: 85 },
+    { month: "Dec", kepatuhanTerapi: 95, kepatuhanPenunjang: 91 }
+  ],
+  "stroke-hemoragik": [
+    { month: "Jan", kepatuhanTerapi: 85, kepatuhanPenunjang: 80 },
+    { month: "Feb", kepatuhanTerapi: 87, kepatuhanPenunjang: 82 },
+    { month: "Mar", kepatuhanTerapi: 84, kepatuhanPenunjang: 78 },
+    { month: "Apr", kepatuhanTerapi: 88, kepatuhanPenunjang: 84 },
+    { month: "May", kepatuhanTerapi: 86, kepatuhanPenunjang: 81 },
+    { month: "Jun", kepatuhanTerapi: 89, kepatuhanPenunjang: 83 },
+    { month: "Jul", kepatuhanTerapi: 85, kepatuhanPenunjang: 79 },
+    { month: "Aug", kepatuhanTerapi: 90, kepatuhanPenunjang: 85 },
+    { month: "Sep", kepatuhanTerapi: 87, kepatuhanPenunjang: 81 },
+    { month: "Oct", kepatuhanTerapi: 91, kepatuhanPenunjang: 87 },
+    { month: "Nov", kepatuhanTerapi: 88, kepatuhanPenunjang: 82 },
+    { month: "Dec", kepatuhanTerapi: 92, kepatuhanPenunjang: 88 }
+  ],
+  "stroke-non-hemoragik": [
+    { month: "Jan", kepatuhanTerapi: 89, kepatuhanPenunjang: 84 },
+    { month: "Feb", kepatuhanTerapi: 91, kepatuhanPenunjang: 86 },
+    { month: "Mar", kepatuhanTerapi: 88, kepatuhanPenunjang: 82 },
+    { month: "Apr", kepatuhanTerapi: 92, kepatuhanPenunjang: 88 },
+    { month: "May", kepatuhanTerapi: 90, kepatuhanPenunjang: 85 },
+    { month: "Jun", kepatuhanTerapi: 93, kepatuhanPenunjang: 87 },
+    { month: "Jul", kepatuhanTerapi: 89, kepatuhanPenunjang: 83 },
+    { month: "Aug", kepatuhanTerapi: 94, kepatuhanPenunjang: 89 },
+    { month: "Sep", kepatuhanTerapi: 91, kepatuhanPenunjang: 85 },
+    { month: "Oct", kepatuhanTerapi: 95, kepatuhanPenunjang: 91 },
+    { month: "Nov", kepatuhanTerapi: 92, kepatuhanPenunjang: 86 },
+    { month: "Dec", kepatuhanTerapi: 96, kepatuhanPenunjang: 92 }
+  ],
+  "dengue-fever": [
+    { month: "Jan", kepatuhanTerapi: 93, kepatuhanPenunjang: 88 },
+    { month: "Feb", kepatuhanTerapi: 95, kepatuhanPenunjang: 90 },
+    { month: "Mar", kepatuhanTerapi: 92, kepatuhanPenunjang: 86 },
+    { month: "Apr", kepatuhanTerapi: 96, kepatuhanPenunjang: 92 },
+    { month: "May", kepatuhanTerapi: 94, kepatuhanPenunjang: 89 },
+    { month: "Jun", kepatuhanTerapi: 97, kepatuhanPenunjang: 91 },
+    { month: "Jul", kepatuhanTerapi: 93, kepatuhanPenunjang: 87 },
+    { month: "Aug", kepatuhanTerapi: 98, kepatuhanPenunjang: 93 },
+    { month: "Sep", kepatuhanTerapi: 95, kepatuhanPenunjang: 89 },
+    { month: "Oct", kepatuhanTerapi: 99, kepatuhanPenunjang: 95 },
+    { month: "Nov", kepatuhanTerapi: 96, kepatuhanPenunjang: 90 },
+    { month: "Dec", kepatuhanTerapi: 100, kepatuhanPenunjang: 96 }
+  ]
+};
 
 const dpjpComplianceData = {
   "Sectio Caesaria": [
@@ -132,14 +184,20 @@ export default function Dashboard() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <Card className="medical-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Kepatuhan LOS</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">87.2%</div>
+            <div className="text-2xl font-bold">
+              {selectedDiagnosis === "sectio-caesaria" ? "87.2%" : 
+               selectedDiagnosis === "pneumonia" ? "84.5%" : 
+               selectedDiagnosis === "stroke-hemoragik" ? "82.1%" : 
+               selectedDiagnosis === "stroke-non-hemoragik" ? "85.8%" : 
+               selectedDiagnosis === "dengue-fever" ? "89.3%" : "87.2%"}
+            </div>
             <p className="text-xs text-muted-foreground">
               <Badge variant="positive">+2.1%</Badge> dari bulan lalu
             </p>
@@ -152,9 +210,53 @@ export default function Dashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">89.5%</div>
+            <div className="text-2xl font-bold">
+              {selectedDiagnosis === "sectio-caesaria" ? "89.5%" : 
+               selectedDiagnosis === "pneumonia" ? "86.7%" : 
+               selectedDiagnosis === "stroke-hemoragik" ? "83.4%" : 
+               selectedDiagnosis === "stroke-non-hemoragik" ? "87.9%" : 
+               selectedDiagnosis === "dengue-fever" ? "91.2%" : "89.5%"}
+            </div>
             <p className="text-xs text-muted-foreground">
               <Badge variant="positive">+1.8%</Badge> dari bulan lalu
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="medical-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Kepatuhan Terapi</CardTitle>
+            <FileCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {selectedDiagnosis === "sectio-caesaria" ? "92.3%" : 
+               selectedDiagnosis === "pneumonia" ? "88.6%" : 
+               selectedDiagnosis === "stroke-hemoragik" ? "85.2%" : 
+               selectedDiagnosis === "stroke-non-hemoragik" ? "89.7%" : 
+               selectedDiagnosis === "dengue-fever" ? "93.8%" : "92.3%"}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              <Badge variant="positive">+2.4%</Badge> dari bulan lalu
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="medical-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Kepatuhan Penunjang</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {selectedDiagnosis === "sectio-caesaria" ? "86.9%" : 
+               selectedDiagnosis === "pneumonia" ? "83.4%" : 
+               selectedDiagnosis === "stroke-hemoragik" ? "80.7%" : 
+               selectedDiagnosis === "stroke-non-hemoragik" ? "84.1%" : 
+               selectedDiagnosis === "dengue-fever" ? "88.5%" : "86.9%"}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              <Badge variant="positive">+1.5%</Badge> dari bulan lalu
             </p>
           </CardContent>
         </Card>
@@ -165,7 +267,13 @@ export default function Dashboard() {
             <FileCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1.6 hari</div>
+            <div className="text-2xl font-bold">
+              {selectedDiagnosis === "sectio-caesaria" ? "1.6 hari" : 
+               selectedDiagnosis === "pneumonia" ? "5.2 hari" : 
+               selectedDiagnosis === "stroke-hemoragik" ? "4.8 hari" : 
+               selectedDiagnosis === "stroke-non-hemoragik" ? "4.6 hari" : 
+               selectedDiagnosis === "dengue-fever" ? "2.8 hari" : "1.6 hari"}
+            </div>
             <p className="text-xs text-muted-foreground">
               <Badge variant="positive">-0.3</Badge> dari bulan lalu
             </p>
@@ -178,7 +286,13 @@ export default function Dashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,284</div>
+            <div className="text-2xl font-bold">
+              {selectedDiagnosis === "sectio-caesaria" ? "1,284" : 
+               selectedDiagnosis === "pneumonia" ? "892" : 
+               selectedDiagnosis === "stroke-hemoragik" ? "456" : 
+               selectedDiagnosis === "stroke-non-hemoragik" ? "623" : 
+               selectedDiagnosis === "dengue-fever" ? "234" : "1,284"}
+            </div>
             <p className="text-xs text-muted-foreground">
               <Badge variant="positive">+5.2%</Badge> dari bulan lalu
             </p>
@@ -243,26 +357,38 @@ export default function Dashboard() {
       {/* Grafik Kepatuhan Komponen CP */}
       <Card className="medical-card">
         <CardHeader>
-          <CardTitle>Grafik Kepatuhan Komponen CP</CardTitle>
-          <CardDescription>
-            Presentase kepatuhan komponen Clinical Pathways per bulan
-          </CardDescription>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+            <div>
+              <CardTitle>Grafik Kepatuhan Komponen CP</CardTitle>
+              <CardDescription>
+                Presentase kepatuhan komponen Clinical Pathways per bulan
+              </CardDescription>
+            </div>
+            <div className="flex flex-col md:flex-row gap-4">
+              <Select value={selectedDiagnosis} onValueChange={setSelectedDiagnosis}>
+                <SelectTrigger className="w-full md:w-[250px]">
+                  <SelectValue placeholder="Pilih Diagnosis" />
+                </SelectTrigger>
+                <SelectContent>
+                  {diagnosisOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={500}>
-            <BarChart data={componentComplianceData}>
+            <BarChart data={componentComplianceData[selectedDiagnosis as keyof typeof componentComplianceData] || componentComplianceData["sectio-caesaria"]}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis domain={[0, 100]} label={{ value: 'Kepatuhan (%)', angle: -90, position: 'insideLeft' }} />
               <Tooltip />
-              <Bar dataKey="dokter" fill="hsl(var(--primary))" name="Dokter" label={<CustomBarLabel />} />
-              <Bar dataKey="perawat" fill="hsl(var(--secondary))" name="Perawat" label={<CustomBarLabel />} />
-              <Bar dataKey="penunjang" fill="hsl(var(--accent))" name="Penunjang" label={<CustomBarLabel />} />
-              <Bar dataKey="laboratorium" fill="hsl(var(--success))" name="Lab" label={<CustomBarLabel />} />
-              <Bar dataKey="obat" fill="hsl(var(--warning))" name="Obat" label={<CustomBarLabel />} />
-              <Bar dataKey="nutrisi" fill="hsl(var(--destructive))" name="Nutrisi" label={<CustomBarLabel />} />
-              <Bar dataKey="fisioterapi" fill="#8B5CF6" name="Fisioterapi" label={<CustomBarLabel />} />
-              <Bar dataKey="edukasi" fill="#F59E0B" name="Edukasi" label={<CustomBarLabel />} />
+              <Bar dataKey="kepatuhanTerapi" fill="hsl(var(--primary))" name="Kepatuhan Terapi" label={<CustomBarLabel />} />
+              <Bar dataKey="kepatuhanPenunjang" fill="hsl(var(--secondary))" name="Kepatuhan Penunjang" label={<CustomBarLabel />} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

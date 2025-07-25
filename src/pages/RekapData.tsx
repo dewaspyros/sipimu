@@ -329,9 +329,9 @@ export default function RekapData() {
                     <th className="text-left p-3">Diagnosis Pasien</th>
                     <th className="text-left p-3">LOS</th>
                     <th className="text-left p-3">Sesuai Target</th>
-                    <th className="text-left p-3">Kepatuhan CP</th>
                     <th className="text-left p-3">Kepatuhan Penunjang</th>
                     <th className="text-left p-3">Kepatuhan Terapi</th>
+                    <th className="text-left p-3">Kepatuhan CP</th>
                     <th className="text-left p-3">Aksi</th>
                   </tr>
                 </thead>
@@ -402,24 +402,6 @@ export default function RekapData() {
                         <td className="p-3">
                           {isEditing ? (
                             <Checkbox
-                              checked={item.kepatuhanCP}
-                              onCheckedChange={(checked) => updateCheckbox(index, 'kepatuhanCP', !!checked)}
-                            />
-                          ) : (
-                            <Badge 
-                              variant="outline"
-                              className={item.kepatuhanCP
-                                ? "bg-success/10 text-success border-success/20"
-                                : "bg-warning/10 text-warning border-warning/20"
-                              }
-                            >
-                              {item.kepatuhanCP ? "✓ Patuh" : "✗ Tidak Patuh"}
-                            </Badge>
-                          )}
-                        </td>
-                        <td className="p-3">
-                          {isEditing ? (
-                            <Checkbox
                               checked={item.kepatuhanPenunjang}
                               onCheckedChange={(checked) => updateCheckbox(index, 'kepatuhanPenunjang', !!checked)}
                             />
@@ -452,6 +434,27 @@ export default function RekapData() {
                               {item.kepatuhanTerapi ? "✓ Patuh" : "✗ Tidak Patuh"}
                             </Badge>
                           )}
+                        </td>
+                        <td className="p-3">
+                          {(() => {
+                            // Calculate automatic percentage based on checked compliance items
+                            const complianceItems = [item.kepatuhanPenunjang, item.kepatuhanTerapi];
+                            const checkedItems = complianceItems.filter(Boolean).length;
+                            const totalItems = complianceItems.length;
+                            const percentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+                            
+                            return (
+                              <Badge 
+                                variant="outline"
+                                className={percentage >= 75
+                                  ? "bg-success/10 text-success border-success/20 font-bold"
+                                  : "bg-warning/10 text-warning border-warning/20 font-bold"
+                                }
+                              >
+                                {percentage}%
+                              </Badge>
+                            );
+                          })()}
                         </td>
                         <td className="p-3">
                           <Button
@@ -492,17 +495,27 @@ export default function RekapData() {
                       </td>
                       <td className="p-3 text-center">
                         <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
-                          {summary.persentaseKepatuhanCP}%
-                        </Badge>
-                      </td>
-                      <td className="p-3 text-center">
-                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
                           {summary.persentaseKepatuhanPenunjang}%
                         </Badge>
                       </td>
                       <td className="p-3 text-center">
                         <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
                           {summary.persentaseKepatuhanTerapi}%
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-center">
+                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
+                          {(() => {
+                            // Calculate overall average CP compliance percentage
+                            if (data.length === 0) return "0";
+                            const totalPercentage = data.reduce((acc, item) => {
+                              const complianceItems = [item.kepatuhanPenunjang, item.kepatuhanTerapi];
+                              const checkedItems = complianceItems.filter(Boolean).length;
+                              const totalItems = complianceItems.length;
+                              return acc + (totalItems > 0 ? (checkedItems / totalItems) * 100 : 0);
+                            }, 0);
+                            return Math.round(totalPercentage / data.length);
+                          })()}%
                         </Badge>
                       </td>
                       <td className="p-3 text-center">
