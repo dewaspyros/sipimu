@@ -1,30 +1,41 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  ReferenceLine,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from "@/components/ui/chart";
 import { Activity, Users, TrendingUp, Clock, Target, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 const Dashboard = () => {
-  const [selectedPathway, setSelectedPathway] = useState<string>('');
-  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [selectedPathway, setSelectedPathway] = useState<string>("all");
 
   // Fetch dashboard statistics
   const { data: dashboardStats = [] } = useQuery({
-    queryKey: ['dashboard_stats', selectedPathway, selectedMonth],
+    queryKey: ['dashboard_stats', selectedPathway],
     queryFn: async () => {
       let query = supabase
         .from('v_monthly_stats')
         .select('*');
 
-      if (selectedPathway) {
-        query = query.eq('pathway_type', selectedPathway);
-      }
-
-      if (selectedMonth) {
-        query = query.eq('month', parseInt(selectedMonth));
+      if (selectedPathway !== 'all') {
+        query = query.eq('pathway_type', selectedPathway as any);
       }
 
       const { data, error } = await query;
@@ -35,7 +46,7 @@ const Dashboard = () => {
 
   // Fetch pathway compliance data
   const { data: pathwayCompliance = [] } = useQuery({
-    queryKey: ['pathway_compliance'],
+    queryKey: ['pathway-compliance'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('v_pathway_compliance')
@@ -70,19 +81,20 @@ const Dashboard = () => {
   const avgKepatuhanTerapi = aggregatedStats.totalPatients > 0 ? (aggregatedStats.totalKepatuhanTerapi / aggregatedStats.totalPatients * 100).toFixed(1) : '0';
   const avgLOS = aggregatedStats.totalPatients > 0 ? (aggregatedStats.totalAvgLOS / aggregatedStats.totalPatients).toFixed(1) : '0';
 
-  // Chart data for kepatuhan
-  const kepatuhanData = pathwayCompliance.map(item => ({
-    name: item.clinical_pathway_type,
-    kepatuhan_terapi: item.kepatuhan_terapi_count ? ((item.kepatuhan_terapi_count / item.total_patients) * 100).toFixed(1) : 0,
-    kepatuhan_penunjang: item.kepatuhan_penunjang_count ? ((item.kepatuhan_penunjang_count / item.total_patients) * 100).toFixed(1) : 0,
+  // Prepare chart data for LOS, CP and Avg LOS (using monthly stats)
+  const chartData1 = dashboardStats.map(item => ({
+    month: `${item.month}/${item.year}`,
+    los_compliance: Number((item.sesuai_target_percentage || 0).toFixed(1)),
+    cp_compliance: Number((item.kepatuhan_cp_percentage || 0).toFixed(1)),
+    avg_los: Number((item.avg_los || 0).toFixed(1))
   }));
 
-  // Pie chart data for compliance
-  const complianceData = [
-    { name: 'Kepatuhan CP', value: parseFloat(avgKepatuhanCP), color: '#3b82f6' },
-    { name: 'Kepatuhan Penunjang', value: parseFloat(avgKepatuhanPenunjang), color: '#10b981' },
-    { name: 'Kepatuhan Terapi', value: parseFloat(avgKepatuhanTerapi), color: '#f59e0b' },
-  ];
+  // Prepare chart data for therapy and support compliance
+  const chartData2 = dashboardStats.map(item => ({
+    month: `${item.month}/${item.year}`,
+    terapi_compliance: Number((item.kepatuhan_terapi_percentage || 0).toFixed(1)),
+    penunjang_compliance: Number((item.kepatuhan_penunjang_percentage || 0).toFixed(1))
+  }));
 
   return (
     <div className="space-y-6">
@@ -93,9 +105,9 @@ const Dashboard = () => {
             Selamat datang di sistem Clinical Pathways RS PKU Muhammadiyah Wonosobo
           </p>
         </div>
-        <div className="flex gap-4">
+        <div className="space-y-4">
           <Select value={selectedPathway} onValueChange={setSelectedPathway}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Pilih Clinical Pathway" />
             </SelectTrigger>
             <SelectContent>
@@ -107,166 +119,145 @@ const Dashboard = () => {
               <SelectItem value="Dengue Fever">Dengue Fever</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Bulan" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua</SelectItem>
-              <SelectItem value="1">Januari</SelectItem>
-              <SelectItem value="2">Februari</SelectItem>
-              <SelectItem value="3">Maret</SelectItem>
-              <SelectItem value="4">April</SelectItem>
-              <SelectItem value="5">Mei</SelectItem>
-              <SelectItem value="6">Juni</SelectItem>
-              <SelectItem value="7">Juli</SelectItem>
-              <SelectItem value="8">Agustus</SelectItem>
-              <SelectItem value="9">September</SelectItem>
-              <SelectItem value="10">Oktober</SelectItem>
-              <SelectItem value="11">November</SelectItem>
-              <SelectItem value="12">Desember</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <Card className="medical-card">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Pasien</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{aggregatedStats.totalPatients}</div>
-            <p className="text-xs text-muted-foreground">
-              Total pasien Clinical Pathway
-            </p>
           </CardContent>
         </Card>
-
-        <Card className="medical-card">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sesuai Target</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Kepatuhan LOS</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{avgSesuaiTarget}%</div>
-            <p className="text-xs text-muted-foreground">
-              Persentase sesuai target LOS
-            </p>
           </CardContent>
         </Card>
-
-        <Card className="medical-card">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Kepatuhan CP</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{avgKepatuhanCP}%</div>
-            <p className="text-xs text-muted-foreground">
-              Persentase kepatuhan Clinical Pathway
-            </p>
           </CardContent>
         </Card>
-
-        <Card className="medical-card">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Kepatuhan Penunjang</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Rata-rata LOS</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgKepatuhanPenunjang}%</div>
-            <p className="text-xs text-muted-foreground">
-              Persentase kepatuhan penunjang
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="medical-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Kepatuhan Terapi</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{avgKepatuhanTerapi}%</div>
-            <p className="text-xs text-muted-foreground">
-              Persentase kepatuhan terapi
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="medical-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg LOS</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{avgLOS}</div>
-            <p className="text-xs text-muted-foreground">
-              Rata-rata Length of Stay (hari)
-            </p>
+            <div className="text-2xl font-bold">{avgLOS} hari</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="medical-card">
+      <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+        <Card className="col-span-1 lg:col-span-2">
           <CardHeader>
-            <CardTitle>Grafik Kepatuhan Terapi dan Penunjang</CardTitle>
-            <CardDescription>
-              Perbandingan kepatuhan terapi dan penunjang per Clinical Pathway
-            </CardDescription>
+            <CardTitle>Grafik Kepatuhan LOS, CP dan Avg LOS</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Persentase kepatuhan dan rata-rata LOS per bulan dalam 1 tahun
+            </p>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={kepatuhanData}>
+            <ChartContainer
+              config={{
+                los_compliance: {
+                  label: "Kepatuhan LOS (%)",
+                  color: "hsl(var(--chart-1))",
+                },
+                cp_compliance: {
+                  label: "Kepatuhan CP (%)", 
+                  color: "hsl(var(--chart-2))",
+                },
+                avg_los: {
+                  label: "Rata-rata LOS (hari)",
+                  color: "hsl(var(--chart-3))",
+                },
+              }}
+              className="h-80"
+            >
+              <ComposedChart
+                data={chartData1}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
-                  dataKey="name" 
-                  tick={{ fontSize: 12 }}
+                  dataKey="month" 
+                  tick={{ fontSize: 10 }}
                   angle={-45}
                   textAnchor="end"
                   height={80}
                 />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="kepatuhan_terapi" fill="#3b82f6" name="Kepatuhan Terapi" />
-                <Bar dataKey="kepatuhan_penunjang" fill="#10b981" name="Kepatuhan Penunjang" />
-              </BarChart>
-            </ResponsiveContainer>
+                <YAxis yAxisId="left" domain={[0, 100]} label={{ value: 'Persentase (%)', angle: -90, position: 'insideLeft' }} />
+                <YAxis yAxisId="right" orientation="right" domain={[0, 6]} label={{ value: 'LOS (hari)', angle: 90, position: 'insideRight' }} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Bar yAxisId="left" dataKey="los_compliance" fill="var(--color-los_compliance)" />
+                <Bar yAxisId="left" dataKey="cp_compliance" fill="var(--color-cp_compliance)" />
+                <Line yAxisId="right" type="monotone" dataKey="avg_los" stroke="var(--color-avg_los)" strokeWidth={3} />
+              </ComposedChart>
+            </ChartContainer>
           </CardContent>
         </Card>
 
-        <Card className="medical-card">
+        <Card className="col-span-1 lg:col-span-2">
           <CardHeader>
-            <CardTitle>Distribusi Kepatuhan</CardTitle>
-            <CardDescription>
-              Persentase kepatuhan secara keseluruhan
-            </CardDescription>
+            <CardTitle>Grafik Kepatuhan Komponen CP</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Persentase kepatuhan terapi dan penunjang per bulan (Target 75% ke atas)
+            </p>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={complianceData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name}: ${value}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {complianceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <ChartContainer
+              config={{
+                terapi_compliance: {
+                  label: "Kepatuhan Terapi (%)",
+                  color: "hsl(var(--chart-1))",
+                },
+                penunjang_compliance: {
+                  label: "Kepatuhan Penunjang (%)", 
+                  color: "hsl(var(--chart-2))",
+                },
+              }}
+              className="h-80"
+            >
+              <BarChart
+                data={chartData2}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="month" 
+                  tick={{ fontSize: 10 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis domain={[0, 100]} label={{ value: 'Persentase (%)', angle: -90, position: 'insideLeft' }} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Bar dataKey="terapi_compliance" fill="var(--color-terapi_compliance)" />
+                <Bar dataKey="penunjang_compliance" fill="var(--color-penunjang_compliance)" />
+                <ReferenceLine y={75} stroke="red" strokeDasharray="5 5" label="Target 75%" />
+              </BarChart>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>

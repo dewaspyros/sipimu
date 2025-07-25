@@ -47,7 +47,7 @@ const ClinicalPathwayChecklist = () => {
       const { data, error } = await supabase
         .from('clinical_pathway_templates')
         .select('*')
-        .eq('pathway_type', formData.clinicalPathway)
+        .eq('pathway_type', formData.clinicalPathway as any)
         .single();
       
       if (error) throw error;
@@ -70,11 +70,12 @@ const ClinicalPathwayChecklist = () => {
   useEffect(() => {
     if (template) {
       // Parse days config
-      const days = Array.isArray(template.days_config) ? template.days_config : [];
+      const daysConfigObj = template.days_config as any;
+      const days = daysConfigObj ? Object.keys(daysConfigObj).filter(day => daysConfigObj[day]) : [];
       setDaysConfig(days);
       
       // Parse items config and initialize checklist
-      const items = Array.isArray(template.items_config) ? template.items_config : [];
+      const items = template.items_config ? (template.items_config as any).filter((item: any) => typeof item === 'string') : [];
       const initialItems: ChecklistItem[] = items.map((item: string, index: number) => ({
         id: index,
         text: item,

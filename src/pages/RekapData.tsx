@@ -1,83 +1,66 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { FileText, Download } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 const RekapData = () => {
-  const [selectedPathway, setSelectedPathway] = useState<string>('');
-  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [selectedPathway, setSelectedPathway] = useState<string>("all");
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
 
   // Fetch monthly statistics
   const { data: monthlyStats = [] } = useQuery({
-    queryKey: ['monthly_stats', selectedPathway, selectedMonth],
+    queryKey: ['monthly-stats', selectedPathway, selectedMonth],
     queryFn: async () => {
-      let query = supabase
-        .from('v_monthly_stats')
-        .select('*')
-        .order('year', { ascending: false })
-        .order('month', { ascending: false });
-
-      if (selectedPathway) {
-        query = query.eq('pathway_type', selectedPathway);
+      let query = supabase.from('v_monthly_stats').select('*');
+      
+      if (selectedPathway !== 'all') {
+        query = query.eq('pathway_type', selectedPathway as any);
       }
-
-      if (selectedMonth) {
-        query = query.eq('month', parseInt(selectedMonth));
+      
+      if (selectedMonth !== 'all') {
+        const [year, month] = selectedMonth.split('-');
+        query = query.eq('year', parseInt(year)).eq('month', parseInt(month));
       }
-
-      const { data, error } = await query;
+      
+      const { data, error } = await query.order('year', { ascending: false }).order('month', { ascending: false });
       if (error) throw error;
       return data || [];
     }
   });
 
-  // Fetch clinical pathways for detailed view
+  // Fetch clinical pathways data
   const { data: clinicalPathways = [] } = useQuery({
-    queryKey: ['clinical_pathways_recap', selectedPathway, selectedMonth],
+    queryKey: ['clinical-pathways', selectedPathway],
     queryFn: async () => {
-      let query = supabase
-        .from('clinical_pathways')
-        .select('*')
-        .order('admission_date', { ascending: false });
-
-      if (selectedPathway) {
-        query = query.eq('clinical_pathway_type', selectedPathway);
+      let query = supabase.from('clinical_pathways').select('*');
+      
+      if (selectedPathway !== 'all') {
+        query = query.eq('clinical_pathway_type', selectedPathway as any);
       }
-
-      if (selectedMonth) {
-        const monthNumber = parseInt(selectedMonth);
-        query = query.filter('admission_date', 'gte', `2024-${monthNumber.toString().padStart(2, '0')}-01`)
-                     .filter('admission_date', 'lt', `2024-${(monthNumber + 1).toString().padStart(2, '0')}-01`);
-      }
-
-      const { data, error } = await query;
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
       if (error) throw error;
       return data || [];
     }
   });
 
+  // Calculate kepatuhan percentage
   const calculateKepatuhanCP = (pathway: any) => {
-    const compliance = (pathway.kepatuhan_cp ? 1 : 0) + 
-                      (pathway.kepatuhan_penunjang ? 1 : 0) + 
-                      (pathway.kepatuhan_terapi ? 1 : 0);
-    return Math.round((compliance / 3) * 100);
+    const total = 3; // kepatuhan_cp, kepatuhan_penunjang, kepatuhan_terapi
+    const kepatuhan = [
+      pathway.kepatuhan_cp,
+      pathway.kepatuhan_penunjang, 
+      pathway.kepatuhan_terapi
+    ].filter(Boolean).length;
+    return Math.round((kepatuhan / total) * 100);
   };
 
-  // Chart data for kepatuhan terapi and penunjang
-  const chartData = monthlyStats.map(item => ({
-    name: `${item.pathway_type} (${item.month}/${item.year})`,
-    kepatuhan_terapi: item.kepatuhan_terapi_percentage || 0,
-    kepatuhan_penunjang: item.kepatuhan_penunjang_percentage || 0,
-  }));
-
   const handleExport = () => {
-    // Export functionality placeholder
-    console.log('Exporting data...');
+    // TODO: Implement export functionality
+    console.log('Export data:', monthlyStats);
   };
 
   return (
@@ -91,7 +74,7 @@ const RekapData = () => {
         </div>
         <div className="flex gap-4">
           <Select value={selectedPathway} onValueChange={setSelectedPathway}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Pilih Clinical Pathway" />
             </SelectTrigger>
             <SelectContent>
@@ -103,26 +86,19 @@ const RekapData = () => {
               <SelectItem value="Dengue Fever">Dengue Fever</SelectItem>
             </SelectContent>
           </Select>
+
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Bulan" />
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Pilih Bulan" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Semua</SelectItem>
-              <SelectItem value="1">Januari</SelectItem>
-              <SelectItem value="2">Februari</SelectItem>
-              <SelectItem value="3">Maret</SelectItem>
-              <SelectItem value="4">April</SelectItem>
-              <SelectItem value="5">Mei</SelectItem>
-              <SelectItem value="6">Juni</SelectItem>
-              <SelectItem value="7">Juli</SelectItem>
-              <SelectItem value="8">Agustus</SelectItem>
-              <SelectItem value="9">September</SelectItem>
-              <SelectItem value="10">Oktober</SelectItem>
-              <SelectItem value="11">November</SelectItem>
-              <SelectItem value="12">Desember</SelectItem>
+              <SelectItem value="all">Semua Bulan</SelectItem>
+              <SelectItem value="2024-01">Januari 2024</SelectItem>
+              <SelectItem value="2024-02">Februari 2024</SelectItem>
+              <SelectItem value="2024-03">Maret 2024</SelectItem>
             </SelectContent>
           </Select>
+
           <Button onClick={handleExport} className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             Export
@@ -131,7 +107,7 @@ const RekapData = () => {
       </div>
 
       {/* Monthly Statistics Table */}
-      <Card className="medical-card">
+      <Card>
         <CardHeader>
           <CardTitle>Rekap Data Bulanan</CardTitle>
           <CardDescription>
@@ -177,7 +153,7 @@ const RekapData = () => {
       </Card>
 
       {/* Detailed Patient Data */}
-      <Card className="medical-card">
+      <Card>
         <CardHeader>
           <CardTitle>Data Detail Pasien</CardTitle>
           <CardDescription>
@@ -235,34 +211,6 @@ const RekapData = () => {
               </tbody>
             </table>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Grafik Kepatuhan */}
-      <Card className="medical-card">
-        <CardHeader>
-          <CardTitle>Grafik Kepatuhan Terapi dan Penunjang</CardTitle>
-          <CardDescription>
-            Perbandingan kepatuhan terapi dan penunjang per Clinical Pathway
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fontSize: 12 }}
-                angle={-45}
-                textAnchor="end"
-                height={100}
-              />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="kepatuhan_terapi" fill="#3b82f6" name="Kepatuhan Terapi" />
-              <Bar dataKey="kepatuhan_penunjang" fill="#10b981" name="Kepatuhan Penunjang" />
-            </BarChart>
-          </ResponsiveContainer>
         </CardContent>
       </Card>
     </div>
