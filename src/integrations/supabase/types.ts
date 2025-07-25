@@ -10,11 +10,28 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daftar_cp: {
+        Row: {
+          id: number
+          jenis_cp: string
+          "Terget Los": number | null
+        }
+        Insert: {
+          id?: number
+          jenis_cp: string
+          "Terget Los"?: number | null
+        }
+        Update: {
+          id?: number
+          jenis_cp?: string
+          "Terget Los"?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +40,18 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      clinical_pathway_type:
+        | "Sectio Caesaria"
+        | "Stroke Hemoragik"
+        | "Stroke Non Hemoragik"
+        | "Pneumonia"
+        | "Dengue Fever"
+      daftar_cps:
+        | "Sectio Caesaria"
+        | "Stroke Hemoragik"
+        | "Stroke Non Hemoragik"
+        | "Pneumonia"
+        | "Dengue Fever"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +178,21 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      clinical_pathway_type: [
+        "Sectio Caesaria",
+        "Stroke Hemoragik",
+        "Stroke Non Hemoragik",
+        "Pneumonia",
+        "Dengue Fever",
+      ],
+      daftar_cps: [
+        "Sectio Caesaria",
+        "Stroke Hemoragik",
+        "Stroke Non Hemoragik",
+        "Pneumonia",
+        "Dengue Fever",
+      ],
+    },
   },
 } as const
