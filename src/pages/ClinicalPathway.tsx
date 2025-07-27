@@ -46,7 +46,7 @@ export default function ClinicalPathway() {
                       <SelectValue placeholder="Pilih bulan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Semua Bulan</SelectItem>
+                      <SelectItem value="all">Semua Bulan</SelectItem>
                       <SelectItem value="1">Januari</SelectItem>
                       <SelectItem value="2">Februari</SelectItem>
                       <SelectItem value="3">Maret</SelectItem>
@@ -94,7 +94,7 @@ export default function ClinicalPathway() {
                     ) : (
                       pathways
                         .filter(item => {
-                          if (!selectedMonth) return true;
+                          if (!selectedMonth || selectedMonth === "all") return true;
                           const admissionMonth = new Date(item.tanggal_masuk).getMonth() + 1;
                           return admissionMonth.toString() === selectedMonth;
                         })
