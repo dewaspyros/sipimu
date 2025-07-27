@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useChecklist } from "@/hooks/useClinicalPathways";
 
 interface PatientFormData {
   clinicalPathway: string;
@@ -19,6 +20,7 @@ interface PatientFormData {
   dischargeDate?: string;
   dischargeTime?: string;
   lengthOfStay?: string;
+  pathwayId?: string;
 }
 
 interface ChecklistItem {
@@ -262,6 +264,7 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
 const ClinicalPathwayChecklist = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { saveChecklist, loading: checklistLoading } = useChecklist();
   const [patientData, setPatientData] = useState<PatientFormData | null>(null);
   const [checklistData, setChecklistData] = useState<ChecklistData>({});
   const [variantData, setVariantData] = useState<VariantData>({});
@@ -301,23 +304,36 @@ const ClinicalPathwayChecklist = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    const finalData = {
-      patientData,
-      checklistData,
-      variantData,
-      submittedAt: new Date().toISOString()
-    };
-    
-    console.log('Data Clinical Pathway:', finalData);
-    
-    toast({
-      title: "Data berhasil disimpan",
-      description: "Data Clinical Pathway telah tersimpan."
-    });
-    
-    sessionStorage.removeItem('clinicalPathwayFormData');
-    navigate('/clinical-pathway');
+  const handleSubmit = async () => {
+    if (!patientData?.pathwayId) {
+      toast({
+        title: "Error",
+        description: "ID pathway tidak ditemukan",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Prepare checklist items for saving
+      const checklistItems = config.items.map((item, index) => ({
+        text: item,
+        day1: checklistData[index.toString()]?.['Hari ke-1'] || false,
+        day2: checklistData[index.toString()]?.['Hari ke-2'] || false,
+        day3: checklistData[index.toString()]?.['Hari ke-3'] || false,
+        day4: checklistData[index.toString()]?.['Hari ke-4'] || false,
+        day5: checklistData[index.toString()]?.['Hari ke-5'] || false,
+        day6: checklistData[index.toString()]?.['Hari ke-6'] || false,
+        variant: variantData[index.toString()] || ''
+      }));
+
+      await saveChecklist(patientData.pathwayId, checklistItems);
+      
+      sessionStorage.removeItem('clinicalPathwayFormData');
+      navigate('/clinical-pathway');
+    } catch (error) {
+      console.error('Error saving checklist:', error);
+    }
   };
 
   return (
@@ -429,8 +445,8 @@ const ClinicalPathwayChecklist = () => {
           >
             Kembali
           </Button>
-          <Button onClick={handleSubmit}>
-            Kirim Data
+          <Button onClick={handleSubmit} disabled={checklistLoading}>
+            {checklistLoading ? "Menyimpan..." : "Kirim Data"}
           </Button>
         </div>
       </div>

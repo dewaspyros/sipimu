@@ -7,6 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
+import { useClinicalPathways } from "@/hooks/useClinicalPathways";
 
 interface PatientFormData {
   clinicalPathway: string;
@@ -54,6 +55,7 @@ const dpjpOptions = [
 
 const ClinicalPathwayForm = () => {
   const navigate = useNavigate();
+  const { createPathway } = useClinicalPathways();
   const [customVerifikator, setCustomVerifikator] = useState("");
   const [customDPJP, setCustomDPJP] = useState("");
   
@@ -72,10 +74,41 @@ const ClinicalPathwayForm = () => {
     }
   });
 
-  const onSubmit = (data: PatientFormData) => {
-    // Store form data in session storage for the next step
-    sessionStorage.setItem('clinicalPathwayFormData', JSON.stringify(data));
-    navigate('/clinical-pathway-checklist');
+  const onSubmit = async (data: PatientFormData) => {
+    try {
+      // Calculate LOS if both admission and discharge dates are provided
+      let losHari = null;
+      if (data.dischargeDate && data.admissionDate) {
+        const admissionDate = new Date(data.admissionDate);
+        const dischargeDate = new Date(data.dischargeDate);
+        const timeDiff = dischargeDate.getTime() - admissionDate.getTime();
+        losHari = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      }
+
+      // Create clinical pathway record
+      const pathway = await createPathway({
+        no_rm: data.noRM,
+        nama_pasien: data.patientNameAge,
+        jenis_clinical_pathway: data.clinicalPathway as any,
+        verifikator_pelaksana: data.verifikator,
+        dpjp: data.dpjp,
+        tanggal_masuk: data.admissionDate,
+        jam_masuk: data.admissionTime,
+        tanggal_keluar: data.dischargeDate || null,
+        jam_keluar: data.dischargeTime || null,
+        los_hari: losHari
+      });
+
+      // Store form data and pathway ID in session storage for the checklist step
+      sessionStorage.setItem('clinicalPathwayFormData', JSON.stringify({
+        ...data,
+        pathwayId: pathway.id
+      }));
+      
+      navigate('/clinical-pathway-checklist');
+    } catch (error) {
+      console.error('Error creating clinical pathway:', error);
+    }
   };
 
   return (
