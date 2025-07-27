@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -6,106 +6,23 @@ import { Calendar, FileText, TrendingUp, Download, Edit, Save } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { useRekapData, type RekapDataItem } from "@/hooks/useRekapData";
 
-// Dummy data for monthly recap
-const monthlyData = {
-  "januari": [
-    {
-      no: 1,
-      namaPasien: "Siti Aminah / 28 th",
-      tanggalMasuk: "2024-01-15T08:30:00",
-      tanggalKeluar: "2024-01-17T14:20:00",
-      diagnosis: "Sectio Caesaria",
-      los: 2,
-      sesuaiTarget: true,
-      kepatuhanCP: true,
-      kepatuhanPenunjang: true,
-      kepatuhanTerapi: false,
-      avgLOS: 1.8
-    },
-    {
-      no: 2,
-      namaPasien: "Dewi Sartika / 32 th",
-      tanggalMasuk: "2024-01-20T10:15:00",
-      tanggalKeluar: "2024-01-21T16:45:00",
-      diagnosis: "Sectio Caesaria",
-      los: 1,
-      sesuaiTarget: true,
-      kepatuhanCP: true,
-      kepatuhanPenunjang: true,
-      kepatuhanTerapi: true,
-      avgLOS: 1.6
-    },
-    {
-      no: 3,
-      namaPasien: "Budi Santoso / 45 th",
-      tanggalMasuk: "2024-01-22T12:00:00",
-      tanggalKeluar: "2024-01-27T09:30:00",
-      diagnosis: "Pneumonia",
-      los: 5,
-      sesuaiTarget: true,
-      kepatuhanCP: false,
-      kepatuhanPenunjang: true,
-      kepatuhanTerapi: true,
-      avgLOS: 5.2
-    },
-    {
-      no: 4,
-      namaPasien: "Ahmad Wijaya / 55 th",
-      tanggalMasuk: "2024-01-25T07:45:00",
-      tanggalKeluar: "2024-01-30T13:15:00",
-      diagnosis: "Stroke Non Hemoragik",
-      los: 5,
-      sesuaiTarget: true,
-      kepatuhanCP: true,
-      kepatuhanPenunjang: false,
-      kepatuhanTerapi: true,
-      avgLOS: 4.8
-    }
-  ],
-  "februari": [
-    {
-      no: 1,
-      namaPasien: "Ratna Sari / 35 th",
-      tanggalMasuk: "2024-02-05T11:20:00",
-      tanggalKeluar: "2024-02-07T15:30:00",
-      diagnosis: "Sectio Caesaria",
-      los: 2,
-      sesuaiTarget: true,
-      kepatuhanCP: true,
-      kepatuhanPenunjang: true,
-      kepatuhanTerapi: true,
-      avgLOS: 1.9
-    },
-    {
-      no: 2,
-      namaPasien: "Joko Susilo / 40 th",
-      tanggalMasuk: "2024-02-10T09:00:00",
-      tanggalKeluar: "2024-02-14T17:00:00",
-      diagnosis: "Pneumonia",
-      los: 4,
-      sesuaiTarget: true,
-      kepatuhanCP: true,
-      kepatuhanPenunjang: false,
-      kepatuhanTerapi: true,
-      avgLOS: 4.5
-    }
-  ]
-};
+// Remove dummy data - now using real Supabase data
 
 const monthOptions = [
-  { value: "januari", label: "Januari" },
-  { value: "februari", label: "Februari" },
-  { value: "maret", label: "Maret" },
-  { value: "april", label: "April" },
-  { value: "mei", label: "Mei" },
-  { value: "juni", label: "Juni" },
-  { value: "juli", label: "Juli" },
-  { value: "agustus", label: "Agustus" },
-  { value: "september", label: "September" },
-  { value: "oktober", label: "Oktober" },
-  { value: "november", label: "November" },
-  { value: "desember", label: "Desember" }
+  { value: "1", label: "Januari" },
+  { value: "2", label: "Februari" },
+  { value: "3", label: "Maret" },
+  { value: "4", label: "April" },
+  { value: "5", label: "Mei" },
+  { value: "6", label: "Juni" },
+  { value: "7", label: "Juli" },
+  { value: "8", label: "Agustus" },
+  { value: "9", label: "September" },
+  { value: "10", label: "Oktober" },
+  { value: "11", label: "November" },
+  { value: "12", label: "Desember" }
 ];
 
 const pathwayOptions = [
@@ -120,63 +37,47 @@ const pathwayOptions = [
 export default function RekapData() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedPathway, setSelectedPathway] = useState("all");
-  const [data, setData] = useState<typeof monthlyData["januari"]>([]);
+  const [filteredData, setFilteredData] = useState<RekapDataItem[]>([]);
   const [editingRows, setEditingRows] = useState<{[key: string]: boolean}>({});
+  
+  const { data, loading, fetchDataByMonth, filterDataByPathway, updatePatientData, getTargetLOS } = useRekapData();
 
-  const filterDataByPathway = (data: typeof monthlyData["januari"], pathway: string) => {
-    if (pathway === "all") return data;
-    
-    const pathwayMap: {[key: string]: string} = {
-      "sectio-caesaria": "Sectio Caesaria",
-      "stroke-hemoragik": "Stroke Hemoragik", 
-      "stroke-non-hemoragik": "Stroke Non Hemoragik",
-      "pneumonia": "Pneumonia",
-      "dengue-fever": "Dengue Fever"
-    };
-    
-    return data.filter(item => item.diagnosis === pathwayMap[pathway]);
-  };
-
-  const handleMonthChange = (month: string) => {
+  const handleMonthChange = async (month: string) => {
     setSelectedMonth(month);
-    const monthData = monthlyData[month as keyof typeof monthlyData] || [];
-    setData(filterDataByPathway(monthData, selectedPathway));
+    if (month) {
+      await fetchDataByMonth(parseInt(month));
+    }
   };
 
   const handlePathwayChange = (pathway: string) => {
     setSelectedPathway(pathway);
-    if (selectedMonth) {
-      const monthData = monthlyData[selectedMonth as keyof typeof monthlyData] || [];
-      setData(filterDataByPathway(monthData, pathway));
+    if (selectedMonth && data.length > 0) {
+      setFilteredData(filterDataByPathway(pathway));
     }
   };
 
-  const getTargetInfo = (diagnosis: string) => {
-    switch (diagnosis.toLowerCase()) {
-      case "sectio caesaria":
-        return { target: 2, unit: "hari" };
-      case "pneumonia":
-        return { target: 6, unit: "hari" };
-      case "stroke hemoragik":
-      case "stroke non hemoragik":
-        return { target: 5, unit: "hari" };
-      case "dengue fever":
-        return { target: 3, unit: "hari" };
-      default:
-        return { target: 2, unit: "hari" };
+  // Update filtered data when main data changes
+  useEffect(() => {
+    if (data.length > 0) {
+      setFilteredData(filterDataByPathway(selectedPathway));
     }
+  }, [data, selectedPathway, filterDataByPathway]);
+
+  const getTargetInfo = (diagnosis: string) => {
+    const target = getTargetLOS(diagnosis);
+    return { target, unit: "hari" };
   };
 
   const calculateSummary = () => {
-    if (data.length === 0) return null;
+    if (filteredData.length === 0) return null;
     
-    const totalPatients = data.length;
-    const sesuaiTarget = data.filter(item => item.sesuaiTarget).length;
-    const kepatuhanCP = data.filter(item => item.kepatuhanCP).length;
-    const kepatuhanPenunjang = data.filter(item => item.kepatuhanPenunjang).length;
-    const kepatuhanTerapi = data.filter(item => item.kepatuhanTerapi).length;
-    const totalLOS = data.reduce((acc, item) => acc + item.los, 0);
-    const avgLOS = totalLOS / totalPatients;
+    const totalPatients = filteredData.length;
+    const sesuaiTarget = filteredData.filter(item => item.sesuaiTarget).length;
+    const kepatuhanCP = filteredData.filter(item => item.kepatuhanCP).length;
+    const kepatuhanPenunjang = filteredData.filter(item => item.kepatuhanPenunjang).length;
+    const kepatuhanTerapi = filteredData.filter(item => item.kepatuhanTerapi).length;
+    const totalLOS = filteredData.reduce((acc, item) => acc + (item.los || 0), 0);
+    const avgLOS = totalPatients > 0 ? totalLOS / totalPatients : 0;
 
     return {
       totalPatients,
@@ -196,16 +97,25 @@ export default function RekapData() {
     }));
   };
 
-  const updateLOS = (index: number, newLOS: number) => {
-    setData(prev => prev.map((item, i) => 
-      i === index ? { ...item, los: newLOS } : item
-    ));
+  const updateLOS = async (index: number, newLOS: number) => {
+    const patient = filteredData[index];
+    if (patient) {
+      const updatedData = [...filteredData];
+      updatedData[index] = { ...patient, los: newLOS, sesuaiTarget: newLOS <= getTargetLOS(patient.diagnosis) };
+      setFilteredData(updatedData);
+      
+      // Update in database
+      await updatePatientData(patient.id, { los: newLOS });
+    }
   };
 
   const updateCheckbox = (index: number, field: string, value: boolean) => {
-    setData(prev => prev.map((item, i) => 
-      i === index ? { ...item, [field]: value } : item
-    ));
+    const updatedData = [...filteredData];
+    updatedData[index] = { ...updatedData[index], [field]: value };
+    setFilteredData(updatedData);
+    
+    // Note: Compliance checkboxes are not stored in database yet
+    // They would need to be implemented with checklist functionality
   };
 
   const summary = calculateSummary();
@@ -220,7 +130,7 @@ export default function RekapData() {
             Laporan dan rekap data Clinical Pathways per bulan
           </p>
         </div>
-        {data.length > 0 && (
+        {filteredData.length > 0 && (
           <Button className="medical-transition">
             <Download className="h-4 w-4 mr-2" />
             Export Excel
@@ -306,7 +216,13 @@ export default function RekapData() {
       </Card>
 
       {/* Data Table */}
-      {data.length > 0 ? (
+      {loading ? (
+        <Card className="medical-card">
+          <CardContent className="p-6">
+            <div className="text-center">Loading data...</div>
+          </CardContent>
+        </Card>
+      ) : filteredData.length > 0 ? (
         <Card className="medical-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -335,34 +251,25 @@ export default function RekapData() {
                     <th className="text-left p-3">Aksi</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {data.map((item, index) => {
+                 <tbody>
+                   {filteredData.map((item, index) => {
                     const targetInfo = getTargetInfo(item.diagnosis);
                     const rowKey = `${selectedMonth}-${index}`;
                     const isEditing = editingRows[rowKey];
                     
                     return (
                       <tr key={index} className="border-b hover:bg-muted/50 medical-transition">
-                        <td className="p-3">{item.no}</td>
-                        <td className="p-3">{item.namaPasien}</td>
-                        <td className="p-3">
-                          {new Date(item.tanggalMasuk).toLocaleString('id-ID', {
-                            year: 'numeric',
-                            month: '2-digit', 
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </td>
-                        <td className="p-3">
-                          {new Date(item.tanggalKeluar).toLocaleString('id-ID', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit', 
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </td>
+                         <td className="p-3">{item.no}</td>
+                         <td className="p-3">{item.namaPasien} / {item.noRM}</td>
+                         <td className="p-3">
+                           {new Date(item.tanggalMasuk).toLocaleDateString('id-ID')} {item.jamMasuk}
+                         </td>
+                         <td className="p-3">
+                           {item.tanggalKeluar && item.jamKeluar 
+                             ? `${new Date(item.tanggalKeluar).toLocaleDateString('id-ID')} ${item.jamKeluar}`
+                             : '-'
+                           }
+                         </td>
                         <td className="p-3">
                           <Badge variant="outline" className="bg-primary/10 text-primary">
                             {item.diagnosis}
@@ -377,9 +284,9 @@ export default function RekapData() {
                               className="w-20 text-center"
                               min="0"
                             />
-                          ) : (
-                            <span className="font-semibold">{item.los} hari</span>
-                          )}
+                           ) : (
+                             <span className="font-semibold">{item.los || '-'} {item.los ? 'hari' : ''}</span>
+                           )}
                         </td>
                         <td className="p-3">
                           {isEditing ? (
