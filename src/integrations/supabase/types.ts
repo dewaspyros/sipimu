@@ -14,6 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      clinical_pathway_checklist: {
+        Row: {
+          checklist_hari_1: boolean | null
+          checklist_hari_2: boolean | null
+          checklist_hari_3: boolean | null
+          checklist_hari_4: boolean | null
+          checklist_hari_5: boolean | null
+          checklist_hari_6: boolean | null
+          clinical_pathway_id: string | null
+          created_at: string
+          id: string
+          item_index: number
+          item_text: string
+          updated_at: string
+        }
+        Insert: {
+          checklist_hari_1?: boolean | null
+          checklist_hari_2?: boolean | null
+          checklist_hari_3?: boolean | null
+          checklist_hari_4?: boolean | null
+          checklist_hari_5?: boolean | null
+          checklist_hari_6?: boolean | null
+          clinical_pathway_id?: string | null
+          created_at?: string
+          id?: string
+          item_index: number
+          item_text: string
+          updated_at?: string
+        }
+        Update: {
+          checklist_hari_1?: boolean | null
+          checklist_hari_2?: boolean | null
+          checklist_hari_3?: boolean | null
+          checklist_hari_4?: boolean | null
+          checklist_hari_5?: boolean | null
+          checklist_hari_6?: boolean | null
+          clinical_pathway_id?: string | null
+          created_at?: string
+          id?: string
+          item_index?: number
+          item_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_pathway_checklist_clinical_pathway_id_fkey"
+            columns: ["clinical_pathway_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_pathways"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinical_pathways: {
+        Row: {
+          created_at: string
+          dpjp: string | null
+          id: string
+          jam_keluar: string | null
+          jam_masuk: string
+          jenis_clinical_pathway: Database["public"]["Enums"]["clinical_pathway_type"]
+          los_hari: number | null
+          nama_pasien: string
+          no_rm: string
+          tanggal_keluar: string | null
+          tanggal_masuk: string
+          updated_at: string
+          verifikator_pelaksana: string | null
+        }
+        Insert: {
+          created_at?: string
+          dpjp?: string | null
+          id?: string
+          jam_keluar?: string | null
+          jam_masuk: string
+          jenis_clinical_pathway: Database["public"]["Enums"]["clinical_pathway_type"]
+          los_hari?: number | null
+          nama_pasien: string
+          no_rm: string
+          tanggal_keluar?: string | null
+          tanggal_masuk: string
+          updated_at?: string
+          verifikator_pelaksana?: string | null
+        }
+        Update: {
+          created_at?: string
+          dpjp?: string | null
+          id?: string
+          jam_keluar?: string | null
+          jam_masuk?: string
+          jenis_clinical_pathway?: Database["public"]["Enums"]["clinical_pathway_type"]
+          los_hari?: number | null
+          nama_pasien?: string
+          no_rm?: string
+          tanggal_keluar?: string | null
+          tanggal_masuk?: string
+          updated_at?: string
+          verifikator_pelaksana?: string | null
+        }
+        Relationships: []
+      }
       daftar_cp: {
         Row: {
           id: number
@@ -32,12 +133,191 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_summary: {
+        Row: {
+          bulan: number
+          created_at: string
+          id: string
+          jumlah_kepatuhan_cp: number | null
+          jumlah_kepatuhan_penunjang: number | null
+          jumlah_kepatuhan_terapi: number | null
+          jumlah_sesuai_target: number | null
+          kepatuhan_cp: number | null
+          kepatuhan_penunjang: number | null
+          kepatuhan_terapi: number | null
+          keterangan_varian: string | null
+          rata_rata_los: number | null
+          sesuai_target: boolean | null
+          tahun: number
+          total_pasien_input: number | null
+          updated_at: string
+        }
+        Insert: {
+          bulan: number
+          created_at?: string
+          id?: string
+          jumlah_kepatuhan_cp?: number | null
+          jumlah_kepatuhan_penunjang?: number | null
+          jumlah_kepatuhan_terapi?: number | null
+          jumlah_sesuai_target?: number | null
+          kepatuhan_cp?: number | null
+          kepatuhan_penunjang?: number | null
+          kepatuhan_terapi?: number | null
+          keterangan_varian?: string | null
+          rata_rata_los?: number | null
+          sesuai_target?: boolean | null
+          tahun: number
+          total_pasien_input?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bulan?: number
+          created_at?: string
+          id?: string
+          jumlah_kepatuhan_cp?: number | null
+          jumlah_kepatuhan_penunjang?: number | null
+          jumlah_kepatuhan_terapi?: number | null
+          jumlah_sesuai_target?: number | null
+          kepatuhan_cp?: number | null
+          kepatuhan_penunjang?: number | null
+          kepatuhan_terapi?: number | null
+          keterangan_varian?: string | null
+          rata_rata_los?: number | null
+          sesuai_target?: boolean | null
+          tahun?: number
+          total_pasien_input?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          nik: string
+          password: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nik: string
+          password: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nik?: string
+          password?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      v_avg_los_compliance: {
+        Row: {
+          avg_los: number | null
+          jenis_clinical_pathway:
+            | Database["public"]["Enums"]["clinical_pathway_type"]
+            | null
+          meets_target: boolean | null
+          target_los: number | null
+        }
+        Relationships: []
+      }
+      v_los_compliance: {
+        Row: {
+          avg_los: number | null
+          jenis_clinical_pathway:
+            | Database["public"]["Enums"]["clinical_pathway_type"]
+            | null
+          max_los: number | null
+          min_los: number | null
+          total_cases: number | null
+        }
+        Relationships: []
+      }
+      v_monthly_stats: {
+        Row: {
+          bulan: number | null
+          jumlah_sesuai_target: number | null
+          kepatuhan_cp: number | null
+          kepatuhan_penunjang: number | null
+          kepatuhan_terapi: number | null
+          rata_rata_los: number | null
+          tahun: number | null
+          total_pasien_input: number | null
+        }
+        Insert: {
+          bulan?: number | null
+          jumlah_sesuai_target?: number | null
+          kepatuhan_cp?: number | null
+          kepatuhan_penunjang?: number | null
+          kepatuhan_terapi?: number | null
+          rata_rata_los?: number | null
+          tahun?: number | null
+          total_pasien_input?: number | null
+        }
+        Update: {
+          bulan?: number | null
+          jumlah_sesuai_target?: number | null
+          kepatuhan_cp?: number | null
+          kepatuhan_penunjang?: number | null
+          kepatuhan_terapi?: number | null
+          rata_rata_los?: number | null
+          tahun?: number | null
+          total_pasien_input?: number | null
+        }
+        Relationships: []
+      }
+      v_pathway_compliance: {
+        Row: {
+          compliance_percentage: number | null
+          jenis_clinical_pathway:
+            | Database["public"]["Enums"]["clinical_pathway_type"]
+            | null
+          total_pasien: number | null
+        }
+        Relationships: []
+      }
+      v_support_compliance: {
+        Row: {
+          compliance_percentage: number | null
+          compliant_patients: number | null
+          jenis_clinical_pathway:
+            | Database["public"]["Enums"]["clinical_pathway_type"]
+            | null
+          total_patients: number | null
+        }
+        Relationships: []
+      }
+      v_therapy_compliance: {
+        Row: {
+          compliance_percentage: number | null
+          compliant_patients: number | null
+          jenis_clinical_pathway:
+            | Database["public"]["Enums"]["clinical_pathway_type"]
+            | null
+          total_patients: number | null
+        }
+        Relationships: []
+      }
+      v_total_patients: {
+        Row: {
+          active_patients: number | null
+          discharged_patients: number | null
+          total_patients: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      calculate_compliance_function: {
+        Args: { cp_type: Database["public"]["Enums"]["clinical_pathway_type"] }
+        Returns: number
+      }
     }
     Enums: {
       clinical_pathway_type:
