@@ -133,6 +133,8 @@ export const useDashboardData = () => {
     const therapy = therapyCompliance.find(t => t.jenis_clinical_pathway === type);
     const support = supportCompliance.find(s => s.jenis_clinical_pathway === type);
 
+    console.log('getComplianceByType for:', type, { pathway, los, therapy, support });
+
     return {
       pathwayCompliance: pathway?.compliance_percentage || 0,
       losCompliance: pathway?.compliance_percentage || 0,

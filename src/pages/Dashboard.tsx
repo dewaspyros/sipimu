@@ -45,7 +45,7 @@ const diagnosisOptions = [
   { value: "Stroke Non Hemoragik", label: "Stroke Non Hemoragik" },
   { value: "Pneumonia", label: "Pneumonia" },
   { value: "Dengue Fever", label: "Dengue Fever" }
-];
+].filter(option => option.value && option.value.trim() !== "");
 
 export default function Dashboard() {
   const [selectedDiagnosis, setSelectedDiagnosis] = useState("Sectio Caesaria");
@@ -77,6 +77,13 @@ export default function Dashboard() {
   const complianceData = getComplianceByType(selectedDiagnosis);
   const monthlyChartData = getMonthlyChartData();
   const componentChartData = getComponentComplianceData(selectedDiagnosis);
+
+  console.log('Dashboard variables:', { 
+    selectedDiagnosis, 
+    complianceData, 
+    monthlyChartData, 
+    componentChartData 
+  });
 
   return (
     <div className="space-y-6">
