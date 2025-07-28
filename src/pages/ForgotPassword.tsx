@@ -13,7 +13,6 @@ export default function ForgotPassword() {
   const [step, setStep] = useState(1); // 1: form, 2: success
   const [formData, setFormData] = useState({
     nik: "",
-    nomorHp: "",
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -24,13 +23,13 @@ export default function ForgotPassword() {
     setLoading(true);
 
     // Validate form
-    if (!formData.nik || !formData.nomorHp) {
-      setError("Silakan lengkapi NIK dan nomor HP");
+    if (!formData.nik) {
+      setError("Silakan masukkan NIK");
       setLoading(false);
       return;
     }
 
-    // Simulate WhatsApp link sending
+    // Simulate password reset
     setTimeout(() => {
       setLoading(false);
       setStep(2);
@@ -60,22 +59,22 @@ export default function ForgotPassword() {
               <div className="mx-auto w-12 h-12 bg-success/20 rounded-full flex items-center justify-center mb-4">
                 <Send className="h-6 w-6 text-success" />
               </div>
-              <CardTitle className="text-2xl text-success">Link Reset Password Terkirim!</CardTitle>
+              <CardTitle className="text-2xl text-success">Password Reset Berhasil!</CardTitle>
               <CardDescription>
-                Link reset password telah dikirim ke WhatsApp Anda di nomor {formData.nomorHp}
+                Password Anda telah direset. Silakan hubungi administrator untuk mendapatkan password baru.
               </CardDescription>
             </CardHeader>
             
             <CardContent className="text-center space-y-4">
               <Alert className="border-primary bg-primary/10 text-primary">
                 <AlertDescription>
-                  Silakan cek pesan WhatsApp Anda dan klik link yang diberikan untuk mengatur ulang password.
+                  Silakan hubungi administrator sistem untuk mendapatkan password baru Anda.
                 </AlertDescription>
               </Alert>
               
               <div className="text-sm text-muted-foreground">
-                <p>Tidak menerima pesan?</p>
-                <p>Pastikan nomor HP yang Anda masukkan benar dan aktif.</p>
+                <p>Hubungi IT Support RS PKU Muhammadiyah Wonosobo</p>
+                <p>untuk mendapatkan password baru.</p>
               </div>
             </CardContent>
             
@@ -127,7 +126,7 @@ export default function ForgotPassword() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Lupa Password</CardTitle>
             <CardDescription className="text-center">
-              Masukkan NIK dan nomor HP Anda untuk mendapatkan link reset password via WhatsApp
+              Masukkan NIK Anda untuk mereset password
             </CardDescription>
           </CardHeader>
           
@@ -155,24 +154,6 @@ export default function ForgotPassword() {
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="nomorHp">Nomor HP</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="nomorHp"
-                    type="tel"
-                    placeholder="Contoh: 08123456789"
-                    value={formData.nomorHp}
-                    onChange={(e) => setFormData({ ...formData, nomorHp: e.target.value })}
-                    className="medical-transition pl-10"
-                    required
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Link reset password akan dikirim ke nomor WhatsApp ini
-                </p>
-              </div>
             </CardContent>
             
             <CardFooter className="flex flex-col space-y-4">
@@ -189,7 +170,7 @@ export default function ForgotPassword() {
                 ) : (
                   <div className="flex items-center gap-2">
                     <Send className="h-4 w-4" />
-                    <span>Kirim Link Reset Password</span>
+                    <span>Reset Password</span>
                   </div>
                 )}
               </Button>

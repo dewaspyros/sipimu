@@ -11,13 +11,10 @@ const hospitalLogo = "/lovable-uploads/52e51664-283f-4073-94f9-3d65a68fa748.png"
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1); // 1: form, 2: verification
   const [formData, setFormData] = useState({
     nik: "",
-    nomorHp: "",
     password: "",
     confirmPassword: "",
-    verificationCode: "",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -28,40 +25,27 @@ export default function Register() {
     setError("");
     setLoading(true);
 
-    if (step === 1) {
-      // Validate form
-      if (!formData.nik || !formData.nomorHp || !formData.password || !formData.confirmPassword) {
-        setError("Silakan lengkapi semua field");
-        setLoading(false);
-        return;
-      }
+    // Validate form
+    if (!formData.nik || !formData.password || !formData.confirmPassword) {
+      setError("Silakan lengkapi semua field");
+      setLoading(false);
+      return;
+    }
 
-      if (formData.password !== formData.confirmPassword) {
-        setError("Password tidak cocok");
-        setLoading(false);
-        return;
-      }
+    if (formData.password !== formData.confirmPassword) {
+      setError("Password tidak cocok");
+      setLoading(false);
+      return;
+    }
 
-      // Simulate WhatsApp code sending
+    // Simulate registration
+    setTimeout(() => {
+      setLoading(false);
+      setSuccess("Akun berhasil didaftarkan!");
       setTimeout(() => {
-        setLoading(false);
-        setStep(2);
-        setSuccess("Kode verifikasi telah dikirim ke WhatsApp Anda");
-      }, 2000);
-    } else {
-      // Verify code
-      if (!formData.verificationCode) {
-        setError("Silakan masukkan kode verifikasi");
-        setLoading(false);
-        return;
-      }
-
-      // Simulate verification
-      setTimeout(() => {
-        setLoading(false);
         navigate("/login");
       }, 1500);
-    }
+    }, 2000);
   };
 
   return (
@@ -88,14 +72,9 @@ export default function Register() {
         {/* Register Form */}
         <Card className="medical-card medical-shadow">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">
-              {step === 1 ? "Daftar Akun" : "Verifikasi WhatsApp"}
-            </CardTitle>
+            <CardTitle className="text-2xl text-center">Daftar Akun</CardTitle>
             <CardDescription className="text-center">
-              {step === 1 
-                ? "Buat akun baru untuk mengakses sistem" 
-                : "Masukkan kode yang dikirim ke WhatsApp Anda"
-              }
+              Buat akun baru untuk mengakses sistem
             </CardDescription>
           </CardHeader>
           
@@ -113,101 +92,64 @@ export default function Register() {
                 </Alert>
               )}
               
-              {step === 1 ? (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="nik">NIK Rumah Sakit *</Label>
-                    <div className="relative">
-                      <IdCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="nik"
-                        type="text"
-                        placeholder="Masukkan NIK Rumah Sakit"
-                        value={formData.nik}
-                        onChange={(e) => setFormData({ ...formData, nik: e.target.value })}
-                        className="medical-transition pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="nomorHp">Nomor HP *</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="nomorHp"
-                        type="tel"
-                        placeholder="Contoh: 08123456789"
-                        value={formData.nomorHp}
-                        onChange={(e) => setFormData({ ...formData, nomorHp: e.target.value })}
-                        className="medical-transition pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password *</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Masukkan password"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="medical-transition pr-10"
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Konfirmasi Password *</Label>
-                    <div className="relative">
-                      <Input
-                        id="confirmPassword"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Ulangi password"
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                        className="medical-transition pr-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="verificationCode">Kode Verifikasi *</Label>
+              <div className="space-y-2">
+                <Label htmlFor="nik">NIK Rumah Sakit *</Label>
+                <div className="relative">
+                  <IdCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="verificationCode"
+                    id="nik"
                     type="text"
-                    placeholder="Masukkan kode 6 digit"
-                    value={formData.verificationCode}
-                    onChange={(e) => setFormData({ ...formData, verificationCode: e.target.value })}
-                    className="medical-transition text-center text-lg tracking-widest"
-                    maxLength={6}
+                    placeholder="Masukkan NIK Rumah Sakit"
+                    value={formData.nik}
+                    onChange={(e) => setFormData({ ...formData, nik: e.target.value })}
+                    className="medical-transition pl-10"
                     required
                   />
-                  <p className="text-xs text-muted-foreground text-center">
-                    Kode dikirim ke: {formData.nomorHp}
-                  </p>
                 </div>
-              )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Password *</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Masukkan password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="medical-transition pr-10"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Konfirmasi Password *</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Ulangi password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    className="medical-transition pr-10"
+                    required
+                  />
+                </div>
+              </div>
             </CardContent>
             
             <CardFooter className="flex flex-col space-y-4">
@@ -224,21 +166,10 @@ export default function Register() {
                 ) : (
                   <div className="flex items-center gap-2">
                     <UserPlus className="h-4 w-4" />
-                    <span>{step === 1 ? "Kirim Kode Verifikasi" : "Verifikasi & Daftar"}</span>
+                    <span>Daftar Akun</span>
                   </div>
                 )}
               </Button>
-              
-              {step === 2 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setStep(1)}
-                >
-                  Kembali ke Form
-                </Button>
-              )}
               
               <div className="text-center">
                 <span className="text-sm text-muted-foreground">

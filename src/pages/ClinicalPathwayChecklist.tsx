@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useChecklist } from "@/hooks/useClinicalPathways";
+import { useChecklist, useClinicalPathways } from "@/hooks/useClinicalPathways";
 
 interface PatientFormData {
   clinicalPathway: string;
@@ -264,19 +264,79 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
 const ClinicalPathwayChecklist = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { saveChecklist, loading: checklistLoading } = useChecklist();
+  const [searchParams] = useSearchParams();
+  const { saveChecklist, loading: checklistLoading, getChecklistByPathwayId } = useChecklist();
+  const { pathways } = useClinicalPathways();
   const [patientData, setPatientData] = useState<PatientFormData | null>(null);
   const [checklistData, setChecklistData] = useState<ChecklistData>({});
   const [variantData, setVariantData] = useState<VariantData>({});
+  
+  const pathwayId = searchParams.get('id');
+  const mode = searchParams.get('mode') || 'edit'; // 'view' or 'edit'
+  const isReadOnly = mode === 'view';
 
   useEffect(() => {
-    const storedData = sessionStorage.getItem('clinicalPathwayFormData');
-    if (storedData) {
-      setPatientData(JSON.parse(storedData));
-    } else {
-      navigate('/clinical-pathway-form');
-    }
-  }, [navigate]);
+    const loadData = async () => {
+      // Check if coming from form (session storage)
+      const storedData = sessionStorage.getItem('clinicalPathwayFormData');
+      if (storedData && !pathwayId) {
+        setPatientData(JSON.parse(storedData));
+        return;
+      }
+      
+      // Load from URL parameters (from Clinical Pathway list)
+      if (pathwayId) {
+        const pathway = pathways.find(p => p.id === pathwayId);
+        if (pathway) {
+          setPatientData({
+            clinicalPathway: pathway.jenis_clinical_pathway,
+            verifikator: pathway.verifikator_pelaksana || '',
+            dpjp: pathway.dpjp || '',
+            noRM: pathway.no_rm,
+            patientNameAge: pathway.nama_pasien,
+            admissionDate: pathway.tanggal_masuk,
+            admissionTime: pathway.jam_masuk,
+            dischargeDate: pathway.tanggal_keluar || undefined,
+            dischargeTime: pathway.jam_keluar || undefined,
+            lengthOfStay: pathway.los_hari?.toString() || undefined,
+            pathwayId: pathway.id
+          });
+          
+          // Load existing checklist data
+          try {
+            const existingChecklist = await getChecklistByPathwayId(pathwayId);
+            if (existingChecklist && existingChecklist.length > 0) {
+              const checklistMap: ChecklistData = {};
+              const variantMap: VariantData = {};
+              
+              existingChecklist.forEach((item, index) => {
+                checklistMap[index.toString()] = {
+                  'Hari ke-1': item.checklist_hari_1 || false,
+                  'Hari ke-2': item.checklist_hari_2 || false,
+                  'Hari ke-3': item.checklist_hari_3 || false,
+                  'Hari ke-4': item.checklist_hari_4 || false,
+                  'Hari ke-5': item.checklist_hari_5 || false,
+                  'Hari ke-6': item.checklist_hari_6 || false,
+                };
+                // Note: variant data would need to be stored separately in the database
+              });
+              
+              setChecklistData(checklistMap);
+              setVariantData(variantMap);
+            }
+          } catch (error) {
+            console.error('Error loading checklist:', error);
+          }
+        } else {
+          navigate('/clinical-pathway');
+        }
+      } else {
+        navigate('/clinical-pathway-form');
+      }
+    };
+    
+    loadData();
+  }, [navigate, pathwayId, pathways, getChecklistByPathwayId]);
 
   if (!patientData) {
     return <div>Loading...</div>;
@@ -343,13 +403,15 @@ const ClinicalPathwayChecklist = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/clinical-pathway-form')}
+            onClick={() => navigate(pathwayId ? '/clinical-pathway' : '/clinical-pathway-form')}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Kembali
           </Button>
-          <h1 className="text-2xl font-bold">Checklist {patientData.clinicalPathway}</h1>
+          <h1 className="text-2xl font-bold">
+            {isReadOnly ? 'Detail' : 'Checklist'} {patientData.clinicalPathway}
+          </h1>
         </div>
 
         <Card className="mb-6">
@@ -399,9 +461,10 @@ const ClinicalPathwayChecklist = () => {
                             {!isHeader && (
                               <Checkbox
                                 checked={checklistData[itemKey]?.[day] || false}
-                                onCheckedChange={(checked) => 
+                                onCheckedChange={isReadOnly ? undefined : (checked) => 
                                   handleCheckboxChange(itemKey, day, checked as boolean)
                                 }
+                                disabled={isReadOnly}
                               />
                             )}
                           </td>
@@ -410,9 +473,11 @@ const ClinicalPathwayChecklist = () => {
                           {!isHeader && (
                             <Input
                               value={variantData[itemKey] || ''}
-                              onChange={(e) => handleVariantChange(itemKey, e.target.value)}
+                              onChange={isReadOnly ? undefined : (e) => handleVariantChange(itemKey, e.target.value)}
                               placeholder="Keterangan varian"
                               className="text-sm"
+                              readOnly={isReadOnly}
+                              disabled={isReadOnly}
                             />
                           )}
                         </td>
@@ -441,13 +506,15 @@ const ClinicalPathwayChecklist = () => {
         <div className="flex justify-end gap-4">
           <Button
             variant="outline"
-            onClick={() => navigate('/clinical-pathway-form')}
+            onClick={() => navigate(pathwayId ? '/clinical-pathway' : '/clinical-pathway-form')}
           >
             Kembali
           </Button>
-          <Button onClick={handleSubmit} disabled={checklistLoading}>
-            {checklistLoading ? "Menyimpan..." : "Kirim Data"}
-          </Button>
+          {!isReadOnly && (
+            <Button onClick={handleSubmit} disabled={checklistLoading}>
+              {checklistLoading ? "Menyimpan..." : "Kirim Data"}
+            </Button>
+          )}
         </div>
       </div>
     </div>

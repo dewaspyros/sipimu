@@ -129,6 +129,7 @@ export default function ClinicalPathway() {
                                   size="sm" 
                                   variant="outline"
                                   title="Lihat Detail"
+                                  onClick={() => navigate(`/clinical-pathway-checklist?id=${item.id}&mode=view`)}
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
@@ -136,6 +137,7 @@ export default function ClinicalPathway() {
                                   size="sm" 
                                   variant="outline"
                                   title="Edit Data"
+                                  onClick={() => navigate(`/clinical-pathway-checklist?id=${item.id}&mode=edit`)}
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>

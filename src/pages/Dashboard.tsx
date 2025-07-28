@@ -40,6 +40,7 @@ const CustomBarLabel = (props: any) => {
 // Removed dummy data - now using real data from Supabase
 
 const diagnosisOptions = [
+  { value: "all", label: "Semua Clinical Pathway" },
   { value: "Sectio Caesaria", label: "Sectio Caesaria" },
   { value: "Stroke Hemoragik", label: "Stroke Hemoragik" },
   { value: "Stroke Non Hemoragik", label: "Stroke Non Hemoragik" },
@@ -48,7 +49,7 @@ const diagnosisOptions = [
 ].filter(option => option.value && option.value.trim() !== "");
 
 export default function Dashboard() {
-  const [selectedDiagnosis, setSelectedDiagnosis] = useState("Sectio Caesaria");
+  const [selectedDiagnosis, setSelectedDiagnosis] = useState("all");
   const { 
     loading, 
     getComplianceByType, 
@@ -59,6 +60,8 @@ export default function Dashboard() {
   
   const getTargetInfo = (diagnosis: string) => {
     switch (diagnosis) {
+      case "all":
+        return { target: "Sesuai Target", compliance: "> 75%" };
       case "Sectio Caesaria":
         return { target: "< 2x24 jam", compliance: "> 75%" };
       case "Stroke Hemoragik":

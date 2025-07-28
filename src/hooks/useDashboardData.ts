@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useRekapData } from '@/hooks/useRekapData';
 
 export interface MonthlyStats {
   bulan: number;
@@ -56,6 +57,13 @@ export const useDashboardData = () => {
   const [totalPatients, setTotalPatients] = useState<TotalPatients | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { data: rekapData, fetchDataByMonth, filterDataByPathway, getTargetLOS } = useRekapData();
+
+  // Load current month data for real-time statistics
+  useEffect(() => {
+    const currentMonth = new Date().getMonth() + 1;
+    fetchDataByMonth(currentMonth);
+  }, [fetchDataByMonth]);
 
   const fetchDashboardData = async () => {
     try {
@@ -128,20 +136,79 @@ export const useDashboardData = () => {
 
   // Get compliance data by clinical pathway type
   const getComplianceByType = (type: string) => {
-    const pathway = pathwayCompliance.find(p => p.jenis_clinical_pathway === type);
-    const los = losCompliance.find(l => l.jenis_clinical_pathway === type);
-    const therapy = therapyCompliance.find(t => t.jenis_clinical_pathway === type);
-    const support = supportCompliance.find(s => s.jenis_clinical_pathway === type);
-
-    console.log('getComplianceByType for:', type, { pathway, los, therapy, support });
-
+    // If "all" is selected, calculate overall compliance from all data
+    if (type === "all") {
+      const totalPatients = rekapData.length;
+      if (totalPatients === 0) {
+        return {
+          pathwayCompliance: 0,
+          losCompliance: 0,
+          therapyCompliance: 0,
+          supportCompliance: 0,
+          totalPatients: 0,
+          avgLOS: 0
+        };
+      }
+      
+      const sesuaiTarget = rekapData.filter(item => item.sesuaiTarget).length;
+      const kepatuhanCP = rekapData.filter(item => item.kepatuhanCP).length;
+      const kepatuhanTerapi = rekapData.filter(item => item.kepatuhanTerapi).length;
+      const kepatuhanPenunjang = rekapData.filter(item => item.kepatuhanPenunjang).length;
+      const totalLOS = rekapData.reduce((acc, item) => acc + (item.los || 0), 0);
+      
+      return {
+        pathwayCompliance: (kepatuhanCP / totalPatients) * 100,
+        losCompliance: (sesuaiTarget / totalPatients) * 100,
+        therapyCompliance: (kepatuhanTerapi / totalPatients) * 100,
+        supportCompliance: (kepatuhanPenunjang / totalPatients) * 100,
+        totalPatients,
+        avgLOS: totalLOS / totalPatients
+      };
+    }
+    
+    // Filter data by pathway type
+    const pathwayMap: {[key: string]: string} = {
+      "Sectio Caesaria": "sectio_caesaria",
+      "Stroke Hemoragik": "stroke_hemoragik", 
+      "Stroke Non Hemoragik": "stroke_non_hemoragik",
+      "Pneumonia": "pneumonia",
+      "Dengue Fever": "dengue_fever"
+    };
+    
+    const targetType = pathwayMap[type] || type;
+    const filteredData = rekapData.filter(item => item.diagnosis === targetType);
+    const totalPatients = filteredData.length;
+    
+    if (totalPatients === 0) {
+      // Fallback to original data if no rekap data available
+      const pathway = pathwayCompliance.find(p => p.jenis_clinical_pathway === type);
+      const los = losCompliance.find(l => l.jenis_clinical_pathway === type);
+      const therapy = therapyCompliance.find(t => t.jenis_clinical_pathway === type);
+      const support = supportCompliance.find(s => s.jenis_clinical_pathway === type);
+      
+      return {
+        pathwayCompliance: pathway?.compliance_percentage || 0,
+        losCompliance: pathway?.compliance_percentage || 0,
+        therapyCompliance: therapy?.compliance_percentage || 0,
+        supportCompliance: support?.compliance_percentage || 0,
+        avgLOS: los?.avg_los || 0,
+        totalPatients: pathway?.total_pasien || 0
+      };
+    }
+    
+    const sesuaiTarget = filteredData.filter(item => item.sesuaiTarget).length;
+    const kepatuhanCP = filteredData.filter(item => item.kepatuhanCP).length;
+    const kepatuhanTerapi = filteredData.filter(item => item.kepatuhanTerapi).length;
+    const kepatuhanPenunjang = filteredData.filter(item => item.kepatuhanPenunjang).length;
+    const totalLOS = filteredData.reduce((acc, item) => acc + (item.los || 0), 0);
+    
     return {
-      pathwayCompliance: pathway?.compliance_percentage || 0,
-      losCompliance: pathway?.compliance_percentage || 0,
-      therapyCompliance: therapy?.compliance_percentage || 0,
-      supportCompliance: support?.compliance_percentage || 0,
-      avgLOS: los?.avg_los || 0,
-      totalPatients: pathway?.total_pasien || 0
+      pathwayCompliance: (kepatuhanCP / totalPatients) * 100,
+      losCompliance: (sesuaiTarget / totalPatients) * 100,
+      therapyCompliance: (kepatuhanTerapi / totalPatients) * 100,
+      supportCompliance: (kepatuhanPenunjang / totalPatients) * 100,
+      totalPatients,
+      avgLOS: totalLOS / totalPatients
     };
   };
 
@@ -159,12 +226,13 @@ export const useDashboardData = () => {
     }));
   };
 
-  // Get component compliance data for charts
+  // Get component compliance data for charts (integrated with type filtering)
   const getComponentComplianceData = (type: string) => {
     if (!monthlyStats.length) return [];
 
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
+    // For now, return general data - could be enhanced to filter by type across months
     return monthlyStats.slice(0, 12).reverse().map(stat => ({
       month: monthNames[stat.bulan - 1],
       kepatuhanTerapi: Math.round(stat.kepatuhan_terapi || 0),
