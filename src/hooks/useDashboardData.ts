@@ -57,13 +57,16 @@ export const useDashboardData = () => {
   const [totalPatients, setTotalPatients] = useState<TotalPatients | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { data: rekapData, fetchDataByMonth, filterDataByPathway, getTargetLOS } = useRekapData();
+  const { data: rekapData, fetchDataByMonth, fetchAllData, filterDataByPathway, getTargetLOS } = useRekapData();
 
-  // Load current month data for real-time statistics
+  // Load all data for dashboard calculations
   useEffect(() => {
-    const currentMonth = new Date().getMonth() + 1;
-    fetchDataByMonth(currentMonth);
-  }, [fetchDataByMonth]);
+    const initializeDashboard = async () => {
+      await fetchAllData(); // Load all rekap data for calculations
+      await fetchDashboardData(); // Load dashboard view data
+    };
+    initializeDashboard();
+  }, [fetchAllData]);
 
   const fetchDashboardData = async () => {
     try {
@@ -212,32 +215,149 @@ export const useDashboardData = () => {
     };
   };
 
-  // Transform monthly data for charts
-  const getMonthlyChartData = () => {
-    if (!monthlyStats.length) return [];
+  // Transform monthly data for charts with pathway type filtering
+  const getMonthlyChartData = (type: string = "all") => {
+    if (!rekapData.length) return [];
 
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    return monthlyStats.slice(0, 12).reverse().map(stat => ({
-      month: monthNames[stat.bulan - 1],
-      losCompliance: Math.round(stat.kepatuhan_cp || 0),
-      cpCompliance: Math.round(stat.kepatuhan_cp || 0),
-      avgLos: parseFloat((stat.rata_rata_los || 0).toFixed(1))
-    }));
+    // Group data by month and calculate compliance for each month
+    const monthlyData: { [key: string]: any } = {};
+    
+    // Filter data by pathway type first
+    const pathwayMap: {[key: string]: string} = {
+      "Sectio Caesaria": "sectio_caesaria",
+      "Stroke Hemoragik": "stroke_hemoragik", 
+      "Stroke Non Hemoragik": "stroke_non_hemoragik",
+      "Pneumonia": "pneumonia",
+      "Dengue Fever": "dengue_fever"
+    };
+    
+    const targetType = type === "all" ? null : pathwayMap[type];
+    const filteredData = targetType ? rekapData.filter(item => item.diagnosis === targetType) : rekapData;
+    
+    // Group by month
+    filteredData.forEach(item => {
+      const date = new Date(item.tanggalMasuk);
+      const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+      const monthName = monthNames[date.getMonth()];
+      
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = {
+          month: monthName,
+          data: [],
+          year: date.getFullYear(),
+          monthNum: date.getMonth() + 1
+        };
+      }
+      
+      monthlyData[monthKey].data.push(item);
+    });
+    
+    // Calculate compliance for each month
+    const chartData = Object.values(monthlyData)
+      .sort((a: any, b: any) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.monthNum - b.monthNum;
+      })
+      .slice(-12) // Get last 12 months
+      .map((monthData: any) => {
+        const data = monthData.data;
+        const totalPatients = data.length;
+        
+        if (totalPatients === 0) {
+          return {
+            month: monthData.month,
+            losCompliance: 0,
+            cpCompliance: 0,
+            avgLos: 0
+          };
+        }
+        
+        const sesuaiTarget = data.filter((item: any) => item.sesuaiTarget).length;
+        const kepatuhanCP = data.filter((item: any) => item.kepatuhanCP).length;
+        const totalLOS = data.reduce((acc: number, item: any) => acc + (item.los || 0), 0);
+        
+        return {
+          month: monthData.month,
+          losCompliance: Math.round((sesuaiTarget / totalPatients) * 100),
+          cpCompliance: Math.round((kepatuhanCP / totalPatients) * 100),
+          avgLos: parseFloat((totalLOS / totalPatients).toFixed(1))
+        };
+      });
+      
+    return chartData;
   };
 
-  // Get component compliance data for charts (integrated with type filtering)
-  const getComponentComplianceData = (type: string) => {
-    if (!monthlyStats.length) return [];
+  // Get component compliance data for charts with pathway type filtering
+  const getComponentComplianceData = (type: string = "all") => {
+    if (!rekapData.length) return [];
 
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    // For now, return general data - could be enhanced to filter by type across months
-    return monthlyStats.slice(0, 12).reverse().map(stat => ({
-      month: monthNames[stat.bulan - 1],
-      kepatuhanTerapi: Math.round(stat.kepatuhan_terapi || 0),
-      kepatuhanPenunjang: Math.round(stat.kepatuhan_penunjang || 0)
-    }));
+    // Group data by month and calculate compliance for each month
+    const monthlyData: { [key: string]: any } = {};
+    
+    // Filter data by pathway type first
+    const pathwayMap: {[key: string]: string} = {
+      "Sectio Caesaria": "sectio_caesaria",
+      "Stroke Hemoragik": "stroke_hemoragik", 
+      "Stroke Non Hemoragik": "stroke_non_hemoragik",
+      "Pneumonia": "pneumonia",
+      "Dengue Fever": "dengue_fever"
+    };
+    
+    const targetType = type === "all" ? null : pathwayMap[type];
+    const filteredData = targetType ? rekapData.filter(item => item.diagnosis === targetType) : rekapData;
+    
+    // Group by month
+    filteredData.forEach(item => {
+      const date = new Date(item.tanggalMasuk);
+      const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+      const monthName = monthNames[date.getMonth()];
+      
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = {
+          month: monthName,
+          data: [],
+          year: date.getFullYear(),
+          monthNum: date.getMonth() + 1
+        };
+      }
+      
+      monthlyData[monthKey].data.push(item);
+    });
+    
+    // Calculate compliance for each month
+    const chartData = Object.values(monthlyData)
+      .sort((a: any, b: any) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.monthNum - b.monthNum;
+      })
+      .slice(-12) // Get last 12 months
+      .map((monthData: any) => {
+        const data = monthData.data;
+        const totalPatients = data.length;
+        
+        if (totalPatients === 0) {
+          return {
+            month: monthData.month,
+            kepatuhanTerapi: 0,
+            kepatuhanPenunjang: 0
+          };
+        }
+        
+        const kepatuhanTerapi = data.filter((item: any) => item.kepatuhanTerapi).length;
+        const kepatuhanPenunjang = data.filter((item: any) => item.kepatuhanPenunjang).length;
+        
+        return {
+          month: monthData.month,
+          kepatuhanTerapi: Math.round((kepatuhanTerapi / totalPatients) * 100),
+          kepatuhanPenunjang: Math.round((kepatuhanPenunjang / totalPatients) * 100)
+        };
+      });
+      
+    return chartData;
   };
 
   useEffect(() => {

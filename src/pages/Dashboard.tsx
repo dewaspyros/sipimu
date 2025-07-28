@@ -78,7 +78,7 @@ export default function Dashboard() {
 
   const targetInfo = getTargetInfo(selectedDiagnosis);
   const complianceData = getComplianceByType(selectedDiagnosis);
-  const monthlyChartData = getMonthlyChartData();
+  const monthlyChartData = getMonthlyChartData(selectedDiagnosis);
   const componentChartData = getComponentComplianceData(selectedDiagnosis);
 
   console.log('Dashboard variables:', { 

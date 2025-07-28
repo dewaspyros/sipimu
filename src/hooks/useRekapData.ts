@@ -31,6 +31,7 @@ export const useRekapData = () => {
     setError(null);
     
     try {
+      // Fetch pathways and their checklist data
       const { data: pathways, error } = await supabase
         .from('clinical_pathways')
         .select(`
@@ -44,7 +45,17 @@ export const useRekapData = () => {
           jenis_clinical_pathway,
           los_hari,
           dpjp,
-          verifikator_pelaksana
+          verifikator_pelaksana,
+          clinical_pathway_checklist (
+            id,
+            item_text,
+            checklist_hari_1,
+            checklist_hari_2,
+            checklist_hari_3,
+            checklist_hari_4,
+            checklist_hari_5,
+            checklist_hari_6
+          )
         `)
         .gte('tanggal_masuk', `${year}-${month.toString().padStart(2, '0')}-01`)
         .lt('tanggal_masuk', `${year}-${(month + 1).toString().padStart(2, '0')}-01`)
@@ -53,32 +64,35 @@ export const useRekapData = () => {
       if (error) throw error;
 
       // Transform data to match RekapDataItem interface
-      const transformedData: RekapDataItem[] = pathways?.map((pathway, index) => {
-        // Get target LOS for the diagnosis
-        const targetLOS = getTargetLOS(pathway.jenis_clinical_pathway);
-        const isSesuaiTarget = pathway.los_hari ? pathway.los_hari <= targetLOS : false;
-        
-        return {
-          id: pathway.id,
-          no: index + 1,
-          namaPasien: pathway.nama_pasien,
-          noRM: pathway.no_rm,
-          tanggalMasuk: pathway.tanggal_masuk,
-          jamMasuk: pathway.jam_masuk,
-          tanggalKeluar: pathway.tanggal_keluar,
-          jamKeluar: pathway.jam_keluar,
-          diagnosis: pathway.jenis_clinical_pathway,
-          los: pathway.los_hari,
-          sesuaiTarget: isSesuaiTarget,
-          // For now, set compliance values to true as placeholder
-          // These should ideally come from checklist data
-          kepatuhanCP: true,
-          kepatuhanPenunjang: true,
-          kepatuhanTerapi: true,
-          dpjp: pathway.dpjp || '',
-          verifikatorPelaksana: pathway.verifikator_pelaksana || '',
-        };
-      }) || [];
+      const transformedData: RekapDataItem[] = await Promise.all(
+        pathways?.map(async (pathway, index) => {
+          // Get target LOS for the diagnosis
+          const targetLOS = getTargetLOS(pathway.jenis_clinical_pathway);
+          const isSesuaiTarget = pathway.los_hari ? pathway.los_hari <= targetLOS : false;
+          
+          // Calculate compliance based on checklist data
+          const compliance = calculateComplianceFromChecklist(pathway.clinical_pathway_checklist || []);
+          
+          return {
+            id: pathway.id,
+            no: index + 1,
+            namaPasien: pathway.nama_pasien,
+            noRM: pathway.no_rm,
+            tanggalMasuk: pathway.tanggal_masuk,
+            jamMasuk: pathway.jam_masuk,
+            tanggalKeluar: pathway.tanggal_keluar,
+            jamKeluar: pathway.jam_keluar,
+            diagnosis: pathway.jenis_clinical_pathway,
+            los: pathway.los_hari,
+            sesuaiTarget: isSesuaiTarget,
+            kepatuhanCP: compliance.kepatuhanCP,
+            kepatuhanPenunjang: compliance.kepatuhanPenunjang,
+            kepatuhanTerapi: compliance.kepatuhanTerapi,
+            dpjp: pathway.dpjp || '',
+            verifikatorPelaksana: pathway.verifikator_pelaksana || '',
+          };
+        }) || []
+      );
 
       setData(transformedData);
     } catch (error) {
@@ -92,6 +106,61 @@ export const useRekapData = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Calculate compliance based on checklist data
+  const calculateComplianceFromChecklist = (checklistItems: any[]) => {
+    if (!checklistItems || checklistItems.length === 0) {
+      return {
+        kepatuhanCP: false,
+        kepatuhanPenunjang: false,
+        kepatuhanTerapi: false
+      };
+    }
+
+    // Group checklist items by type based on their text content
+    const terapiItems = checklistItems.filter(item => 
+      item.item_text.toLowerCase().includes('terapi') || 
+      item.item_text.toLowerCase().includes('obat') ||
+      item.item_text.toLowerCase().includes('medikasi')
+    );
+    
+    const penunjangItems = checklistItems.filter(item => 
+      item.item_text.toLowerCase().includes('laboratorium') || 
+      item.item_text.toLowerCase().includes('radiologi') ||
+      item.item_text.toLowerCase().includes('pemeriksaan penunjang') ||
+      item.item_text.toLowerCase().includes('rontgen') ||
+      item.item_text.toLowerCase().includes('ct scan')
+    );
+
+    // CP compliance: overall compliance based on all items
+    const totalItems = checklistItems.length;
+    const completedItems = checklistItems.filter(item => 
+      item.checklist_hari_1 || item.checklist_hari_2 || item.checklist_hari_3 || 
+      item.checklist_hari_4 || item.checklist_hari_5 || item.checklist_hari_6
+    ).length;
+    
+    const kepatuhanCP = totalItems > 0 ? (completedItems / totalItems) >= 0.75 : false;
+    
+    // Therapy compliance: at least 75% of therapy items completed
+    const completedTerapiItems = terapiItems.filter(item => 
+      item.checklist_hari_1 || item.checklist_hari_2 || item.checklist_hari_3 || 
+      item.checklist_hari_4 || item.checklist_hari_5 || item.checklist_hari_6
+    ).length;
+    const kepatuhanTerapi = terapiItems.length > 0 ? (completedTerapiItems / terapiItems.length) >= 0.75 : true;
+    
+    // Support compliance: at least 75% of support items completed
+    const completedPenunjangItems = penunjangItems.filter(item => 
+      item.checklist_hari_1 || item.checklist_hari_2 || item.checklist_hari_3 || 
+      item.checklist_hari_4 || item.checklist_hari_5 || item.checklist_hari_6
+    ).length;
+    const kepatuhanPenunjang = penunjangItems.length > 0 ? (completedPenunjangItems / penunjangItems.length) >= 0.75 : true;
+
+    return {
+      kepatuhanCP,
+      kepatuhanPenunjang,
+      kepatuhanTerapi
+    };
   };
 
   const filterDataByPathway = (pathway: string): RekapDataItem[] => {
@@ -162,11 +231,93 @@ export const useRekapData = () => {
     }
   };
 
+  // Fetch all data for dashboard calculations
+  const fetchAllData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Fetch all pathways and their checklist data
+      const { data: pathways, error } = await supabase
+        .from('clinical_pathways')
+        .select(`
+          id,
+          nama_pasien,
+          no_rm,
+          tanggal_masuk,
+          jam_masuk,
+          tanggal_keluar,
+          jam_keluar,
+          jenis_clinical_pathway,
+          los_hari,
+          dpjp,
+          verifikator_pelaksana,
+          clinical_pathway_checklist (
+            id,
+            item_text,
+            checklist_hari_1,
+            checklist_hari_2,
+            checklist_hari_3,
+            checklist_hari_4,
+            checklist_hari_5,
+            checklist_hari_6
+          )
+        `)
+        .order('tanggal_masuk', { ascending: true });
+
+      if (error) throw error;
+
+      // Transform data to match RekapDataItem interface
+      const transformedData: RekapDataItem[] = pathways?.map((pathway, index) => {
+        // Get target LOS for the diagnosis
+        const targetLOS = getTargetLOS(pathway.jenis_clinical_pathway);
+        const isSesuaiTarget = pathway.los_hari ? pathway.los_hari <= targetLOS : false;
+        
+        // Calculate compliance based on checklist data
+        const compliance = calculateComplianceFromChecklist(pathway.clinical_pathway_checklist || []);
+        
+        return {
+          id: pathway.id,
+          no: index + 1,
+          namaPasien: pathway.nama_pasien,
+          noRM: pathway.no_rm,
+          tanggalMasuk: pathway.tanggal_masuk,
+          jamMasuk: pathway.jam_masuk,
+          tanggalKeluar: pathway.tanggal_keluar,
+          jamKeluar: pathway.jam_keluar,
+          diagnosis: pathway.jenis_clinical_pathway,
+          los: pathway.los_hari,
+          sesuaiTarget: isSesuaiTarget,
+          kepatuhanCP: compliance.kepatuhanCP,
+          kepatuhanPenunjang: compliance.kepatuhanPenunjang,
+          kepatuhanTerapi: compliance.kepatuhanTerapi,
+          dpjp: pathway.dpjp || '',
+          verifikatorPelaksana: pathway.verifikator_pelaksana || '',
+        };
+      }) || [];
+
+      setData(transformedData);
+      return transformedData;
+    } catch (error) {
+      console.error('Error fetching all rekap data:', error);
+      setError('Gagal mengambil data rekap');
+      toast({
+        title: "Error",
+        description: "Gagal mengambil data rekap",
+        variant: "destructive",
+      });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     data,
     loading,
     error,
     fetchDataByMonth,
+    fetchAllData,
     filterDataByPathway,
     updatePatientData,
     getTargetLOS,
