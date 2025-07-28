@@ -62,8 +62,15 @@ export const useDashboardData = () => {
   // Load all data for dashboard calculations
   useEffect(() => {
     const initializeDashboard = async () => {
-      await fetchAllData(); // Load all rekap data for calculations
-      await fetchDashboardData(); // Load dashboard view data
+      setLoading(true);
+      try {
+        await Promise.all([
+          fetchAllData(), // Load all rekap data for calculations
+          fetchDashboardData() // Load dashboard view data
+        ]);
+      } finally {
+        setLoading(false);
+      }
     };
     initializeDashboard();
   }, [fetchAllData]);
@@ -171,11 +178,11 @@ export const useDashboardData = () => {
     
     // Filter data by pathway type
     const pathwayMap: {[key: string]: string} = {
-      "Sectio Caesaria": "sectio_caesaria",
-      "Stroke Hemoragik": "stroke_hemoragik", 
-      "Stroke Non Hemoragik": "stroke_non_hemoragik",
-      "Pneumonia": "pneumonia",
-      "Dengue Fever": "dengue_fever"
+      "Sectio Caesaria": "Sectio Caesaria",
+      "Stroke Hemoragik": "Stroke Hemoragik", 
+      "Stroke Non Hemoragik": "Stroke Non Hemoragik",
+      "Pneumonia": "Pneumonia",
+      "Dengue Fever": "Dengue Fever"
     };
     
     const targetType = pathwayMap[type] || type;
@@ -226,11 +233,11 @@ export const useDashboardData = () => {
     
     // Filter data by pathway type first
     const pathwayMap: {[key: string]: string} = {
-      "Sectio Caesaria": "sectio_caesaria",
-      "Stroke Hemoragik": "stroke_hemoragik", 
-      "Stroke Non Hemoragik": "stroke_non_hemoragik",
-      "Pneumonia": "pneumonia",
-      "Dengue Fever": "dengue_fever"
+      "Sectio Caesaria": "Sectio Caesaria",
+      "Stroke Hemoragik": "Stroke Hemoragik", 
+      "Stroke Non Hemoragik": "Stroke Non Hemoragik",
+      "Pneumonia": "Pneumonia",
+      "Dengue Fever": "Dengue Fever"
     };
     
     const targetType = type === "all" ? null : pathwayMap[type];
@@ -300,11 +307,11 @@ export const useDashboardData = () => {
     
     // Filter data by pathway type first
     const pathwayMap: {[key: string]: string} = {
-      "Sectio Caesaria": "sectio_caesaria",
-      "Stroke Hemoragik": "stroke_hemoragik", 
-      "Stroke Non Hemoragik": "stroke_non_hemoragik",
-      "Pneumonia": "pneumonia",
-      "Dengue Fever": "dengue_fever"
+      "Sectio Caesaria": "Sectio Caesaria",
+      "Stroke Hemoragik": "Stroke Hemoragik", 
+      "Stroke Non Hemoragik": "Stroke Non Hemoragik",
+      "Pneumonia": "Pneumonia",
+      "Dengue Fever": "Dengue Fever"
     };
     
     const targetType = type === "all" ? null : pathwayMap[type];
@@ -360,9 +367,7 @@ export const useDashboardData = () => {
     return chartData;
   };
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  // Remove duplicate effect that causes blinking
 
   return {
     monthlyStats,

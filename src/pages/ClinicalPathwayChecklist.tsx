@@ -348,6 +348,8 @@ const ClinicalPathwayChecklist = () => {
   }
 
   const handleCheckboxChange = (itemIndex: string, day: string, checked: boolean) => {
+    if (isReadOnly) return; // Prevent changes in view mode
+    
     setChecklistData(prev => ({
       ...prev,
       [itemIndex]: {

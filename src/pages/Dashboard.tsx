@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +58,24 @@ export default function Dashboard() {
     totalPatients 
   } = useDashboardData();
   
+  // Memoize data to prevent blinking
+  const [memoizedData, setMemoizedData] = useState({
+    complianceData: getComplianceByType(selectedDiagnosis),
+    monthlyChartData: getMonthlyChartData(selectedDiagnosis),
+    componentChartData: getComponentComplianceData(selectedDiagnosis)
+  });
+  
+  // Update memoized data only when selectedDiagnosis changes and not loading
+  useEffect(() => {
+    if (!loading) {
+      setMemoizedData({
+        complianceData: getComplianceByType(selectedDiagnosis),
+        monthlyChartData: getMonthlyChartData(selectedDiagnosis),
+        componentChartData: getComponentComplianceData(selectedDiagnosis)
+      });
+    }
+  }, [selectedDiagnosis, loading, getComplianceByType, getMonthlyChartData, getComponentComplianceData]);
+  
   const getTargetInfo = (diagnosis: string) => {
     switch (diagnosis) {
       case "all":
@@ -77,16 +95,7 @@ export default function Dashboard() {
   };
 
   const targetInfo = getTargetInfo(selectedDiagnosis);
-  const complianceData = getComplianceByType(selectedDiagnosis);
-  const monthlyChartData = getMonthlyChartData(selectedDiagnosis);
-  const componentChartData = getComponentComplianceData(selectedDiagnosis);
-
-  console.log('Dashboard variables:', { 
-    selectedDiagnosis, 
-    complianceData, 
-    monthlyChartData, 
-    componentChartData 
-  });
+  const { complianceData, monthlyChartData, componentChartData } = memoizedData;
 
   return (
     <div className="space-y-6">

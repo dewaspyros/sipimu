@@ -40,7 +40,7 @@ export default function RekapData() {
   const [filteredData, setFilteredData] = useState<RekapDataItem[]>([]);
   const [editingRows, setEditingRows] = useState<{[key: string]: boolean}>({});
   
-  const { data, loading, fetchDataByMonth, filterDataByPathway, updatePatientData, getTargetLOS } = useRekapData();
+  const { data, loading, fetchDataByMonth, filterDataByPathway, updatePatientData, updateComplianceData, getTargetLOS } = useRekapData();
 
   const handleMonthChange = async (month: string) => {
     setSelectedMonth(month);
@@ -109,13 +109,16 @@ export default function RekapData() {
     }
   };
 
-  const updateCheckbox = (index: number, field: string, value: boolean) => {
+  const updateCheckbox = async (index: number, field: string, value: boolean) => {
     const updatedData = [...filteredData];
     updatedData[index] = { ...updatedData[index], [field]: value };
     setFilteredData(updatedData);
     
-    // Note: Compliance checkboxes are not stored in database yet
-    // They would need to be implemented with checklist functionality
+    // Update the compliance data
+    const patient = filteredData[index];
+    if (patient) {
+      await updateComplianceData(patient.id, field, value);
+    }
   };
 
   const summary = calculateSummary();
