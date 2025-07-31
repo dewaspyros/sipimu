@@ -50,6 +50,7 @@ const diagnosisOptions = [
 
 export default function Dashboard() {
   const [selectedDiagnosis, setSelectedDiagnosis] = useState("all");
+  const [selectedMonth, setSelectedMonth] = useState("all");
   const { 
     loading, 
     getComplianceByType, 
@@ -60,21 +61,21 @@ export default function Dashboard() {
   
   // Memoize data to prevent blinking
   const [memoizedData, setMemoizedData] = useState({
-    complianceData: getComplianceByType(selectedDiagnosis),
+    complianceData: getComplianceByType(selectedDiagnosis, selectedMonth),
     monthlyChartData: getMonthlyChartData(selectedDiagnosis),
     componentChartData: getComponentComplianceData(selectedDiagnosis)
   });
   
-  // Update memoized data only when selectedDiagnosis changes and not loading
+  // Update memoized data only when selectedDiagnosis or selectedMonth changes and not loading
   useEffect(() => {
     if (!loading) {
       setMemoizedData({
-        complianceData: getComplianceByType(selectedDiagnosis),
+        complianceData: getComplianceByType(selectedDiagnosis, selectedMonth),
         monthlyChartData: getMonthlyChartData(selectedDiagnosis),
         componentChartData: getComponentComplianceData(selectedDiagnosis)
       });
     }
-  }, [selectedDiagnosis, loading, getComplianceByType, getMonthlyChartData, getComponentComplianceData]);
+  }, [selectedDiagnosis, selectedMonth, loading, getComplianceByType, getMonthlyChartData, getComponentComplianceData]);
   
   const getTargetInfo = (diagnosis: string) => {
     switch (diagnosis) {
@@ -106,6 +107,41 @@ export default function Dashboard() {
           Monitoring Kepatuhan Clinical Pathways RS PKU Muhammadiyah Wonosobo
         </p>
       </div>
+
+      {/* Month Filter */}
+      <Card className="medical-card">
+        <CardHeader>
+          <CardTitle>Filter Data</CardTitle>
+          <CardDescription>
+            Pilih bulan untuk melihat statistik spesifik
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full md:w-64">
+            <label className="text-sm font-medium mb-2 block">Pilih Bulan:</label>
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih bulan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Bulan</SelectItem>
+                <SelectItem value="1">Januari</SelectItem>
+                <SelectItem value="2">Februari</SelectItem>
+                <SelectItem value="3">Maret</SelectItem>
+                <SelectItem value="4">April</SelectItem>
+                <SelectItem value="5">Mei</SelectItem>
+                <SelectItem value="6">Juni</SelectItem>
+                <SelectItem value="7">Juli</SelectItem>
+                <SelectItem value="8">Agustus</SelectItem>
+                <SelectItem value="9">September</SelectItem>
+                <SelectItem value="10">Oktober</SelectItem>
+                <SelectItem value="11">November</SelectItem>
+                <SelectItem value="12">Desember</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">

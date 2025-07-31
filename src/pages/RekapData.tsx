@@ -40,12 +40,14 @@ export default function RekapData() {
   const [filteredData, setFilteredData] = useState<RekapDataItem[]>([]);
   const [editingRows, setEditingRows] = useState<{[key: string]: boolean}>({});
   
-  const { data, loading, fetchDataByMonth, filterDataByPathway, updatePatientData, updateComplianceData, getTargetLOS } = useRekapData();
+  const { data, loading, fetchDataByMonth, fetchAllData, filterDataByPathway, updatePatientData, updateComplianceData, getTargetLOS } = useRekapData();
 
   const handleMonthChange = async (month: string) => {
     setSelectedMonth(month);
-    if (month) {
+    if (month && month !== "all") {
       await fetchDataByMonth(parseInt(month));
+    } else if (month === "all") {
+      await fetchAllData();
     }
   };
 
@@ -79,18 +81,41 @@ export default function RekapData() {
     const totalLOS = filteredData.reduce((acc, item) => acc + (item.los || 0), 0);
     const avgLOS = totalPatients > 0 ? totalLOS / totalPatients : 0;
 
+    // Calculate average CP compliance based on sesuaiTarget, kepatuhanPenunjang, kepatuhanTerapi
+    const avgKepatuhanCP = filteredData.map(item => {
+      const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
+      const checkedItems = complianceItems.filter(Boolean).length;
+      return (checkedItems / complianceItems.length) * 100;
+    }).reduce((acc, val) => acc + val, 0) / totalPatients;
+
     return {
       totalPatients,
       persentaseSesuaiTarget: ((sesuaiTarget / totalPatients) * 100).toFixed(1),
       persentaseKepatuhanCP: ((kepatuhanCP / totalPatients) * 100).toFixed(1),
       persentaseKepatuhanPenunjang: ((kepatuhanPenunjang / totalPatients) * 100).toFixed(1),
       persentaseKepatuhanTerapi: ((kepatuhanTerapi / totalPatients) * 100).toFixed(1),
-      avgKepatuhanCP: ((kepatuhanCP / totalPatients) * 100).toFixed(1),
+      avgKepatuhanCP: avgKepatuhanCP.toFixed(1),
       avgLOS: avgLOS.toFixed(1)
     };
   };
 
-  const toggleEdit = (rowKey: string) => {
+  const toggleEdit = async (rowKey: string) => {
+    const isCurrentlyEditing = editingRows[rowKey];
+    
+    if (isCurrentlyEditing) {
+      // Save the data when toggling from edit to view mode
+      const rowIndex = parseInt(rowKey.split('-')[1]);
+      const patient = filteredData[rowIndex];
+      if (patient) {
+        await updatePatientData(patient.id, {
+          los: patient.los,
+          sesuaiTarget: patient.sesuaiTarget,
+          kepatuhanPenunjang: patient.kepatuhanPenunjang,
+          kepatuhanTerapi: patient.kepatuhanTerapi
+        });
+      }
+    }
+    
     setEditingRows(prev => ({
       ...prev,
       [rowKey]: !prev[rowKey]
@@ -161,6 +186,7 @@ export default function RekapData() {
                   <SelectValue placeholder="Pilih bulan" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">Semua Bulan</SelectItem>
                   {monthOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -345,13 +371,13 @@ export default function RekapData() {
                             </Badge>
                           )}
                         </td>
-                        <td className="p-3">
-                          {(() => {
-                            // Calculate automatic percentage based on checked compliance items
-                            const complianceItems = [item.kepatuhanPenunjang, item.kepatuhanTerapi];
-                            const checkedItems = complianceItems.filter(Boolean).length;
-                            const totalItems = complianceItems.length;
-                            const percentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+                         <td className="p-3">
+                           {(() => {
+                             // Calculate automatic percentage based on checked compliance items including sesuaiTarget
+                             const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
+                             const checkedItems = complianceItems.filter(Boolean).length;
+                             const totalItems = complianceItems.length;
+                             const percentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
                             
                             return (
                               <Badge 

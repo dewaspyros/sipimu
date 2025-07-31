@@ -140,139 +140,14 @@ Terima kasih.`
         </p>
       </div>
 
-      <Tabs defaultValue="whatsapp" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="whatsapp" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            WhatsApp Gateway
-          </TabsTrigger>
+      <Tabs defaultValue="password" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="password" className="flex items-center gap-2">
             <Key className="h-4 w-4" />
             Ubah Password
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="whatsapp">
-          <div className="grid gap-6">
-            {/* API Configuration */}
-            <Card className="medical-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Konfigurasi API WhatsApp
-                </CardTitle>
-                <CardDescription>
-                  Pengaturan API Key untuk WhatsApp Gateway
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="apiKey">API Key WhatsApp</Label>
-                  <div className="relative">
-                    <Input
-                      id="apiKey"
-                      type={showPassword ? "text" : "password"}
-                      value={whatsappSettings.apiKey}
-                      onChange={(e) => setWhatsappSettings({
-                        ...whatsappSettings,
-                        apiKey: e.target.value
-                      })}
-                      className="pr-10"
-                      placeholder="Masukkan API Key WhatsApp"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    API Key digunakan untuk mengirim pesan WhatsApp otomatis
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Message Templates */}
-            <Card className="medical-card">
-              <CardHeader>
-                <CardTitle>Template Pesan WhatsApp</CardTitle>
-                <CardDescription>
-                  Atur template pesan yang akan dikirim otomatis
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="pesan">Pesan Verifikasi Pendaftaran</Label>
-                  <Textarea
-                    id="pesan"
-                    value={whatsappSettings.pesan}
-                    onChange={(e) => setWhatsappSettings({
-                      ...whatsappSettings,
-                      pesan: e.target.value
-                    })}
-                    rows={8}
-                    className="font-mono text-sm"
-                  />
-                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <span>Variabel tersedia:</span>
-                    <code className="bg-muted px-2 py-1 rounded">{"{nama}"}</code>
-                    <code className="bg-muted px-2 py-1 rounded">{"{kode}"}</code>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="pesanResetPassword">Pesan Reset Password</Label>
-                  <Textarea
-                    id="pesanResetPassword"
-                    value={whatsappSettings.pesanResetPassword}
-                    onChange={(e) => setWhatsappSettings({
-                      ...whatsappSettings,
-                      pesanResetPassword: e.target.value
-                    })}
-                    rows={10}
-                    className="font-mono text-sm"
-                  />
-                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <span>Variabel tersedia:</span>
-                    <code className="bg-muted px-2 py-1 rounded">{"{nama}"}</code>
-                    <code className="bg-muted px-2 py-1 rounded">{"{link}"}</code>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={resetWhatsappToDefault}
-                  className="flex items-center gap-2"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Reset ke Default
-                </Button>
-                <Button
-                  onClick={handleWhatsappSave}
-                  disabled={loading}
-                  className="flex items-center gap-2 medical-transition"
-                >
-                  {loading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  Simpan Pengaturan
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </TabsContent>
 
         <TabsContent value="password">
           <Card className="medical-card">

@@ -245,8 +245,10 @@ export const useRekapData = () => {
           : item
       ));
 
-      // Note: Compliance data is calculated from checklist items, 
-      // so direct updates would need to modify the checklist accordingly
+      // Since compliance data in this context is manually set (not calculated from checklist),
+      // we can update it directly in the local state. For persistent storage,
+      // you might want to add a separate table to store manual compliance overrides.
+      
       toast({
         title: "Berhasil",
         description: "Data kepatuhan berhasil diperbarui",

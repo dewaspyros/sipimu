@@ -144,11 +144,21 @@ export const useDashboardData = () => {
     }
   };
 
-  // Get compliance data by clinical pathway type
-  const getComplianceByType = (type: string) => {
-    // If "all" is selected, calculate overall compliance from all data
+  // Get compliance data by clinical pathway type and month
+  const getComplianceByType = (type: string, month: string = "all") => {
+    // Filter data by month first
+    let filteredByMonth = rekapData;
+    if (month !== "all") {
+      const monthNum = parseInt(month);
+      filteredByMonth = rekapData.filter(item => {
+        const admissionMonth = new Date(item.tanggalMasuk).getMonth() + 1;
+        return admissionMonth === monthNum;
+      });
+    }
+
+    // If "all" is selected, calculate overall compliance from filtered data
     if (type === "all") {
-      const totalPatients = rekapData.length;
+      const totalPatients = filteredByMonth.length;
       if (totalPatients === 0) {
         return {
           pathwayCompliance: 0,
@@ -160,11 +170,11 @@ export const useDashboardData = () => {
         };
       }
       
-      const sesuaiTarget = rekapData.filter(item => item.sesuaiTarget).length;
-      const kepatuhanCP = rekapData.filter(item => item.kepatuhanCP).length;
-      const kepatuhanTerapi = rekapData.filter(item => item.kepatuhanTerapi).length;
-      const kepatuhanPenunjang = rekapData.filter(item => item.kepatuhanPenunjang).length;
-      const totalLOS = rekapData.reduce((acc, item) => acc + (item.los || 0), 0);
+      const sesuaiTarget = filteredByMonth.filter(item => item.sesuaiTarget).length;
+      const kepatuhanCP = filteredByMonth.filter(item => item.kepatuhanCP).length;
+      const kepatuhanTerapi = filteredByMonth.filter(item => item.kepatuhanTerapi).length;
+      const kepatuhanPenunjang = filteredByMonth.filter(item => item.kepatuhanPenunjang).length;
+      const totalLOS = filteredByMonth.reduce((acc, item) => acc + (item.los || 0), 0);
       
       return {
         pathwayCompliance: (kepatuhanCP / totalPatients) * 100,
@@ -186,7 +196,7 @@ export const useDashboardData = () => {
     };
     
     const targetType = pathwayMap[type] || type;
-    const filteredData = rekapData.filter(item => item.diagnosis === targetType);
+    const filteredData = filteredByMonth.filter(item => item.diagnosis === targetType);
     const totalPatients = filteredData.length;
     
     if (totalPatients === 0) {
