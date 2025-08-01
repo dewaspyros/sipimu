@@ -294,26 +294,6 @@ export type Database = {
           tahun: number | null
           total_pasien_input: number | null
         }
-        Insert: {
-          bulan?: number | null
-          jumlah_sesuai_target?: number | null
-          kepatuhan_cp?: number | null
-          kepatuhan_penunjang?: number | null
-          kepatuhan_terapi?: number | null
-          rata_rata_los?: number | null
-          tahun?: number | null
-          total_pasien_input?: number | null
-        }
-        Update: {
-          bulan?: number | null
-          jumlah_sesuai_target?: number | null
-          kepatuhan_cp?: number | null
-          kepatuhan_penunjang?: number | null
-          kepatuhan_terapi?: number | null
-          rata_rata_los?: number | null
-          tahun?: number | null
-          total_pasien_input?: number | null
-        }
         Relationships: []
       }
       v_pathway_compliance: {
