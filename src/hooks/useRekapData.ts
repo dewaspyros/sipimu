@@ -31,7 +31,7 @@ export const useRekapData = () => {
     setError(null);
     
     try {
-      // Fetch pathways and their checklist data
+      // Fetch pathways and their checklist data + compliance overrides
       const { data: pathways, error } = await supabase
         .from('clinical_pathways')
         .select(`
@@ -55,6 +55,13 @@ export const useRekapData = () => {
             checklist_hari_4,
             checklist_hari_5,
             checklist_hari_6
+          ),
+          compliance_overrides (
+            los_hari,
+            sesuai_target,
+            kepatuhan_cp,
+            kepatuhan_penunjang,
+            kepatuhan_terapi
           )
         `)
         .gte('tanggal_masuk', `${year}-${month.toString().padStart(2, '0')}-01`)
@@ -68,10 +75,27 @@ export const useRekapData = () => {
         pathways?.map(async (pathway, index) => {
           // Get target LOS for the diagnosis
           const targetLOS = getTargetLOS(pathway.jenis_clinical_pathway);
-          const isSesuaiTarget = pathway.los_hari ? pathway.los_hari <= targetLOS : false;
           
-          // Calculate compliance based on checklist data
-          const compliance = calculateComplianceFromChecklist(pathway.clinical_pathway_checklist || []);
+          // Use override data if available, otherwise calculate
+          const override = pathway.compliance_overrides?.[0];
+          let isSesuaiTarget, kepatuhanCP, kepatuhanPenunjang, kepatuhanTerapi, los;
+          
+          if (override) {
+            // Use manually set compliance data
+            isSesuaiTarget = override.sesuai_target;
+            kepatuhanCP = override.kepatuhan_cp;
+            kepatuhanPenunjang = override.kepatuhan_penunjang;
+            kepatuhanTerapi = override.kepatuhan_terapi;
+            los = override.los_hari || pathway.los_hari;
+          } else {
+            // Calculate compliance based on checklist data and LOS
+            los = pathway.los_hari;
+            isSesuaiTarget = pathway.los_hari ? pathway.los_hari <= targetLOS : false;
+            const compliance = calculateComplianceFromChecklist(pathway.clinical_pathway_checklist || []);
+            kepatuhanCP = compliance.kepatuhanCP;
+            kepatuhanPenunjang = compliance.kepatuhanPenunjang;
+            kepatuhanTerapi = compliance.kepatuhanTerapi;
+          }
           
           return {
             id: pathway.id,
@@ -83,11 +107,11 @@ export const useRekapData = () => {
             tanggalKeluar: pathway.tanggal_keluar,
             jamKeluar: pathway.jam_keluar,
             diagnosis: pathway.jenis_clinical_pathway,
-            los: pathway.los_hari,
+            los: los,
             sesuaiTarget: isSesuaiTarget,
-            kepatuhanCP: compliance.kepatuhanCP,
-            kepatuhanPenunjang: compliance.kepatuhanPenunjang,
-            kepatuhanTerapi: compliance.kepatuhanTerapi,
+            kepatuhanCP: kepatuhanCP,
+            kepatuhanPenunjang: kepatuhanPenunjang,
+            kepatuhanTerapi: kepatuhanTerapi,
             dpjp: pathway.dpjp || '',
             verifikatorPelaksana: pathway.verifikator_pelaksana || '',
           };
@@ -210,6 +234,29 @@ export const useRekapData = () => {
 
       if (error) throw error;
 
+      // Also update or create compliance override if LOS changed
+      if (updates.los !== undefined) {
+        const patient = data.find(p => p.id === patientId);
+        if (patient) {
+          const newSesuaiTarget = updates.los <= getTargetLOS(patient.diagnosis);
+          
+          const overrideData = {
+            patient_id: patientId,
+            los_hari: updates.los,
+            sesuai_target: newSesuaiTarget,
+            kepatuhan_cp: patient.kepatuhanCP,
+            kepatuhan_penunjang: patient.kepatuhanPenunjang,
+            kepatuhan_terapi: patient.kepatuhanTerapi
+          };
+
+          await supabase
+            .from('compliance_overrides')
+            .upsert(overrideData, {
+              onConflict: 'patient_id'
+            });
+        }
+      }
+
       // Update local state
       setData(prev => prev.map(item => 
         item.id === patientId 
@@ -235,7 +282,7 @@ export const useRekapData = () => {
     }
   };
 
-  // Function to save compliance updates (for checkbox changes)
+  // Function to save compliance updates (for checkbox changes) - now with persistent storage
   const updateComplianceData = async (patientId: string, field: string, value: boolean) => {
     try {
       // Update local state immediately for better UX
@@ -245,13 +292,32 @@ export const useRekapData = () => {
           : item
       ));
 
-      // Since compliance data in this context is manually set (not calculated from checklist),
-      // we can update it directly in the local state. For persistent storage,
-      // you might want to add a separate table to store manual compliance overrides.
-      
+      // Save to database for persistent storage
+      const currentPatient = data.find(item => item.id === patientId);
+      if (!currentPatient) return;
+
+      // Prepare the override data
+      const overrideData = {
+        patient_id: patientId,
+        los_hari: currentPatient.los,
+        sesuai_target: field === 'sesuaiTarget' ? value : currentPatient.sesuaiTarget,
+        kepatuhan_cp: field === 'kepatuhanCP' ? value : currentPatient.kepatuhanCP,
+        kepatuhan_penunjang: field === 'kepatuhanPenunjang' ? value : currentPatient.kepatuhanPenunjang,
+        kepatuhan_terapi: field === 'kepatuhanTerapi' ? value : currentPatient.kepatuhanTerapi
+      };
+
+      // Use upsert to insert or update the override
+      const { error } = await supabase
+        .from('compliance_overrides')
+        .upsert(overrideData, {
+          onConflict: 'patient_id'
+        });
+
+      if (error) throw error;
+
       toast({
         title: "Berhasil",
-        description: "Data kepatuhan berhasil diperbarui",
+        description: "Data kepatuhan berhasil disimpan permanen",
       });
     } catch (error) {
       console.error('Error updating compliance data:', error);
@@ -260,6 +326,13 @@ export const useRekapData = () => {
         description: "Gagal memperbarui data kepatuhan",
         variant: "destructive",
       });
+      
+      // Rollback local state on error
+      setData(prev => prev.map(item => 
+        item.id === patientId 
+          ? { ...item, [field]: !value }
+          : item
+      ));
     }
   };
 
@@ -269,7 +342,7 @@ export const useRekapData = () => {
     setError(null);
     
     try {
-      // Fetch all pathways and their checklist data
+      // Fetch all pathways and their checklist data + compliance overrides
       const { data: pathways, error } = await supabase
         .from('clinical_pathways')
         .select(`
@@ -293,6 +366,13 @@ export const useRekapData = () => {
             checklist_hari_4,
             checklist_hari_5,
             checklist_hari_6
+          ),
+          compliance_overrides (
+            los_hari,
+            sesuai_target,
+            kepatuhan_cp,
+            kepatuhan_penunjang,
+            kepatuhan_terapi
           )
         `)
         .order('tanggal_masuk', { ascending: true });
@@ -303,10 +383,27 @@ export const useRekapData = () => {
       const transformedData: RekapDataItem[] = pathways?.map((pathway, index) => {
         // Get target LOS for the diagnosis
         const targetLOS = getTargetLOS(pathway.jenis_clinical_pathway);
-        const isSesuaiTarget = pathway.los_hari ? pathway.los_hari <= targetLOS : false;
         
-        // Calculate compliance based on checklist data
-        const compliance = calculateComplianceFromChecklist(pathway.clinical_pathway_checklist || []);
+        // Use override data if available, otherwise calculate
+        const override = pathway.compliance_overrides?.[0];
+        let isSesuaiTarget, kepatuhanCP, kepatuhanPenunjang, kepatuhanTerapi, los;
+        
+        if (override) {
+          // Use manually set compliance data
+          isSesuaiTarget = override.sesuai_target;
+          kepatuhanCP = override.kepatuhan_cp;
+          kepatuhanPenunjang = override.kepatuhan_penunjang;
+          kepatuhanTerapi = override.kepatuhan_terapi;
+          los = override.los_hari || pathway.los_hari;
+        } else {
+          // Calculate compliance based on checklist data and LOS
+          los = pathway.los_hari;
+          isSesuaiTarget = pathway.los_hari ? pathway.los_hari <= targetLOS : false;
+          const compliance = calculateComplianceFromChecklist(pathway.clinical_pathway_checklist || []);
+          kepatuhanCP = compliance.kepatuhanCP;
+          kepatuhanPenunjang = compliance.kepatuhanPenunjang;
+          kepatuhanTerapi = compliance.kepatuhanTerapi;
+        }
         
         return {
           id: pathway.id,
@@ -318,11 +415,11 @@ export const useRekapData = () => {
           tanggalKeluar: pathway.tanggal_keluar,
           jamKeluar: pathway.jam_keluar,
           diagnosis: pathway.jenis_clinical_pathway,
-          los: pathway.los_hari,
+          los: los,
           sesuaiTarget: isSesuaiTarget,
-          kepatuhanCP: compliance.kepatuhanCP,
-          kepatuhanPenunjang: compliance.kepatuhanPenunjang,
-          kepatuhanTerapi: compliance.kepatuhanTerapi,
+          kepatuhanCP: kepatuhanCP,
+          kepatuhanPenunjang: kepatuhanPenunjang,
+          kepatuhanTerapi: kepatuhanTerapi,
           dpjp: pathway.dpjp || '',
           verifikatorPelaksana: pathway.verifikator_pelaksana || '',
         };

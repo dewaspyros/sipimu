@@ -81,12 +81,8 @@ export default function RekapData() {
     const totalLOS = filteredData.reduce((acc, item) => acc + (item.los || 0), 0);
     const avgLOS = totalPatients > 0 ? totalLOS / totalPatients : 0;
 
-    // Calculate average CP compliance based on sesuaiTarget, kepatuhanPenunjang, kepatuhanTerapi
-    const avgKepatuhanCP = filteredData.map(item => {
-      const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
-      const checkedItems = complianceItems.filter(Boolean).length;
-      return (checkedItems / complianceItems.length) * 100;
-    }).reduce((acc, val) => acc + val, 0) / totalPatients;
+    // Calculate average CP compliance - this should be the average of kepatuhanCP column
+    const avgKepatuhanCP = totalPatients > 0 ? (kepatuhanCP / totalPatients) * 100 : 0;
 
     return {
       totalPatients,
@@ -440,19 +436,9 @@ export default function RekapData() {
                         </Badge>
                       </td>
                       <td className="p-3 text-center">
-                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
-                          {(() => {
-                            // Calculate overall average CP compliance percentage
-                            if (data.length === 0) return "0";
-                            const totalPercentage = data.reduce((acc, item) => {
-                              const complianceItems = [item.kepatuhanPenunjang, item.kepatuhanTerapi];
-                              const checkedItems = complianceItems.filter(Boolean).length;
-                              const totalItems = complianceItems.length;
-                              return acc + (totalItems > 0 ? (checkedItems / totalItems) * 100 : 0);
-                            }, 0);
-                            return Math.round(totalPercentage / data.length);
-                          })()}%
-                        </Badge>
+                         <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
+                           {summary.persentaseKepatuhanCP}%
+                         </Badge>
                       </td>
                       <td className="p-3 text-center">
                         <span className="text-sm text-muted-foreground">-</span>

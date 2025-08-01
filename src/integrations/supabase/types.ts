@@ -115,6 +115,50 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_overrides: {
+        Row: {
+          created_at: string
+          id: string
+          kepatuhan_cp: boolean | null
+          kepatuhan_penunjang: boolean | null
+          kepatuhan_terapi: boolean | null
+          los_hari: number | null
+          patient_id: string
+          sesuai_target: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kepatuhan_cp?: boolean | null
+          kepatuhan_penunjang?: boolean | null
+          kepatuhan_terapi?: boolean | null
+          los_hari?: number | null
+          patient_id: string
+          sesuai_target?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kepatuhan_cp?: boolean | null
+          kepatuhan_penunjang?: boolean | null
+          kepatuhan_terapi?: boolean | null
+          los_hari?: number | null
+          patient_id?: string
+          sesuai_target?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_overrides_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: true
+            referencedRelation: "clinical_pathways"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daftar_cp: {
         Row: {
           id: number
