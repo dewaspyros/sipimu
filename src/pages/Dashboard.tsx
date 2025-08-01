@@ -40,7 +40,6 @@ const CustomBarLabel = (props: any) => {
 // Removed dummy data - now using real data from Supabase
 
 const diagnosisOptions = [
-  { value: "all", label: "Semua Clinical Pathway" },
   { value: "Sectio Caesaria", label: "Sectio Caesaria" },
   { value: "Stroke Hemoragik", label: "Stroke Hemoragik" },
   { value: "Stroke Non Hemoragik", label: "Stroke Non Hemoragik" },
@@ -49,8 +48,8 @@ const diagnosisOptions = [
 ].filter(option => option.value && option.value.trim() !== "");
 
 export default function Dashboard() {
-  const [selectedDiagnosis, setSelectedDiagnosis] = useState("all");
-  const [selectedMonth, setSelectedMonth] = useState("all");
+  const [selectedDiagnosis, setSelectedDiagnosis] = useState("Sectio Caesaria");
+  const [selectedMonth, setSelectedMonth] = useState("1");
   const { 
     loading, 
     getComplianceByType, 
@@ -120,9 +119,8 @@ export default function Dashboard() {
               <SelectTrigger>
                 <SelectValue placeholder="Pilih bulan" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Bulan</SelectItem>
-                <SelectItem value="1">Januari</SelectItem>
+                <SelectContent>
+                  <SelectItem value="1">Januari</SelectItem>
                 <SelectItem value="2">Februari</SelectItem>
                 <SelectItem value="3">Maret</SelectItem>
                 <SelectItem value="4">April</SelectItem>

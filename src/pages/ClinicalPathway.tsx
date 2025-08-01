@@ -141,6 +141,16 @@ export default function ClinicalPathway() {
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
+                                {item.tanggal_keluar && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="default"
+                                    title="Lanjut ke Checklist"
+                                    onClick={() => navigate(`/clinical-pathway-checklist?id=${item.id}&mode=edit`)}
+                                  >
+                                    <FileText className="h-4 w-4" />
+                                  </Button>
+                                )}
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button 

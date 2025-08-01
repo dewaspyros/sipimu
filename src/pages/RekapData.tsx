@@ -388,15 +388,16 @@ export default function RekapData() {
                             );
                           })()}
                         </td>
-                        <td className="p-3">
-                          <Button
-                            size="sm"
-                            variant={isEditing ? "default" : "outline"}
-                            onClick={() => toggleEdit(rowKey)}
-                            className="medical-transition"
-                          >
-                            {isEditing ? (
-                              <>
+                         <td className="p-3">
+                           <div className="flex gap-2">
+                             <Button
+                               size="sm"
+                               variant={isEditing ? "default" : "outline"}
+                               onClick={() => toggleEdit(rowKey)}
+                               className="medical-transition"
+                             >
+                               {isEditing ? (
+                                 <>
                                 <Save className="h-4 w-4 mr-1" />
                                 Simpan
                               </>
@@ -405,9 +406,19 @@ export default function RekapData() {
                                 <Edit className="h-4 w-4 mr-1" />
                                 Edit
                               </>
-                            )}
-                          </Button>
-                        </td>
+                             )}
+                           </Button>
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => window.location.href = `/clinical-pathway-checklist?id=${item.id}&mode=view`}
+                             className="medical-transition"
+                             title="Lihat Checklist"
+                           >
+                             <FileText className="h-4 w-4" />
+                           </Button>
+                         </div>
+                         </td>
                       </tr>
                     );
                   })}
