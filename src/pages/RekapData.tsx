@@ -182,7 +182,7 @@ export default function RekapData() {
                   <SelectValue placeholder="Pilih bulan" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Semua Bulan</SelectItem>
+                  
                   {monthOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -199,11 +199,11 @@ export default function RekapData() {
                   <SelectValue placeholder="Pilih jenis" />
                 </SelectTrigger>
                 <SelectContent>
-                  {pathwayOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
+                   {pathwayOptions.filter(option => option.value !== "all").map((option) => (
+                     <SelectItem key={option.value} value={option.value}>
+                       {option.label}
+                     </SelectItem>
+                   ))}
                 </SelectContent>
               </Select>
             </div>

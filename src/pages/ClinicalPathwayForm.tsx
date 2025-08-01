@@ -427,18 +427,28 @@ const ClinicalPathwayForm = () => {
                   />
                 </div>
 
-                <div className="flex justify-end gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/clinical-pathway')}
-                  >
-                    Batal
-                  </Button>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Menyimpan...' : mode === 'edit' ? 'Simpan Perubahan' : 'Lanjut ke Checklist'}
-                  </Button>
-                </div>
+                 <div className="flex justify-end gap-4">
+                   <Button
+                     type="button"
+                     variant="outline"
+                     onClick={() => navigate('/clinical-pathway')}
+                   >
+                     Batal
+                   </Button>
+                   {mode === 'edit' && (
+                     <Button
+                       type="button"
+                       variant="secondary"
+                       onClick={() => navigate(`/clinical-pathway-checklist?id=${patientId}&mode=edit`)}
+                       disabled={isLoading}
+                     >
+                       Lanjutkan ke Checklist
+                     </Button>
+                   )}
+                   <Button type="submit" disabled={isLoading}>
+                     {isLoading ? 'Menyimpan...' : mode === 'edit' ? 'Simpan Perubahan' : 'Lanjut ke Checklist'}
+                   </Button>
+                 </div>
               </form>
             </Form>
           </CardContent>

@@ -68,12 +68,14 @@ export const useDashboardData = () => {
           fetchAllData(), // Load all rekap data for calculations
           fetchDashboardData() // Load dashboard view data
         ]);
+      } catch (error) {
+        console.error('Dashboard initialization error:', error);
       } finally {
         setLoading(false);
       }
     };
     initializeDashboard();
-  }, [fetchAllData]);
+  }, []);
 
   const fetchDashboardData = async () => {
     try {
