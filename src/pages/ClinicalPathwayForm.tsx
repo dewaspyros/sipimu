@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { useClinicalPathways } from "@/hooks/useClinicalPathways";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface PatientFormData {
   clinicalPathway: string;
@@ -55,9 +57,14 @@ const dpjpOptions = [
 
 const ClinicalPathwayForm = () => {
   const navigate = useNavigate();
-  const { createPathway } = useClinicalPathways();
+  const [searchParams] = useSearchParams();
+  const { createPathway, updatePathway } = useClinicalPathways();
   const [customVerifikator, setCustomVerifikator] = useState("");
   const [customDPJP, setCustomDPJP] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const patientId = searchParams.get('id');
+  const mode = searchParams.get('mode') || 'create';
   
   const form = useForm<PatientFormData>({
     defaultValues: {
@@ -74,8 +81,54 @@ const ClinicalPathwayForm = () => {
     }
   });
 
+  // Load patient data for edit mode
+  useEffect(() => {
+    const loadPatientData = async () => {
+      if (mode === 'edit' && patientId) {
+        setIsLoading(true);
+        try {
+          const { data: patient, error } = await supabase
+            .from('clinical_pathways')
+            .select('*')
+            .eq('id', patientId)
+            .single();
+
+          if (error) throw error;
+
+          if (patient) {
+            form.reset({
+              clinicalPathway: patient.jenis_clinical_pathway,
+              verifikator: patient.verifikator_pelaksana || "",
+              dpjp: patient.dpjp || "",
+              noRM: patient.no_rm,
+              patientNameAge: patient.nama_pasien,
+              admissionDate: patient.tanggal_masuk,
+              admissionTime: patient.jam_masuk,
+              dischargeDate: patient.tanggal_keluar || "",
+              dischargeTime: patient.jam_keluar || "",
+              lengthOfStay: patient.los_hari ? `${patient.los_hari} hari` : ""
+            });
+          }
+        } catch (error) {
+          console.error('Error loading patient data:', error);
+          toast({
+            title: "Error",
+            description: "Gagal memuat data pasien",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadPatientData();
+  }, [mode, patientId, form]);
+
   const onSubmit = async (data: PatientFormData) => {
     try {
+      setIsLoading(true);
+      
       // Calculate LOS if both admission and discharge dates are provided
       let losHari = null;
       if (data.dischargeDate && data.admissionDate) {
@@ -85,8 +138,7 @@ const ClinicalPathwayForm = () => {
         losHari = Math.ceil(timeDiff / (1000 * 3600 * 24));
       }
 
-      // Create clinical pathway record
-      const pathway = await createPathway({
+      const pathwayData = {
         no_rm: data.noRM,
         nama_pasien: data.patientNameAge,
         jenis_clinical_pathway: data.clinicalPathway as any,
@@ -97,17 +149,38 @@ const ClinicalPathwayForm = () => {
         tanggal_keluar: data.dischargeDate || null,
         jam_keluar: data.dischargeTime || null,
         los_hari: losHari
-      });
+      };
 
-      // Store form data and pathway ID in session storage for the checklist step
-      sessionStorage.setItem('clinicalPathwayFormData', JSON.stringify({
-        ...data,
-        pathwayId: pathway.id
-      }));
-      
-      navigate('/clinical-pathway-checklist');
+      let pathway;
+      if (mode === 'edit' && patientId) {
+        // Update existing pathway
+        pathway = await updatePathway(patientId, pathwayData);
+        toast({
+          title: "Berhasil",
+          description: "Data pasien berhasil diperbarui",
+        });
+        navigate('/clinical-pathway');
+      } else {
+        // Create new pathway
+        pathway = await createPathway(pathwayData);
+        
+        // Store form data and pathway ID in session storage for the checklist step
+        sessionStorage.setItem('clinicalPathwayFormData', JSON.stringify({
+          ...data,
+          pathwayId: pathway.id
+        }));
+        
+        navigate('/clinical-pathway-checklist');
+      }
     } catch (error) {
-      console.error('Error creating clinical pathway:', error);
+      console.error('Error saving clinical pathway:', error);
+      toast({
+        title: "Error",
+        description: "Gagal menyimpan data pasien",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -124,7 +197,9 @@ const ClinicalPathwayForm = () => {
             <ArrowLeft className="h-4 w-4" />
             Kembali
           </Button>
-          <h1 className="text-2xl font-bold">Form Identitas Pasien Clinical Pathway</h1>
+          <h1 className="text-2xl font-bold">
+            {mode === 'edit' ? 'Edit Data Pasien Clinical Pathway' : 'Form Identitas Pasien Clinical Pathway'}
+          </h1>
         </div>
 
         <Card>
@@ -360,8 +435,8 @@ const ClinicalPathwayForm = () => {
                   >
                     Batal
                   </Button>
-                  <Button type="submit">
-                    Lanjut ke Checklist
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Menyimpan...' : mode === 'edit' ? 'Simpan Perubahan' : 'Lanjut ke Checklist'}
                   </Button>
                 </div>
               </form>

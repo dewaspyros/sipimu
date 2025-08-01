@@ -79,66 +79,44 @@ export const useDashboardData = () => {
     try {
       setLoading(true);
 
-      // Fetch monthly statistics
-      const { data: monthlyData, error: monthlyError } = await supabase
-        .from('v_monthly_stats')
-        .select('*')
-        .order('tahun', { ascending: false })
-        .order('bulan', { ascending: false })
-        .limit(12);
+      // Try to fetch data from views, but handle gracefully if views don't exist
+      const results = await Promise.allSettled([
+        supabase.from('v_monthly_stats').select('*').order('tahun', { ascending: false }).order('bulan', { ascending: false }).limit(12),
+        supabase.from('v_pathway_compliance').select('*'),
+        supabase.from('v_los_compliance').select('*'),
+        supabase.from('v_therapy_compliance').select('*'),
+        supabase.from('v_support_compliance').select('*'),
+        supabase.from('v_total_patients').select('*').single()
+      ]);
 
-      if (monthlyError) throw monthlyError;
+      // Extract data from successful results, set empty arrays for failed ones
+      const [monthlyResult, pathwayResult, losResult, therapyResult, supportResult, totalResult] = results;
 
-      // Fetch pathway compliance
-      const { data: pathwayData, error: pathwayError } = await supabase
-        .from('v_pathway_compliance')
-        .select('*');
+      setMonthlyStats(monthlyResult.status === 'fulfilled' ? monthlyResult.value.data || [] : []);
+      setPathwayCompliance(pathwayResult.status === 'fulfilled' ? pathwayResult.value.data || [] : []);
+      setLOSCompliance(losResult.status === 'fulfilled' ? losResult.value.data || [] : []);
+      setTherapyCompliance(therapyResult.status === 'fulfilled' ? therapyResult.value.data || [] : []);
+      setSupportCompliance(supportResult.status === 'fulfilled' ? supportResult.value.data || [] : []);
+      setTotalPatients(totalResult.status === 'fulfilled' ? totalResult.value.data : null);
 
-      if (pathwayError) throw pathwayError;
+      // Only show error if rekap data is also empty
+      const hasAnyData = rekapData.length > 0 || 
+        (monthlyResult.status === 'fulfilled' && monthlyResult.value.data?.length > 0);
 
-      // Fetch LOS compliance
-      const { data: losData, error: losError } = await supabase
-        .from('v_los_compliance')
-        .select('*');
-
-      if (losError) throw losError;
-
-      // Fetch therapy compliance
-      const { data: therapyData, error: therapyError } = await supabase
-        .from('v_therapy_compliance')
-        .select('*');
-
-      if (therapyError) throw therapyError;
-
-      // Fetch support compliance
-      const { data: supportData, error: supportError } = await supabase
-        .from('v_support_compliance')
-        .select('*');
-
-      if (supportError) throw supportError;
-
-      // Fetch total patients
-      const { data: totalData, error: totalError } = await supabase
-        .from('v_total_patients')
-        .select('*')
-        .single();
-
-      if (totalError) throw totalError;
-
-      setMonthlyStats(monthlyData || []);
-      setPathwayCompliance(pathwayData || []);
-      setLOSCompliance(losData || []);
-      setTherapyCompliance(therapyData || []);
-      setSupportCompliance(supportData || []);
-      setTotalPatients(totalData);
+      if (!hasAnyData) {
+        console.warn('No dashboard data available from views, will use rekap data calculations');
+      }
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      toast({
-        title: "Error",
-        description: "Gagal memuat data dashboard",
-        variant: "destructive"
-      });
+      // Only show error toast if there's no rekap data to fall back on
+      if (rekapData.length === 0) {
+        toast({
+          title: "Info",
+          description: "Menggunakan perhitungan data dari rekap data",
+          variant: "default"
+        });
+      }
     } finally {
       setLoading(false);
     }

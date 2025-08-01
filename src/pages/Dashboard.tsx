@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -59,23 +59,21 @@ export default function Dashboard() {
     totalPatients 
   } = useDashboardData();
   
-  // Memoize data to prevent blinking
-  const [memoizedData, setMemoizedData] = useState({
-    complianceData: getComplianceByType(selectedDiagnosis, selectedMonth),
-    monthlyChartData: getMonthlyChartData(selectedDiagnosis),
-    componentChartData: getComponentComplianceData(selectedDiagnosis)
-  });
-  
-  // Update memoized data only when selectedDiagnosis or selectedMonth changes and not loading
-  useEffect(() => {
-    if (!loading) {
-      setMemoizedData({
-        complianceData: getComplianceByType(selectedDiagnosis, selectedMonth),
-        monthlyChartData: getMonthlyChartData(selectedDiagnosis),
-        componentChartData: getComponentComplianceData(selectedDiagnosis)
-      });
-    }
-  }, [selectedDiagnosis, selectedMonth, loading, getComplianceByType, getMonthlyChartData, getComponentComplianceData]);
+  // Memoize data to prevent blinking - use useMemo for better performance
+  const complianceData = React.useMemo(() => {
+    if (loading) return { pathwayCompliance: 0, losCompliance: 0, therapyCompliance: 0, supportCompliance: 0, totalPatients: 0, avgLOS: 0 };
+    return getComplianceByType(selectedDiagnosis, selectedMonth);
+  }, [selectedDiagnosis, selectedMonth, loading, getComplianceByType]);
+
+  const monthlyChartData = React.useMemo(() => {
+    if (loading) return [];
+    return getMonthlyChartData(selectedDiagnosis);
+  }, [selectedDiagnosis, loading, getMonthlyChartData]);
+
+  const componentChartData = React.useMemo(() => {
+    if (loading) return [];
+    return getComponentComplianceData(selectedDiagnosis);
+  }, [selectedDiagnosis, loading, getComponentComplianceData]);
   
   const getTargetInfo = (diagnosis: string) => {
     switch (diagnosis) {
@@ -96,7 +94,6 @@ export default function Dashboard() {
   };
 
   const targetInfo = getTargetInfo(selectedDiagnosis);
-  const { complianceData, monthlyChartData, componentChartData } = memoizedData;
 
   return (
     <div className="space-y-6">
