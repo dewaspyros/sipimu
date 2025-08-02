@@ -12,6 +12,7 @@ export default function ClinicalPathway() {
   const navigate = useNavigate();
   const { pathways, loading, deletePathway } = useClinicalPathways();
   const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedPathway, setSelectedPathway] = useState<string>("");
 
   return (
     <div className="space-y-6">
@@ -38,8 +39,8 @@ export default function ClinicalPathway() {
               <CardDescription>
                 Daftar semua data Clinical Pathways yang telah diinput
               </CardDescription>
-              <div className="flex items-center gap-4 mt-4">
-                <div className="w-48">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mt-4">
+                <div className="w-full md:w-48">
                   <label className="text-sm font-medium mb-2 block">Filter Bulan:</label>
                   <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                     <SelectTrigger>
@@ -59,6 +60,22 @@ export default function ClinicalPathway() {
                       <SelectItem value="10">Oktober</SelectItem>
                       <SelectItem value="11">November</SelectItem>
                       <SelectItem value="12">Desember</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-full md:w-64">
+                  <label className="text-sm font-medium mb-2 block">Filter Jenis Clinical Pathway:</label>
+                  <Select value={selectedPathway} onValueChange={setSelectedPathway}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih jenis" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Semua Clinical Pathway</SelectItem>
+                      <SelectItem value="Sectio Caesaria">Sectio Caesaria</SelectItem>
+                      <SelectItem value="Pneumonia">Pneumonia</SelectItem>
+                      <SelectItem value="Stroke Non Hemoragik">Stroke Non Hemoragik</SelectItem>
+                      <SelectItem value="Stroke Hemoragik">Stroke Hemoragik</SelectItem>
+                      <SelectItem value="Dengue Fever">Dengue Fever</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -94,9 +111,16 @@ export default function ClinicalPathway() {
                     ) : (
                       pathways
                         .filter(item => {
-                          if (!selectedMonth || selectedMonth === "all") return true;
-                          const admissionMonth = new Date(item.tanggal_masuk).getMonth() + 1;
-                          return admissionMonth.toString() === selectedMonth;
+                          // Filter by month
+                          if (selectedMonth && selectedMonth !== "all") {
+                            const admissionMonth = new Date(item.tanggal_masuk).getMonth() + 1;
+                            if (admissionMonth.toString() !== selectedMonth) return false;
+                          }
+                          // Filter by clinical pathway type
+                          if (selectedPathway && selectedPathway !== "all") {
+                            if (item.jenis_clinical_pathway !== selectedPathway) return false;
+                          }
+                          return true;
                         })
                         .map((item) => (
                           <tr key={item.id} className="border-b hover:bg-muted/50 medical-transition">

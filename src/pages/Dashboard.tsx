@@ -104,132 +104,36 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Month Filter */}
+      {/* Welcome Section */}
       <Card className="medical-card">
         <CardHeader>
-          <CardTitle>Filter Data</CardTitle>
+          <CardTitle>Selamat Datang di Dashboard</CardTitle>
           <CardDescription>
-            Pilih bulan untuk melihat statistik spesifik
+            Monitoring sistem Clinical Pathways RS PKU Muhammadiyah Wonosobo
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="w-full md:w-64">
-            <label className="text-sm font-medium mb-2 block">Pilih Bulan:</label>
-            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih bulan" />
-              </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Januari</SelectItem>
-                <SelectItem value="2">Februari</SelectItem>
-                <SelectItem value="3">Maret</SelectItem>
-                <SelectItem value="4">April</SelectItem>
-                <SelectItem value="5">Mei</SelectItem>
-                <SelectItem value="6">Juni</SelectItem>
-                <SelectItem value="7">Juli</SelectItem>
-                <SelectItem value="8">Agustus</SelectItem>
-                <SelectItem value="9">September</SelectItem>
-                <SelectItem value="10">Oktober</SelectItem>
-                <SelectItem value="11">November</SelectItem>
-                <SelectItem value="12">Desember</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="text-center p-6 rounded-lg bg-primary/5 border border-primary/20">
+              <Users className="h-12 w-12 mx-auto mb-4 text-primary" />
+              <div className="text-2xl font-bold">
+                {loading ? "..." : (totalPatients?.total_patients || 0).toLocaleString()}
+              </div>
+              <div className="text-sm text-muted-foreground">Total Pasien Terdaftar</div>
+            </div>
+            <div className="text-center p-6 rounded-lg bg-success/5 border border-success/20">
+              <Activity className="h-12 w-12 mx-auto mb-4 text-success" />
+              <div className="text-2xl font-bold text-success">Aktif</div>
+              <div className="text-sm text-muted-foreground">Sistem Monitoring</div>
+            </div>
+            <div className="text-center p-6 rounded-lg bg-primary/5 border border-primary/20">
+              <FileCheck className="h-12 w-12 mx-auto mb-4 text-primary" />
+              <div className="text-2xl font-bold">5</div>
+              <div className="text-sm text-muted-foreground">Jenis Clinical Pathway</div>
+            </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-        <Card className="medical-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Kepatuhan LOS</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? "..." : `${complianceData.losCompliance.toFixed(1)}%`}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Target: {targetInfo.target}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="medical-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Kepatuhan CP</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? "..." : `${complianceData.pathwayCompliance.toFixed(1)}%`}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Target: {targetInfo.compliance}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="medical-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Kepatuhan Terapi</CardTitle>
-            <FileCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? "..." : `${complianceData.therapyCompliance.toFixed(1)}%`}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Target: {"> 75%"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="medical-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Kepatuhan Penunjang</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? "..." : `${complianceData.supportCompliance.toFixed(1)}%`}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Target: {"> 75%"}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="medical-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rata-rata LOS</CardTitle>
-            <FileCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? "..." : `${complianceData.avgLOS.toFixed(1)} hari`}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Target: {targetInfo.target}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card className="medical-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Pasien</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? "..." : (complianceData.totalPatients || totalPatients?.total_patients || 0).toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Total pasien terdaftar
-            </p>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Grafik Kepatuhan LOS, CP dan Avg LOS */}
       <Card className="medical-card">

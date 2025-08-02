@@ -277,18 +277,13 @@ export const useRekapData = () => {
   // Function to save compliance updates (for checkbox changes) - now with persistent storage
   const updateComplianceData = async (patientId: string, field: string, value: boolean) => {
     try {
-      // Update local state immediately for better UX
-      setData(prev => prev.map(item => 
-        item.id === patientId 
-          ? { ...item, [field]: value }
-          : item
-      ));
-
-      // Save to database for persistent storage
+      // Get current patient data before updating
       const currentPatient = data.find(item => item.id === patientId);
-      if (!currentPatient) return;
+      if (!currentPatient) {
+        throw new Error("Patient not found");
+      }
 
-      // Prepare the override data
+      // Prepare the override data with updated field
       const overrideData = {
         patient_id: patientId,
         los_hari: currentPatient.los,
@@ -307,9 +302,16 @@ export const useRekapData = () => {
 
       if (error) throw error;
 
+      // Update local state after successful database update
+      setData(prev => prev.map(item => 
+        item.id === patientId 
+          ? { ...item, [field]: value }
+          : item
+      ));
+
       toast({
         title: "Berhasil",
-        description: "Data kepatuhan berhasil disimpan permanen",
+        description: "Data kepatuhan berhasil disimpan",
       });
     } catch (error) {
       console.error('Error updating compliance data:', error);
@@ -318,13 +320,7 @@ export const useRekapData = () => {
         description: "Gagal memperbarui data kepatuhan",
         variant: "destructive",
       });
-      
-      // Rollback local state on error
-      setData(prev => prev.map(item => 
-        item.id === patientId 
-          ? { ...item, [field]: !value }
-          : item
-      ));
+      throw error; // Re-throw to handle in calling function
     }
   };
 

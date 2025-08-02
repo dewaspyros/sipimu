@@ -137,14 +137,20 @@ export default function RekapData() {
   };
 
   const updateCheckbox = async (index: number, field: string, value: boolean) => {
-    const updatedData = [...filteredData];
-    updatedData[index] = { ...updatedData[index], [field]: value };
-    setFilteredData(updatedData);
-    
-    // Update the compliance data
     const patient = filteredData[index];
     if (patient) {
-      await updateComplianceData(patient.id, field, value);
+      try {
+        // Update compliance data in database first
+        await updateComplianceData(patient.id, field, value);
+        
+        // Update local filteredData state after successful database update
+        const updatedData = [...filteredData];
+        updatedData[index] = { ...updatedData[index], [field]: value };
+        setFilteredData(updatedData);
+      } catch (error) {
+        // Error already handled in updateComplianceData, just log
+        console.error('Failed to update checkbox:', error);
+      }
     }
   };
 
