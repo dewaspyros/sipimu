@@ -190,16 +190,8 @@ export const useRekapData = () => {
   const filterDataByPathway = (pathway: string): RekapDataItem[] => {
     if (pathway === "all") return data;
     
-    const pathwayMap: {[key: string]: string} = {
-      "sectio-caesaria": "Sectio Caesaria",
-      "stroke-hemoragik": "Stroke Hemoragik", 
-      "stroke-non-hemoragik": "Stroke Non Hemoragik",
-      "pneumonia": "Pneumonia",
-      "dengue-fever": "Dengue Fever"
-    };
-    
-    const targetPathway = pathwayMap[pathway] || pathway;
-    return data.filter(item => item.diagnosis === targetPathway);
+    // Direct mapping since we now use the actual database values as select values
+    return data.filter(item => item.diagnosis === pathway);
   };
 
   const getTargetLOS = (diagnosis: string): number => {

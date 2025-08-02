@@ -27,11 +27,11 @@ const monthOptions = [
 
 const pathwayOptions = [
   { value: "all", label: "Semua Clinical Pathway" },
-  { value: "sectio-caesaria", label: "Sectio Caesaria" },
-  { value: "stroke-hemoragik", label: "Stroke Hemoragik" },
-  { value: "stroke-non-hemoragik", label: "Stroke Non Hemoragik" },
-  { value: "pneumonia", label: "Pneumonia" },
-  { value: "dengue-fever", label: "Dengue Fever" }
+  { value: "Sectio Caesaria", label: "Sectio Caesaria" },
+  { value: "Stroke Hemoragik", label: "Stroke Hemoragik" },
+  { value: "Stroke Non Hemoragik", label: "Stroke Non Hemoragik" },
+  { value: "Pneumonia", label: "Pneumonia" },
+  { value: "Dengue Fever", label: "Dengue Fever" }
 ];
 
 export default function RekapData() {
@@ -81,8 +81,14 @@ export default function RekapData() {
     const totalLOS = filteredData.reduce((acc, item) => acc + (item.los || 0), 0);
     const avgLOS = totalPatients > 0 ? totalLOS / totalPatients : 0;
 
-    // Calculate average CP compliance - this should be the average of kepatuhanCP column
-    const avgKepatuhanCP = totalPatients > 0 ? (kepatuhanCP / totalPatients) * 100 : 0;
+    // Calculate average CP compliance percentage - average of individual patient CP percentages
+    const cpPercentages = filteredData.map(item => {
+      const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
+      const checkedItems = complianceItems.filter(Boolean).length;
+      const totalItems = complianceItems.length;
+      return totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
+    });
+    const avgKepatuhanCP = totalPatients > 0 ? cpPercentages.reduce((sum, percentage) => sum + percentage, 0) / totalPatients : 0;
 
     return {
       totalPatients,
@@ -199,7 +205,7 @@ export default function RekapData() {
                   <SelectValue placeholder="Pilih jenis" />
                 </SelectTrigger>
                 <SelectContent>
-                   {pathwayOptions.filter(option => option.value !== "all").map((option) => (
+                   {pathwayOptions.map((option) => (
                      <SelectItem key={option.value} value={option.value}>
                        {option.label}
                      </SelectItem>
@@ -367,26 +373,16 @@ export default function RekapData() {
                             </Badge>
                           )}
                         </td>
-                         <td className="p-3">
-                           {(() => {
-                             // Calculate automatic percentage based on checked compliance items including sesuaiTarget
-                             const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
-                             const checkedItems = complianceItems.filter(Boolean).length;
-                             const totalItems = complianceItems.length;
-                             const percentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
-                            
-                            return (
-                              <Badge 
-                                variant="outline"
-                                className={percentage >= 75
-                                  ? "bg-success/10 text-success border-success/20 font-bold"
-                                  : "bg-warning/10 text-warning border-warning/20 font-bold"
-                                }
-                              >
-                                {percentage}%
-                              </Badge>
-                            );
-                          })()}
+                          <td className="p-3">
+                           <Badge 
+                             variant="outline"
+                             className={item.kepatuhanCP
+                               ? "bg-success/10 text-success border-success/20 font-bold"
+                               : "bg-warning/10 text-warning border-warning/20 font-bold"
+                             }
+                           >
+                             {item.kepatuhanCP ? "✓ Patuh" : "✗ Tidak Patuh"}
+                           </Badge>
                         </td>
                          <td className="p-3">
                            <div className="flex gap-2">
@@ -446,11 +442,11 @@ export default function RekapData() {
                           {summary.persentaseKepatuhanTerapi}%
                         </Badge>
                       </td>
-                      <td className="p-3 text-center">
+                       <td className="p-3 text-center">
                          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
-                           {summary.persentaseKepatuhanCP}%
+                           {summary.avgKepatuhanCP}%
                          </Badge>
-                      </td>
+                       </td>
                       <td className="p-3 text-center">
                         <span className="text-sm text-muted-foreground">-</span>
                       </td>

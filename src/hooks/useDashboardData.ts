@@ -166,7 +166,7 @@ export const useDashboardData = () => {
       };
     }
     
-    // Filter data by pathway type
+    // Filter data by pathway type - fix pathway filtering logic
     const pathwayMap: {[key: string]: string} = {
       "Sectio Caesaria": "Sectio Caesaria",
       "Stroke Hemoragik": "Stroke Hemoragik", 
