@@ -78,7 +78,7 @@ export const useRekapData = () => {
           
           // Use override data if available, otherwise calculate
           const override = pathway.compliance_overrides?.[0];
-          let isSesuaiTarget, kepatuhanCP, los;
+          let isSesuaiTarget, kepatuhanCP, kepatuhanPenunjang, kepatuhanTerapi, los;
           
           if (override) {
             // Use manually set compliance data
