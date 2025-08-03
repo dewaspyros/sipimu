@@ -277,20 +277,25 @@ export const useRekapData = () => {
   // Function to save compliance updates (for checkbox changes) - now with persistent storage
   const updateComplianceData = async (patientId: string, field: string, value: boolean) => {
     try {
-      // Get current patient data before updating
+      // Get current patient data before updating - from the current state
       const currentPatient = data.find(item => item.id === patientId);
       if (!currentPatient) {
         throw new Error("Patient not found");
       }
 
-      // Prepare the override data with updated field
-      const overrideData = {
-        patient_id: patientId,
-        los_hari: currentPatient.los,
+      // Calculate the updated field values
+      const updatedFields = {
         sesuai_target: field === 'sesuaiTarget' ? value : currentPatient.sesuaiTarget,
         kepatuhan_cp: field === 'kepatuhanCP' ? value : currentPatient.kepatuhanCP,
         kepatuhan_penunjang: field === 'kepatuhanPenunjang' ? value : currentPatient.kepatuhanPenunjang,
         kepatuhan_terapi: field === 'kepatuhanTerapi' ? value : currentPatient.kepatuhanTerapi
+      };
+
+      // Prepare the override data with updated field
+      const overrideData = {
+        patient_id: patientId,
+        los_hari: currentPatient.los,
+        ...updatedFields
       };
 
       // Use upsert to insert or update the override
@@ -302,16 +307,19 @@ export const useRekapData = () => {
 
       if (error) throw error;
 
-      // Update local state after successful database update
+      // CRITICAL: Update local state immediately after successful database update
+      // This ensures the UI reflects the change and persists when filtering/changing views
       setData(prev => prev.map(item => 
         item.id === patientId 
           ? { ...item, [field]: value }
           : item
       ));
 
+      console.log(`Successfully updated ${field} to ${value} for patient ${patientId}`);
+
       toast({
         title: "Berhasil",
-        description: "Data kepatuhan berhasil disimpan",
+        description: "Data kepatuhan berhasil disimpan dan akan tetap tersimpan",
       });
     } catch (error) {
       console.error('Error updating compliance data:', error);

@@ -143,10 +143,15 @@ export default function RekapData() {
         // Update compliance data in database first
         await updateComplianceData(patient.id, field, value);
         
-        // Update local filteredData state after successful database update
-        const updatedData = [...filteredData];
-        updatedData[index] = { ...updatedData[index], [field]: value };
-        setFilteredData(updatedData);
+        // CRITICAL: Update filteredData immediately after successful database update
+        // This ensures the change is visible immediately and persists when switching months
+        setFilteredData(prev => {
+          const updatedData = [...prev];
+          updatedData[index] = { ...updatedData[index], [field]: value };
+          return updatedData;
+        });
+        
+        console.log(`Updated ${field} to ${value} for patient ${patient.namaPasien}`);
       } catch (error) {
         // Error already handled in updateComplianceData, just log
         console.error('Failed to update checkbox:', error);
@@ -380,15 +385,25 @@ export default function RekapData() {
                           )}
                         </td>
                           <td className="p-3">
-                           <Badge 
-                             variant="outline"
-                             className={item.kepatuhanCP
-                               ? "bg-success/10 text-success border-success/20 font-bold"
-                               : "bg-warning/10 text-warning border-warning/20 font-bold"
-                             }
-                           >
-                             {item.kepatuhanCP ? "✓ Patuh" : "✗ Tidak Patuh"}
-                           </Badge>
+                           {(() => {
+                             // Calculate individual patient CP compliance percentage
+                             const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
+                             const checkedItems = complianceItems.filter(Boolean).length;
+                             const totalItems = complianceItems.length;
+                             const percentage = totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
+                             
+                             return (
+                               <Badge 
+                                 variant="outline"
+                                 className={percentage >= 75
+                                   ? "bg-success/10 text-success border-success/20 font-bold"
+                                   : "bg-warning/10 text-warning border-warning/20 font-bold"
+                                 }
+                               >
+                                 {percentage.toFixed(0)}%
+                               </Badge>
+                             );
+                           })()}
                         </td>
                          <td className="p-3">
                            <div className="flex gap-2">

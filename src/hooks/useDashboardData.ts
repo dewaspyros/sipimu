@@ -151,13 +151,22 @@ export const useDashboardData = () => {
       }
       
       const sesuaiTarget = filteredByMonth.filter(item => item.sesuaiTarget).length;
-      const kepatuhanCP = filteredByMonth.filter(item => item.kepatuhanCP).length;
       const kepatuhanTerapi = filteredByMonth.filter(item => item.kepatuhanTerapi).length;
       const kepatuhanPenunjang = filteredByMonth.filter(item => item.kepatuhanPenunjang).length;
+      
+      // Calculate CP compliance as average of individual patient compliance percentages
+      const cpPercentages = filteredByMonth.map(item => {
+        const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
+        const checkedItems = complianceItems.filter(Boolean).length;
+        const totalItems = complianceItems.length;
+        return totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
+      });
+      const avgKepatuhanCP = cpPercentages.reduce((sum, percentage) => sum + percentage, 0) / totalPatients;
+      
       const totalLOS = filteredByMonth.reduce((acc, item) => acc + (item.los || 0), 0);
       
       return {
-        pathwayCompliance: (kepatuhanCP / totalPatients) * 100,
+        pathwayCompliance: avgKepatuhanCP,
         losCompliance: (sesuaiTarget / totalPatients) * 100,
         therapyCompliance: (kepatuhanTerapi / totalPatients) * 100,
         supportCompliance: (kepatuhanPenunjang / totalPatients) * 100,
@@ -197,13 +206,22 @@ export const useDashboardData = () => {
     }
     
     const sesuaiTarget = filteredData.filter(item => item.sesuaiTarget).length;
-    const kepatuhanCP = filteredData.filter(item => item.kepatuhanCP).length;
     const kepatuhanTerapi = filteredData.filter(item => item.kepatuhanTerapi).length;
     const kepatuhanPenunjang = filteredData.filter(item => item.kepatuhanPenunjang).length;
+    
+    // Calculate CP compliance as average of individual patient compliance percentages
+    const cpPercentages = filteredData.map(item => {
+      const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
+      const checkedItems = complianceItems.filter(Boolean).length;
+      const totalItems = complianceItems.length;
+      return totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
+    });
+    const avgKepatuhanCP = cpPercentages.reduce((sum, percentage) => sum + percentage, 0) / totalPatients;
+    
     const totalLOS = filteredData.reduce((acc, item) => acc + (item.los || 0), 0);
     
     return {
-      pathwayCompliance: (kepatuhanCP / totalPatients) * 100,
+      pathwayCompliance: avgKepatuhanCP,
       losCompliance: (sesuaiTarget / totalPatients) * 100,
       therapyCompliance: (kepatuhanTerapi / totalPatients) * 100,
       supportCompliance: (kepatuhanPenunjang / totalPatients) * 100,
@@ -272,13 +290,22 @@ export const useDashboardData = () => {
         }
         
         const sesuaiTarget = data.filter((item: any) => item.sesuaiTarget).length;
-        const kepatuhanCP = data.filter((item: any) => item.kepatuhanCP).length;
+        
+        // Calculate CP compliance as average of individual patient compliance percentages
+        const cpPercentages = data.map((item: any) => {
+          const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
+          const checkedItems = complianceItems.filter(Boolean).length;
+          const totalItems = complianceItems.length;
+          return totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
+        });
+        const avgKepatuhanCP = cpPercentages.reduce((sum: number, percentage: number) => sum + percentage, 0) / totalPatients;
+        
         const totalLOS = data.reduce((acc: number, item: any) => acc + (item.los || 0), 0);
         
         return {
           month: monthData.month,
           losCompliance: Math.round((sesuaiTarget / totalPatients) * 100),
-          cpCompliance: Math.round((kepatuhanCP / totalPatients) * 100),
+          cpCompliance: Math.round(avgKepatuhanCP),
           avgLos: parseFloat((totalLOS / totalPatients).toFixed(1))
         };
       });
