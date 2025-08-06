@@ -43,20 +43,8 @@ export const useAuth = () => {
 
   const signIn = async (nik: string, password: string) => {
     try {
-      // First, find the user profile by NIK to get their email
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('nik', nik)
-        .single();
-
-      if (!profile) {
-        return { error: new Error('NIK tidak ditemukan') };
-      }
-
-      // For now, we'll use NIK as both email and password identifier
-      // In a real implementation, you'd have a proper email/password system
-      const email = `${nik}`; // Temporary email format
+      // Use consistent email format with signUp
+      const email = `${nik}@hospital.local`;
       
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -64,6 +52,10 @@ export const useAuth = () => {
       });
 
       if (error) {
+        // Check if it's an invalid credentials error
+        if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
+          return { error: new Error('NIK atau password salah') };
+        }
         return { error: new Error('NIK atau password salah') };
       }
 
@@ -75,7 +67,7 @@ export const useAuth = () => {
 
   const signUp = async (nik: string, password: string, fullName: string) => {
     try {
-      const email = `${nik}`; // Temporary email format
+      const email = `${nik}@hospital.local`; // Consistent email format
       const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
@@ -91,10 +83,13 @@ export const useAuth = () => {
       });
 
       if (error) {
-        if (error.message.includes('already registered')) {
+        if (error.message.includes('already registered') || error.message.includes('User already registered')) {
           return { error: new Error('NIK sudah terdaftar') };
         }
-        return { error };
+        if (error.message.includes('Password should be at least')) {
+          return { error: new Error('Password minimal 6 karakter') };
+        }
+        return { error: new Error('Gagal mendaftar akun') };
       }
 
       return { error: null };
