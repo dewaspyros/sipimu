@@ -293,97 +293,82 @@ const ClinicalPathwayChecklist = () => {
         setIsLoading(true);
         setError(null);
         
-        console.log('Loading data... pathwayId:', pathwayId, 'pathwaysLoading:', pathwaysLoading);
-        
-        // Wait for pathways to load if we need them
-        if (pathwayId && pathwaysLoading) {
-          console.log('Waiting for pathways to load...');
-          return;
-        }
-        
         // Check if coming from form (session storage)
         const storedData = sessionStorage.getItem('clinicalPathwayFormData');
         if (storedData && !pathwayId) {
-          console.log('Loading from session storage');
           setPatientData(JSON.parse(storedData));
           setIsLoading(false);
           return;
         }
         
-        // Load from URL parameters (from Clinical Pathway list)
-        if (pathwayId) {
-          console.log('Loading pathway with ID:', pathwayId, 'Available pathways:', pathways.length);
-          
-          const pathway = pathways.find(p => p.id === pathwayId);
-          if (pathway) {
-            console.log('Found pathway:', pathway.nama_pasien, pathway.jenis_clinical_pathway);
-            
-            const patientInfo = {
-              clinicalPathway: pathway.jenis_clinical_pathway,
-              verifikator: pathway.verifikator_pelaksana || '',
-              dpjp: pathway.dpjp || '',
-              noRM: pathway.no_rm,
-              patientNameAge: pathway.nama_pasien,
-              admissionDate: pathway.tanggal_masuk,
-              admissionTime: pathway.jam_masuk,
-              dischargeDate: pathway.tanggal_keluar || undefined,
-              dischargeTime: pathway.jam_keluar || undefined,
-              lengthOfStay: pathway.los_hari?.toString() || undefined,
-              pathwayId: pathway.id
-            };
-            
-            setPatientData(patientInfo);
-            
-            // Load existing checklist data
-            try {
-              console.log('Loading existing checklist for pathway:', pathwayId);
-              const existingChecklist = await getChecklistByPathwayId(pathwayId);
-              if (existingChecklist && existingChecklist.length > 0) {
-                console.log('Found existing checklist with', existingChecklist.length, 'items');
-                const checklistMap: ChecklistData = {};
-                const variantMap: VariantData = {};
-                
-                existingChecklist.forEach((item, index) => {
-                  checklistMap[index.toString()] = {
-                    'Hari ke-1': item.checklist_hari_1 || false,
-                    'Hari ke-2': item.checklist_hari_2 || false,
-                    'Hari ke-3': item.checklist_hari_3 || false,
-                    'Hari ke-4': item.checklist_hari_4 || false,
-                    'Hari ke-5': item.checklist_hari_5 || false,
-                    'Hari ke-6': item.checklist_hari_6 || false,
-                  };
-                  // Note: variant data would need to be stored separately in the database
-                });
-                
-                setChecklistData(checklistMap);
-                setVariantData(variantMap);
-              } else {
-                console.log('No existing checklist found');
-              }
-            } catch (error) {
-              console.error('Error loading checklist:', error);
-              toast({
-                title: "Warning",
-                description: "Gagal memuat data checklist yang ada, dimulai dengan checklist kosong",
-                variant: "destructive"
-              });
-            }
-          } else {
-            console.error('Pathway not found for ID:', pathwayId, 'Available IDs:', pathways.map(p => p.id));
-            setError(`Pathway dengan ID ${pathwayId} tidak ditemukan`);
-            toast({
-              title: "Error",
-              description: "Data clinical pathway tidak ditemukan",
-              variant: "destructive"
-            });
-            // Don't navigate immediately, show error state first
-            setTimeout(() => navigate('/clinical-pathway'), 2000);
-            return;
-          }
-        } else {
-          console.log('No pathwayId found, redirecting to clinical pathway list');
+        // If no pathwayId, redirect
+        if (!pathwayId) {
           navigate('/clinical-pathway');
           return;
+        }
+        
+        // Wait for pathways to load if needed
+        if (pathwaysLoading) {
+          return;
+        }
+        
+        // Find pathway data
+        const pathway = pathways.find(p => p.id === pathwayId);
+        if (!pathway) {
+          setError(`Pathway dengan ID ${pathwayId} tidak ditemukan`);
+          toast({
+            title: "Error",
+            description: "Data clinical pathway tidak ditemukan",
+            variant: "destructive"
+          });
+          setTimeout(() => navigate('/clinical-pathway'), 2000);
+          return;
+        }
+        
+        const patientInfo = {
+          clinicalPathway: pathway.jenis_clinical_pathway,
+          verifikator: pathway.verifikator_pelaksana || '',
+          dpjp: pathway.dpjp || '',
+          noRM: pathway.no_rm,
+          patientNameAge: pathway.nama_pasien,
+          admissionDate: pathway.tanggal_masuk,
+          admissionTime: pathway.jam_masuk,
+          dischargeDate: pathway.tanggal_keluar || undefined,
+          dischargeTime: pathway.jam_keluar || undefined,
+          lengthOfStay: pathway.los_hari?.toString() || undefined,
+          pathwayId: pathway.id
+        };
+        
+        setPatientData(patientInfo);
+        
+        // Load existing checklist data in parallel
+        try {
+          const existingChecklist = await getChecklistByPathwayId(pathwayId);
+          if (existingChecklist && existingChecklist.length > 0) {
+            const checklistMap: ChecklistData = {};
+            const variantMap: VariantData = {};
+            
+            existingChecklist.forEach((item, index) => {
+              checklistMap[index.toString()] = {
+                'Hari ke-1': item.checklist_hari_1 || false,
+                'Hari ke-2': item.checklist_hari_2 || false,
+                'Hari ke-3': item.checklist_hari_3 || false,
+                'Hari ke-4': item.checklist_hari_4 || false,
+                'Hari ke-5': item.checklist_hari_5 || false,
+                'Hari ke-6': item.checklist_hari_6 || false,
+              };
+            });
+            
+            setChecklistData(checklistMap);
+            setVariantData(variantMap);
+          }
+        } catch (error) {
+          console.error('Error loading checklist:', error);
+          toast({
+            title: "Warning",
+            description: "Gagal memuat data checklist yang ada, dimulai dengan checklist kosong",
+            variant: "destructive"
+          });
         }
       } catch (error) {
         console.error('Error in loadData:', error);
@@ -399,10 +384,10 @@ const ClinicalPathwayChecklist = () => {
     };
     
     loadData();
-  }, [navigate, pathwayId, pathways, pathwaysLoading, getChecklistByPathwayId, toast]);
+  }, [pathwayId, pathwaysLoading, pathways.length]); // Simplified dependencies
 
-  // Loading state
-  if (isLoading || pathwaysLoading) {
+  // Single loading state check
+  if (isLoading || (pathwayId && pathwaysLoading)) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-7xl mx-auto">
