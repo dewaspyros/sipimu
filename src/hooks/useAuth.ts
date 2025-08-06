@@ -56,7 +56,7 @@ export const useAuth = () => {
 
       // For now, we'll use NIK as both email and password identifier
       // In a real implementation, you'd have a proper email/password system
-      const email = `${nik}@hospital.local`; // Temporary email format
+      const email = `${nik}`; // Temporary email format
       
       const { error } = await supabase.auth.signInWithPassword({
         email,
