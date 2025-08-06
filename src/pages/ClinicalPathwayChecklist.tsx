@@ -381,8 +381,8 @@ const ClinicalPathwayChecklist = () => {
             return;
           }
         } else {
-          console.log('No pathwayId found, redirecting to form');
-          navigate('/clinical-pathway-form');
+          console.log('No pathwayId found, redirecting to clinical pathway list');
+          navigate('/clinical-pathway');
           return;
         }
       } catch (error) {
