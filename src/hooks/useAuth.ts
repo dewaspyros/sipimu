@@ -75,7 +75,7 @@ export const useAuth = () => {
 
   const signUp = async (nik: string, password: string, fullName: string) => {
     try {
-      const email = `${nik}@hospital.local`; // Temporary email format
+      const email = `${nik}`; // Temporary email format
       const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
