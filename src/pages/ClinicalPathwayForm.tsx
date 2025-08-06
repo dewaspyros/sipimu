@@ -170,6 +170,11 @@ const ClinicalPathwayForm = () => {
           pathwayId: pathway.id
         }));
         
+        toast({
+          title: "Berhasil",
+          description: "Data pasien berhasil disimpan",
+        });
+        
         navigate('/clinical-pathway-checklist');
       }
     } catch (error) {
@@ -213,10 +218,9 @@ const ClinicalPathwayForm = () => {
                   <FormField
                     control={form.control}
                     name="clinicalPathway"
-                    rules={{ required: "Clinical Pathway harus dipilih" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Clinical Pathway *</FormLabel>
+                        <FormLabel>Clinical Pathway</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -239,10 +243,9 @@ const ClinicalPathwayForm = () => {
                   <FormField
                     control={form.control}
                     name="verifikator"
-                    rules={{ required: "Verifikator Pelaksana harus dipilih" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Verifikator Pelaksana *</FormLabel>
+                        <FormLabel>Verifikator Pelaksana</FormLabel>
                         <Select onValueChange={(value) => {
                           if (value === "custom") {
                             field.onChange(customVerifikator);
@@ -283,10 +286,9 @@ const ClinicalPathwayForm = () => {
                   <FormField
                     control={form.control}
                     name="dpjp"
-                    rules={{ required: "DPJP harus dipilih" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>DPJP *</FormLabel>
+                        <FormLabel>DPJP</FormLabel>
                         <Select onValueChange={(value) => {
                           if (value === "custom") {
                             field.onChange(customDPJP);
@@ -327,10 +329,9 @@ const ClinicalPathwayForm = () => {
                   <FormField
                     control={form.control}
                     name="noRM"
-                    rules={{ required: "No RM harus diisi" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>No RM *</FormLabel>
+                        <FormLabel>No RM</FormLabel>
                         <FormControl>
                           <Input placeholder="Masukkan No RM" {...field} />
                         </FormControl>
@@ -342,10 +343,9 @@ const ClinicalPathwayForm = () => {
                   <FormField
                     control={form.control}
                     name="patientNameAge"
-                    rules={{ required: "Nama Pasien/Umur harus diisi" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nama Pasien / Umur *</FormLabel>
+                        <FormLabel>Nama Pasien / Umur</FormLabel>
                         <FormControl>
                           <Input placeholder="Contoh: John Doe / 35 tahun" {...field} />
                         </FormControl>
@@ -357,10 +357,9 @@ const ClinicalPathwayForm = () => {
                   <FormField
                     control={form.control}
                     name="admissionDate"
-                    rules={{ required: "Tanggal Masuk RS harus diisi" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tanggal Masuk RS *</FormLabel>
+                        <FormLabel>Tanggal Masuk RS</FormLabel>
                         <FormControl>
                           <Input type="date" {...field} />
                         </FormControl>
@@ -372,10 +371,9 @@ const ClinicalPathwayForm = () => {
                   <FormField
                     control={form.control}
                     name="admissionTime"
-                    rules={{ required: "Jam Masuk RS harus diisi" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Jam Masuk RS *</FormLabel>
+                        <FormLabel>Jam Masuk RS</FormLabel>
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
