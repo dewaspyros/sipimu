@@ -16,6 +16,7 @@ import { Layout } from "./components/Layout";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { RoleProtectedRoute } from "./components/RoleProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -57,7 +58,9 @@ const AppContent = () => {
             } />
             <Route path="/rekap-data" element={
               <ProtectedRoute>
-                <Layout><RekapData /></Layout>
+                <RoleProtectedRoute allowedRoles={['admin']}>
+                  <Layout><RekapData /></Layout>
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/pengaturan" element={

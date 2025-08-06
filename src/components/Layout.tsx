@@ -15,7 +15,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { user, signOut } = useAuthContext();
+  const { user, userRole, signOut } = useAuthContext();
   
   return (
     <SidebarProvider>
@@ -51,9 +51,14 @@ export function Layout({ children }: LayoutProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {user && (
-                      <DropdownMenuItem disabled>
-                        {user.email?.split('@')[0] || 'User'}
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem disabled>
+                          {user.email?.split('@')[0] || 'User'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled>
+                          Role: {userRole === 'admin' ? 'Administrator' : 'User Biasa'}
+                        </DropdownMenuItem>
+                      </>
                     )}
                     <DropdownMenuItem onClick={signOut}>
                       <LogOut className="mr-2 h-4 w-4" />

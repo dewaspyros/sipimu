@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard,
   ClipboardPlus,
@@ -54,7 +55,17 @@ const menuItems = [
 
 export function AppSidebar() {
   const { state } = useSidebar();
+  const { userRole } = useAuth();
   const collapsed = state === "collapsed";
+
+  // Filter menu items based on user role
+  const filteredMenuItems = menuItems.filter(item => {
+    if (userRole === 'admin') {
+      return true; // Admin can see all menus
+    }
+    // Regular users cannot see Rekap Data
+    return item.url !== '/rekap-data';
+  });
   
   return (
     <Sidebar className="medical-transition" collapsible="icon">
@@ -79,7 +90,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Menu Utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {filteredMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
