@@ -173,7 +173,11 @@ All colors MUST be HSL for consistency.
   }
   
   .medical-gradient {
-    background: var(--gradient-primary);
+    background-image: url('/lovable-uploads/e86a41aa-ffb3-410a-a516-244f3946ec8a.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
   }
   
   .medical-shadow {
