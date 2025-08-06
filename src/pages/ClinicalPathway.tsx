@@ -165,17 +165,19 @@ export default function ClinicalPathway() {
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="default"
-                                  title="Lanjut ke Checklist"
-                                  onClick={() => {
-                                    console.log(`Navigating to checklist for patient: ${item.nama_pasien} (ID: ${item.id})`);
-                                    navigate(`/clinical-pathway-checklist?id=${item.id}`);
-                                  }}
-                                >
-                                  <FileText className="h-4 w-4" />
-                                </Button>
+                                {item.tanggal_keluar && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="default"
+                                    title="Lanjut ke Checklist"
+                                    onClick={() => {
+                                      console.log(`Navigating to checklist for patient: ${item.nama_pasien} (ID: ${item.id})`);
+                                      navigate(`/clinical-pathway-checklist?id=${item.id}`);
+                                    }}
+                                  >
+                                    <FileText className="h-4 w-4" />
+                                  </Button>
+                                )}
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button 

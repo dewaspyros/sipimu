@@ -5,8 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useChecklist, useClinicalPathways } from "@/hooks/useClinicalPathways";
 
@@ -267,261 +266,85 @@ const ClinicalPathwayChecklist = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const { saveChecklist, loading: checklistLoading, getChecklistByPathwayId } = useChecklist();
-  const { pathways, loading: pathwaysLoading } = useClinicalPathways();
+  const { pathways } = useClinicalPathways();
   const [patientData, setPatientData] = useState<PatientFormData | null>(null);
   const [checklistData, setChecklistData] = useState<ChecklistData>({});
   const [variantData, setVariantData] = useState<VariantData>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   
   const pathwayId = searchParams.get('id');
   const mode = searchParams.get('mode') || 'edit'; // 'view' or 'edit'
   const isReadOnly = mode === 'view';
 
-  console.log('ClinicalPathwayChecklist - Debug Info:', {
-    pathwayId,
-    mode,
-    isReadOnly,
-    pathwaysCount: pathways.length,
-    pathwaysLoading,
-    patientData: patientData?.noRM
-  });
-
   useEffect(() => {
     const loadData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        console.log('Loading data... pathwayId:', pathwayId, 'pathwaysLoading:', pathwaysLoading);
-        
-        // Wait for pathways to load if we need them
-        if (pathwayId && pathwaysLoading) {
-          console.log('Waiting for pathways to load...');
-          return;
-        }
-        
-        // Check if coming from form (session storage)
-        const storedData = sessionStorage.getItem('clinicalPathwayFormData');
-        if (storedData && !pathwayId) {
-          console.log('Loading from session storage');
-          setPatientData(JSON.parse(storedData));
-          setIsLoading(false);
-          return;
-        }
-        
-        // Load from URL parameters (from Clinical Pathway list)
-        if (pathwayId) {
-          console.log('Loading pathway with ID:', pathwayId, 'Available pathways:', pathways.length);
+      // Check if coming from form (session storage)
+      const storedData = sessionStorage.getItem('clinicalPathwayFormData');
+      if (storedData && !pathwayId) {
+        setPatientData(JSON.parse(storedData));
+        return;
+      }
+      
+      // Load from URL parameters (from Clinical Pathway list)
+      if (pathwayId) {
+        const pathway = pathways.find(p => p.id === pathwayId);
+        if (pathway) {
+          setPatientData({
+            clinicalPathway: pathway.jenis_clinical_pathway,
+            verifikator: pathway.verifikator_pelaksana || '',
+            dpjp: pathway.dpjp || '',
+            noRM: pathway.no_rm,
+            patientNameAge: pathway.nama_pasien,
+            admissionDate: pathway.tanggal_masuk,
+            admissionTime: pathway.jam_masuk,
+            dischargeDate: pathway.tanggal_keluar || undefined,
+            dischargeTime: pathway.jam_keluar || undefined,
+            lengthOfStay: pathway.los_hari?.toString() || undefined,
+            pathwayId: pathway.id
+          });
           
-          const pathway = pathways.find(p => p.id === pathwayId);
-          if (pathway) {
-            console.log('Found pathway:', pathway.nama_pasien, pathway.jenis_clinical_pathway);
-            
-            const patientInfo = {
-              clinicalPathway: pathway.jenis_clinical_pathway,
-              verifikator: pathway.verifikator_pelaksana || '',
-              dpjp: pathway.dpjp || '',
-              noRM: pathway.no_rm,
-              patientNameAge: pathway.nama_pasien,
-              admissionDate: pathway.tanggal_masuk,
-              admissionTime: pathway.jam_masuk,
-              dischargeDate: pathway.tanggal_keluar || undefined,
-              dischargeTime: pathway.jam_keluar || undefined,
-              lengthOfStay: pathway.los_hari?.toString() || undefined,
-              pathwayId: pathway.id
-            };
-            
-            setPatientData(patientInfo);
-            
-            // Load existing checklist data
-            try {
-              console.log('Loading existing checklist for pathway:', pathwayId);
-              const existingChecklist = await getChecklistByPathwayId(pathwayId);
-              if (existingChecklist && existingChecklist.length > 0) {
-                console.log('Found existing checklist with', existingChecklist.length, 'items');
-                const checklistMap: ChecklistData = {};
-                const variantMap: VariantData = {};
-                
-                existingChecklist.forEach((item, index) => {
-                  checklistMap[index.toString()] = {
-                    'Hari ke-1': item.checklist_hari_1 || false,
-                    'Hari ke-2': item.checklist_hari_2 || false,
-                    'Hari ke-3': item.checklist_hari_3 || false,
-                    'Hari ke-4': item.checklist_hari_4 || false,
-                    'Hari ke-5': item.checklist_hari_5 || false,
-                    'Hari ke-6': item.checklist_hari_6 || false,
-                  };
-                  // Note: variant data would need to be stored separately in the database
-                });
-                
-                setChecklistData(checklistMap);
-                setVariantData(variantMap);
-              } else {
-                console.log('No existing checklist found');
-              }
-            } catch (error) {
-              console.error('Error loading checklist:', error);
-              toast({
-                title: "Warning",
-                description: "Gagal memuat data checklist yang ada, dimulai dengan checklist kosong",
-                variant: "destructive"
+          // Load existing checklist data
+          try {
+            const existingChecklist = await getChecklistByPathwayId(pathwayId);
+            if (existingChecklist && existingChecklist.length > 0) {
+              const checklistMap: ChecklistData = {};
+              const variantMap: VariantData = {};
+              
+              existingChecklist.forEach((item, index) => {
+                checklistMap[index.toString()] = {
+                  'Hari ke-1': item.checklist_hari_1 || false,
+                  'Hari ke-2': item.checklist_hari_2 || false,
+                  'Hari ke-3': item.checklist_hari_3 || false,
+                  'Hari ke-4': item.checklist_hari_4 || false,
+                  'Hari ke-5': item.checklist_hari_5 || false,
+                  'Hari ke-6': item.checklist_hari_6 || false,
+                };
+                // Note: variant data would need to be stored separately in the database
               });
+              
+              setChecklistData(checklistMap);
+              setVariantData(variantMap);
             }
-          } else {
-            console.error('Pathway not found for ID:', pathwayId, 'Available IDs:', pathways.map(p => p.id));
-            setError(`Pathway dengan ID ${pathwayId} tidak ditemukan`);
-            toast({
-              title: "Error",
-              description: "Data clinical pathway tidak ditemukan",
-              variant: "destructive"
-            });
-            // Don't navigate immediately, show error state first
-            setTimeout(() => navigate('/clinical-pathway'), 2000);
-            return;
+          } catch (error) {
+            console.error('Error loading checklist:', error);
           }
         } else {
-          console.log('No pathwayId found, redirecting to clinical pathway list');
           navigate('/clinical-pathway');
-          return;
         }
-      } catch (error) {
-        console.error('Error in loadData:', error);
-        setError('Terjadi kesalahan saat memuat data');
-        toast({
-          title: "Error",
-          description: "Terjadi kesalahan saat memuat data",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
+      } else {
+        navigate('/clinical-pathway-form');
       }
     };
     
     loadData();
-  }, [navigate, pathwayId, pathways, pathwaysLoading, getChecklistByPathwayId, toast]);
+  }, [navigate, pathwayId, pathways, getChecklistByPathwayId]);
 
-  // Loading state
-  if (isLoading || pathwaysLoading) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
-            <Skeleton className="h-10 w-20" />
-            <Skeleton className="h-8 w-64" />
-          </div>
-          <Card className="mb-6">
-            <CardHeader>
-              <Skeleton className="h-6 w-40" />
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-4 w-full" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-48" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-64 w-full" />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/clinical-pathway')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Kembali
-            </Button>
-            <h1 className="text-2xl font-bold">Error</h1>
-          </div>
-          <Card>
-            <CardContent className="flex items-center gap-4 p-6">
-              <AlertCircle className="h-8 w-8 text-destructive" />
-              <div>
-                <h3 className="font-semibold text-lg">Terjadi Kesalahan</h3>
-                <p className="text-muted-foreground">{error}</p>
-                <Button 
-                  className="mt-4" 
-                  onClick={() => navigate('/clinical-pathway')}
-                >
-                  Kembali ke Daftar Clinical Pathway
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // Check if we have patient data
   if (!patientData) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <Card>
-            <CardContent className="flex items-center gap-4 p-6">
-              <AlertCircle className="h-8 w-8 text-destructive" />
-              <div>
-                <h3 className="font-semibold text-lg">Data Tidak Ditemukan</h3>
-                <p className="text-muted-foreground">Data pasien tidak dapat dimuat</p>
-                <Button 
-                  className="mt-4" 
-                  onClick={() => navigate('/clinical-pathway')}
-                >
-                  Kembali ke Daftar Clinical Pathway
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   const config = pathwayConfigs[patientData.clinicalPathway as keyof typeof pathwayConfigs];
   if (!config) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <Card>
-            <CardContent className="flex items-center gap-4 p-6">
-              <AlertCircle className="h-8 w-8 text-destructive" />
-              <div>
-                <h3 className="font-semibold text-lg">Clinical Pathway Tidak Ditemukan</h3>
-                <p className="text-muted-foreground">
-                  Konfigurasi untuk "{patientData.clinicalPathway}" tidak tersedia
-                </p>
-                <Button 
-                  className="mt-4" 
-                  onClick={() => navigate('/clinical-pathway')}
-                >
-                  Kembali ke Daftar Clinical Pathway
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    return <div>Clinical Pathway tidak ditemukan</div>;
   }
 
   const handleCheckboxChange = (itemIndex: string, day: string, checked: boolean) => {

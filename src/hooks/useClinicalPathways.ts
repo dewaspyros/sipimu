@@ -36,11 +36,6 @@ export const useClinicalPathways = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Auto-fetch on component mount
-  useEffect(() => {
-    fetchPathways();
-  }, []);
-
   const fetchPathways = async () => {
     try {
       setLoading(true);
@@ -145,6 +140,10 @@ export const useClinicalPathways = () => {
       throw error;
     }
   };
+
+  useEffect(() => {
+    fetchPathways();
+  }, []);
 
   return {
     pathways,
