@@ -55,12 +55,13 @@ export const useAuth = () => {
 
   const fetchUserRole = async (userId: string) => {
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('user_id', userId)
         .single();
       
+      console.log('Fetching role for user:', userId, 'Profile:', profile, 'Error:', error);
       setUserRole(profile?.role || 'user');
     } catch (error) {
       console.error('Error fetching user role:', error);

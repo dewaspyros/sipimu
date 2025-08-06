@@ -10,6 +10,8 @@ interface RoleProtectedRouteProps {
 export const RoleProtectedRoute = ({ children, allowedRoles }: RoleProtectedRouteProps) => {
   const { user, userRole, loading } = useAuth();
 
+  console.log('RoleProtectedRoute - User:', user?.id, 'UserRole:', userRole, 'AllowedRoles:', allowedRoles, 'Loading:', loading);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -19,12 +21,15 @@ export const RoleProtectedRoute = ({ children, allowedRoles }: RoleProtectedRout
   }
 
   if (!user) {
+    console.log('RoleProtectedRoute - No user, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
   if (!userRole || !allowedRoles.includes(userRole)) {
+    console.log('RoleProtectedRoute - Access denied. UserRole:', userRole, 'AllowedRoles:', allowedRoles);
     return <Navigate to="/dashboard" replace />;
   }
 
+  console.log('RoleProtectedRoute - Access granted');
   return <>{children}</>;
 };
