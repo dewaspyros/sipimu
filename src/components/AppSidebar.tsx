@@ -58,14 +58,21 @@ export function AppSidebar() {
   const { userRole } = useAuth();
   const collapsed = state === "collapsed";
 
+  console.log('AppSidebar - userRole:', userRole);
+
   // Filter menu items based on user role
   const filteredMenuItems = menuItems.filter(item => {
     if (userRole === 'admin') {
+      console.log('Admin user - showing all menus including:', item.title);
       return true; // Admin can see all menus
     }
     // Regular users cannot see Rekap Data
-    return item.url !== '/rekap-data';
+    const shouldShow = item.url !== '/rekap-data';
+    console.log('Regular user - item:', item.title, 'shouldShow:', shouldShow);
+    return shouldShow;
   });
+
+  console.log('Filtered menu items:', filteredMenuItems.map(item => item.title));
   
   return (
     <Sidebar className="medical-transition" collapsible="icon">
