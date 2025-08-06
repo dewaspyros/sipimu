@@ -21,23 +21,6 @@ export interface RekapDataItem {
   verifikatorPelaksana: string;
 }
 
-// Local storage for manual checklist data
-interface ManualComplianceData {
-  [patientId: string]: {
-    kepatuhanPenunjang: boolean;
-    kepatuhanTerapi: boolean;
-  };
-}
-
-const getManualComplianceData = (): ManualComplianceData => {
-  const stored = localStorage.getItem('manualComplianceData');
-  return stored ? JSON.parse(stored) : {};
-};
-
-const setManualComplianceData = (data: ManualComplianceData) => {
-  localStorage.setItem('manualComplianceData', JSON.stringify(data));
-};
-
 export const useRekapData = () => {
   const [data, setData] = useState<RekapDataItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -93,18 +76,16 @@ export const useRekapData = () => {
           // Get target LOS for the diagnosis
           const targetLOS = getTargetLOS(pathway.jenis_clinical_pathway);
           
-          // Get manual compliance data for Penunjang and Terapi
-          const manualData = getManualComplianceData();
-          const patientManualData = manualData[pathway.id] || { kepatuhanPenunjang: false, kepatuhanTerapi: false };
-          
           // Use override data if available, otherwise calculate
           const override = pathway.compliance_overrides?.[0];
-          let isSesuaiTarget, kepatuhanCP, los;
+          let isSesuaiTarget, kepatuhanCP, kepatuhanPenunjang, kepatuhanTerapi, los;
           
           if (override) {
-            // Use manually set compliance data for sesuaiTarget and kepatuhanCP only
+            // Use manually set compliance data
             isSesuaiTarget = override.sesuai_target;
             kepatuhanCP = override.kepatuhan_cp;
+            kepatuhanPenunjang = override.kepatuhan_penunjang;
+            kepatuhanTerapi = override.kepatuhan_terapi;
             los = override.los_hari || pathway.los_hari;
           } else {
             // Calculate compliance based on checklist data and LOS
@@ -112,6 +93,8 @@ export const useRekapData = () => {
             isSesuaiTarget = pathway.los_hari ? pathway.los_hari <= targetLOS : false;
             const compliance = calculateComplianceFromChecklist(pathway.clinical_pathway_checklist || []);
             kepatuhanCP = compliance.kepatuhanCP;
+            kepatuhanPenunjang = compliance.kepatuhanPenunjang;
+            kepatuhanTerapi = compliance.kepatuhanTerapi;
           }
           
           return {
@@ -127,8 +110,8 @@ export const useRekapData = () => {
             los: los,
             sesuaiTarget: isSesuaiTarget,
             kepatuhanCP: kepatuhanCP,
-            kepatuhanPenunjang: patientManualData.kepatuhanPenunjang,
-            kepatuhanTerapi: patientManualData.kepatuhanTerapi,
+            kepatuhanPenunjang: kepatuhanPenunjang,
+            kepatuhanTerapi: kepatuhanTerapi,
             dpjp: pathway.dpjp || '',
             verifikatorPelaksana: pathway.verifikator_pelaksana || '',
           };
@@ -291,47 +274,21 @@ export const useRekapData = () => {
     }
   };
 
-  // Function to save compliance updates (for checkbox changes) - now with manual storage for Penunjang/Terapi
+  // Function to save compliance updates (for checkbox changes) - now with persistent storage
   const updateComplianceData = async (patientId: string, field: string, value: boolean) => {
     try {
-      // Handle manual fields (Penunjang and Terapi) separately
-      if (field === 'kepatuhanPenunjang' || field === 'kepatuhanTerapi') {
-        // Store in localStorage for manual fields
-        const manualData = getManualComplianceData();
-        if (!manualData[patientId]) {
-          manualData[patientId] = { kepatuhanPenunjang: false, kepatuhanTerapi: false };
-        }
-        manualData[patientId][field as 'kepatuhanPenunjang' | 'kepatuhanTerapi'] = value;
-        setManualComplianceData(manualData);
-        
-        // Update local state immediately
-        setData(prev => prev.map(item => 
-          item.id === patientId 
-            ? { ...item, [field]: value }
-            : item
-        ));
-
-        console.log(`Successfully updated ${field} to ${value} for patient ${patientId} (manual storage)`);
-        
-        toast({
-          title: "Berhasil",
-          description: "Data kepatuhan berhasil disimpan (manual)",
-        });
-        return;
-      }
-
-      // Handle database fields (sesuaiTarget and kepatuhanCP)
+      // Get current patient data before updating - from the current state
       const currentPatient = data.find(item => item.id === patientId);
       if (!currentPatient) {
         throw new Error("Patient not found");
       }
 
-      // Calculate the updated field values (only for database fields)
+      // Calculate the updated field values
       const updatedFields = {
         sesuai_target: field === 'sesuaiTarget' ? value : currentPatient.sesuaiTarget,
         kepatuhan_cp: field === 'kepatuhanCP' ? value : currentPatient.kepatuhanCP,
-        kepatuhan_penunjang: currentPatient.kepatuhanPenunjang, // Keep current value
-        kepatuhan_terapi: currentPatient.kepatuhanTerapi // Keep current value
+        kepatuhan_penunjang: field === 'kepatuhanPenunjang' ? value : currentPatient.kepatuhanPenunjang,
+        kepatuhan_terapi: field === 'kepatuhanTerapi' ? value : currentPatient.kepatuhanTerapi
       };
 
       // Prepare the override data with updated field
@@ -350,7 +307,8 @@ export const useRekapData = () => {
 
       if (error) throw error;
 
-      // Update local state immediately after successful database update
+      // CRITICAL: Update local state immediately after successful database update
+      // This ensures the UI reflects the change and persists when filtering/changing views
       setData(prev => prev.map(item => 
         item.id === patientId 
           ? { ...item, [field]: value }
@@ -361,7 +319,7 @@ export const useRekapData = () => {
 
       toast({
         title: "Berhasil",
-        description: "Data kepatuhan berhasil disimpan",
+        description: "Data kepatuhan berhasil disimpan dan akan tetap tersimpan",
       });
     } catch (error) {
       console.error('Error updating compliance data:', error);
@@ -422,18 +380,16 @@ export const useRekapData = () => {
         // Get target LOS for the diagnosis
         const targetLOS = getTargetLOS(pathway.jenis_clinical_pathway);
         
-        // Get manual compliance data for Penunjang and Terapi
-        const manualData = getManualComplianceData();
-        const patientManualData = manualData[pathway.id] || { kepatuhanPenunjang: false, kepatuhanTerapi: false };
-        
         // Use override data if available, otherwise calculate
         const override = pathway.compliance_overrides?.[0];
-        let isSesuaiTarget, kepatuhanCP, los;
+        let isSesuaiTarget, kepatuhanCP, kepatuhanPenunjang, kepatuhanTerapi, los;
         
         if (override) {
-          // Use manually set compliance data for sesuaiTarget and kepatuhanCP only
+          // Use manually set compliance data
           isSesuaiTarget = override.sesuai_target;
           kepatuhanCP = override.kepatuhan_cp;
+          kepatuhanPenunjang = override.kepatuhan_penunjang;
+          kepatuhanTerapi = override.kepatuhan_terapi;
           los = override.los_hari || pathway.los_hari;
         } else {
           // Calculate compliance based on checklist data and LOS
@@ -441,6 +397,8 @@ export const useRekapData = () => {
           isSesuaiTarget = pathway.los_hari ? pathway.los_hari <= targetLOS : false;
           const compliance = calculateComplianceFromChecklist(pathway.clinical_pathway_checklist || []);
           kepatuhanCP = compliance.kepatuhanCP;
+          kepatuhanPenunjang = compliance.kepatuhanPenunjang;
+          kepatuhanTerapi = compliance.kepatuhanTerapi;
         }
         
         return {
@@ -456,8 +414,8 @@ export const useRekapData = () => {
           los: los,
           sesuaiTarget: isSesuaiTarget,
           kepatuhanCP: kepatuhanCP,
-          kepatuhanPenunjang: patientManualData.kepatuhanPenunjang,
-          kepatuhanTerapi: patientManualData.kepatuhanTerapi,
+          kepatuhanPenunjang: kepatuhanPenunjang,
+          kepatuhanTerapi: kepatuhanTerapi,
           dpjp: pathway.dpjp || '',
           verifikatorPelaksana: pathway.verifikator_pelaksana || '',
         };
