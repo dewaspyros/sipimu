@@ -1,13 +1,22 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, User } from "lucide-react";
+import { Bell, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuthContext } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
+  const { user, signOut } = useAuthContext();
+  
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
@@ -33,9 +42,25 @@ export function Layout({ children }: LayoutProps) {
                 <Button variant="ghost" size="icon" className="medical-transition">
                   <Bell className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="medical-transition">
-                  <User className="h-5 w-5" />
-                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="medical-transition">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {user && (
+                      <DropdownMenuItem disabled>
+                        {user.email?.split('@')[0] || 'User'}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={signOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Keluar
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </header>

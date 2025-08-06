@@ -14,34 +14,70 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import { Layout } from "./components/Layout";
 import NotFound from "./pages/NotFound";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  const authContext = useAuth();
+  
+  return (
+    <AuthProvider value={authContext}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/daftar" element={<Register />} />
+            <Route path="/lupa-password" element={<ForgotPassword />} />
+            
+            {/* Protected Routes with Layout */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Layout><Dashboard /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/clinical-pathway" element={
+              <ProtectedRoute>
+                <Layout><ClinicalPathway /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/clinical-pathway-form" element={
+              <ProtectedRoute>
+                <Layout><ClinicalPathwayForm /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/clinical-pathway-checklist" element={
+              <ProtectedRoute>
+                <Layout><ClinicalPathwayChecklist /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/rekap-data" element={
+              <ProtectedRoute>
+                <Layout><RekapData /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/pengaturan" element={
+              <ProtectedRoute>
+                <Layout><Pengaturan /></Layout>
+              </ProtectedRoute>
+            } />
+            
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/daftar" element={<Register />} />
-          <Route path="/lupa-password" element={<ForgotPassword />} />
-          
-          {/* Protected Routes with Layout */}
-          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/clinical-pathway" element={<Layout><ClinicalPathway /></Layout>} />
-          <Route path="/clinical-pathway-form" element={<Layout><ClinicalPathwayForm /></Layout>} />
-          <Route path="/clinical-pathway-checklist" element={<Layout><ClinicalPathwayChecklist /></Layout>} />
-          <Route path="/rekap-data" element={<Layout><RekapData /></Layout>} />
-          <Route path="/pengaturan" element={<Layout><Pengaturan /></Layout>} />
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AppContent />
   </QueryClientProvider>
 );
 

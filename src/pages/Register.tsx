@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,42 +11,54 @@ const hospitalLogo = "/lovable-uploads/52e51664-283f-4073-94f9-3d65a68fa748.png"
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nik: "",
+    fullName: "",
     password: "",
     confirmPassword: "",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const { signUp, user, loading } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
     // Validate form
-    if (!formData.nik || !formData.password || !formData.confirmPassword) {
+    if (!formData.nik || !formData.fullName || !formData.password || !formData.confirmPassword) {
       setError("Silakan lengkapi semua field");
-      setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError("Password tidak cocok");
-      setLoading(false);
       return;
     }
 
-    // Simulate registration
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess("Akun berhasil didaftarkan!");
+    if (formData.password.length < 6) {
+      setError("Password minimal 6 karakter");
+      return;
+    }
+
+    const { error: signUpError } = await signUp(formData.nik, formData.password, formData.fullName);
+    
+    if (signUpError) {
+      setError(signUpError.message);
+    } else {
+      setSuccess("Akun berhasil didaftarkan! Silakan login.");
       setTimeout(() => {
         navigate("/login");
-      }, 1500);
-    }, 2000);
+      }, 2000);
+    }
   };
 
   return (
@@ -106,6 +119,19 @@ export default function Register() {
                     required
                   />
                 </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Nama Lengkap *</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="Masukkan nama lengkap"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  className="medical-transition"
+                  required
+                />
               </div>
               
               <div className="space-y-2">

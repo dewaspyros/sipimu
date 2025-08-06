@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,30 +11,36 @@ const hospitalLogo = "/lovable-uploads/52e51664-283f-4073-94f9-3d65a68fa748.png"
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nik: "",
     password: "",
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { signIn, user, loading } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
-    // Simulate login validation
-    if (formData.nik && formData.password) {
-      // Simulate API call
-      setTimeout(() => {
-        setLoading(false);
-        // For demo purposes, accept any credentials
-        navigate("/dashboard");
-      }, 1500);
-    } else {
+    if (!formData.nik || !formData.password) {
       setError("Silakan lengkapi NIK dan password");
-      setLoading(false);
+      return;
+    }
+
+    const { error: signInError } = await signIn(formData.nik, formData.password);
+    
+    if (signInError) {
+      setError(signInError.message);
+    } else {
+      navigate("/dashboard");
     }
   };
 
