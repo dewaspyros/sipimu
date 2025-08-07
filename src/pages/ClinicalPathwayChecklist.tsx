@@ -43,7 +43,7 @@ const pathwayConfigs = {
   "Sectio Caesaria": {
     days: ["Hari ke-1", "Hari ke-2", "Hari ke-3", "Hari ke-4"],
     items: [
-      "Assesmen Awal Dokter IGD",
+      "Assesmen Awal Dokter IGD Keren",
       "Assesmen Awal Dokter Spesialis",
       "Assesmen Awal Keperawatan",
       "PENUNJANG :",
