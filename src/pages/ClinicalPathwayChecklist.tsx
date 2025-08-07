@@ -58,7 +58,7 @@ const pathwayConfigs = {
       "RADIOLOGI / IMAGING :",
       "Thorax AP (sesuai indikasi)",
       "USG Obstetri (sesuai indikasi)",
-      "REKAM JANTUNG :',
+      "REKAM JANTUNG :",
       "EKG",
       "KONSULTASI :",
       "Spesialis Anestesi",
