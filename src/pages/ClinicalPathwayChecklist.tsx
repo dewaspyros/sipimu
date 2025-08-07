@@ -175,7 +175,7 @@ const pathwayConfigs = {
       "Infus paracetamol (sesuai indikasi)",
       "Inj aminofilin drip (sesuai indikasi)",
       "NEBULIZER :",
-      "Ventolin : Pulmicort 3x1",
+      "Ventolin Pulmicort 3x1",
       "OBAT ORAL :",
       "Mukolitik, acetylsistein, ambroxol",
       "Azitromicin 1x500 mg (Pilhan lain, levofloxacin 1x750 mg)",
