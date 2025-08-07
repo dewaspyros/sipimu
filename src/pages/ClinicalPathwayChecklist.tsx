@@ -258,7 +258,7 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
       "Antiplatelet, Aspirin dosis awal 160-320mg dalam 24-48 jam setelah onset dilanjutkan 80mg per hari Atau Clopidogrel 75mg per hari",
       "Anti koagulan (sesuai indikasi)",
       "Asam folat 1 mg/12 jam",
-      "Anti kolesterol (sesuai indikasi)"
+      "Anti kolesterol (sesuai indikasi)",
       "MOBILISASI / REHABILITASI :",
       "KEPERAWATAN :",
       "ROM, positioning, mobilisasi bertahap",
