@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2, Eye, FileText } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, FileText, Search } from "lucide-react";
 import { useClinicalPathways } from "@/hooks/useClinicalPathways";
 
 export default function ClinicalPathway() {
@@ -13,6 +14,7 @@ export default function ClinicalPathway() {
   const { pathways, loading, deletePathway } = useClinicalPathways();
   const [selectedMonth, setSelectedMonth] = useState<string>("");
   const [selectedPathway, setSelectedPathway] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   return (
     <div className="space-y-6">
@@ -40,6 +42,18 @@ export default function ClinicalPathway() {
                 Daftar semua data Clinical Pathways yang telah diinput
               </CardDescription>
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mt-4">
+                <div className="w-full md:w-64">
+                  <label className="text-sm font-medium mb-2 block">Cari Data:</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Nama pasien atau No. RM"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
                 <div className="w-full md:w-48">
                   <label className="text-sm font-medium mb-2 block">Filter Bulan:</label>
                   <Select value={selectedMonth} onValueChange={setSelectedMonth}>
@@ -111,6 +125,13 @@ export default function ClinicalPathway() {
                     ) : (
                       pathways
                         .filter(item => {
+                          // Filter by search query (patient name or medical record number)
+                          if (searchQuery) {
+                            const query = searchQuery.toLowerCase();
+                            const matchesName = item.nama_pasien.toLowerCase().includes(query);
+                            const matchesRM = item.no_rm.toLowerCase().includes(query);
+                            if (!matchesName && !matchesRM) return false;
+                          }
                           // Filter by month
                           if (selectedMonth && selectedMonth !== "all") {
                             const admissionMonth = new Date(item.tanggal_masuk).getMonth() + 1;

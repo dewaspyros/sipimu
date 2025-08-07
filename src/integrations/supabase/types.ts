@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      checklist_summary: {
+        Row: {
+          bulan: number
+          completed_items: number
+          completion_percentage: number
+          created_at: string
+          data_detail: Json | null
+          id: string
+          jenis_clinical_pathway: string
+          tahun: number
+          total_checklist_items: number
+          total_patients: number
+          updated_at: string
+        }
+        Insert: {
+          bulan: number
+          completed_items?: number
+          completion_percentage?: number
+          created_at?: string
+          data_detail?: Json | null
+          id?: string
+          jenis_clinical_pathway: string
+          tahun: number
+          total_checklist_items?: number
+          total_patients?: number
+          updated_at?: string
+        }
+        Update: {
+          bulan?: number
+          completed_items?: number
+          completion_percentage?: number
+          created_at?: string
+          data_detail?: Json | null
+          id?: string
+          jenis_clinical_pathway?: string
+          tahun?: number
+          total_checklist_items?: number
+          total_patients?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clinical_pathway_checklist: {
         Row: {
           checklist_hari_1: boolean | null
@@ -240,6 +282,7 @@ export type Database = {
           full_name: string | null
           id: string
           nik: string
+          role: string | null
           updated_at: string
           user_id: string
         }
@@ -248,6 +291,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           nik: string
+          role?: string | null
           updated_at?: string
           user_id: string
         }
@@ -256,6 +300,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           nik?: string
+          role?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -341,6 +386,20 @@ export type Database = {
       }
     }
     Functions: {
+      aggregate_checklist_data: {
+        Args: {
+          target_month: number
+          target_year: number
+          pathway_type?: string
+        }
+        Returns: {
+          jenis_clinical_pathway: string
+          total_items: number
+          completed_items: number
+          completion_percentage: number
+          total_patients: number
+        }[]
+      }
       calculate_compliance_function: {
         Args: { cp_type: Database["public"]["Enums"]["clinical_pathway_type"] }
         Returns: number

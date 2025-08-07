@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, FileText, TrendingUp, Download, Edit, Save } from "lucide-react";
+import { Calendar, FileText, TrendingUp, Download, Edit, Save, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRekapData, type RekapDataItem } from "@/hooks/useRekapData";
+import { useChecklistSummary, type AggregatedChecklistData } from "@/hooks/useChecklistSummary";
 
 // Remove dummy data - now using real Supabase data
 
@@ -39,15 +41,21 @@ export default function RekapData() {
   const [selectedPathway, setSelectedPathway] = useState("all");
   const [filteredData, setFilteredData] = useState<RekapDataItem[]>([]);
   const [editingRows, setEditingRows] = useState<{[key: string]: boolean}>({});
+  const [checklistData, setChecklistData] = useState<AggregatedChecklistData[]>([]);
   
   const { data, loading, fetchDataByMonth, fetchAllData, filterDataByPathway, updatePatientData, updateComplianceData, getTargetLOS } = useRekapData();
+  const { loading: checklistLoading, aggregateChecklistData, generateChecklistSummaryForMonth } = useChecklistSummary();
 
   const handleMonthChange = async (month: string) => {
     setSelectedMonth(month);
     if (month && month !== "all") {
       await fetchDataByMonth(parseInt(month));
+      // Also fetch checklist data for the selected month
+      const checklistSummary = await aggregateChecklistData(parseInt(month));
+      setChecklistData(checklistSummary);
     } else if (month === "all") {
       await fetchAllData();
+      setChecklistData([]);
     }
   };
 
@@ -159,6 +167,12 @@ export default function RekapData() {
     }
   };
 
+  const generateSummary = async () => {
+    if (selectedMonth && selectedMonth !== "all") {
+      await generateChecklistSummaryForMonth(parseInt(selectedMonth));
+    }
+  };
+
   const summary = calculateSummary();
 
   return (
@@ -171,12 +185,24 @@ export default function RekapData() {
             Laporan dan rekap data Clinical Pathways per bulan
           </p>
         </div>
-        {filteredData.length > 0 && (
-          <Button className="medical-transition">
-            <Download className="h-4 w-4 mr-2" />
-            Export Excel
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {selectedMonth && selectedMonth !== "all" && (
+            <Button 
+              onClick={generateSummary}
+              disabled={checklistLoading}
+              className="medical-transition"
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Generate Checklist Summary
+            </Button>
+          )}
+          {filteredData.length > 0 && (
+            <Button className="medical-transition">
+              <Download className="h-4 w-4 mr-2" />
+              Export Excel
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Month Selection */}
@@ -187,7 +213,7 @@ export default function RekapData() {
             Rekap Data per Bulan
           </CardTitle>
           <CardDescription>
-            Pilih bulan untuk melihat rekap data Clinical Pathways
+            Pilih bulan untuk melihat rekap data Clinical Pathways dan checklist
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -199,7 +225,6 @@ export default function RekapData() {
                   <SelectValue placeholder="Pilih bulan" />
                 </SelectTrigger>
                 <SelectContent>
-                  
                   {monthOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -257,248 +282,285 @@ export default function RekapData() {
         </CardContent>
       </Card>
 
-      {/* Data Table */}
-      {loading ? (
-        <Card className="medical-card">
-          <CardContent className="p-6">
-            <div className="text-center">Loading data...</div>
-          </CardContent>
-        </Card>
-      ) : filteredData.length > 0 ? (
-        <Card className="medical-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Data Bulan {monthOptions.find(m => m.value === selectedMonth)?.label}
-            </CardTitle>
-            <CardDescription>
-              Daftar pasien dan statistik kepatuhan Clinical Pathways
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-3">No</th>
-                    <th className="text-left p-3">Nama Pasien</th>
-                    <th className="text-left p-3">Tanggal Masuk RS</th>
-                    <th className="text-left p-3">Tanggal Keluar RS</th>
-                    <th className="text-left p-3">Diagnosis Pasien</th>
-                    <th className="text-left p-3">LOS</th>
-                    <th className="text-left p-3">Sesuai Target</th>
-                    <th className="text-left p-3">Kepatuhan Penunjang</th>
-                    <th className="text-left p-3">Kepatuhan Terapi</th>
-                    <th className="text-left p-3">Kepatuhan CP</th>
-                    <th className="text-left p-3">Aksi</th>
-                  </tr>
-                </thead>
-                 <tbody>
-                   {filteredData.map((item, index) => {
-                    const targetInfo = getTargetInfo(item.diagnosis);
-                    const rowKey = `${selectedMonth}-${index}`;
-                    const isEditing = editingRows[rowKey];
-                    
-                    return (
-                      <tr key={index} className="border-b hover:bg-muted/50 medical-transition">
-                         <td className="p-3">{item.no}</td>
-                         <td className="p-3">{item.namaPasien} / {item.noRM}</td>
-                         <td className="p-3">
-                           {new Date(item.tanggalMasuk).toLocaleDateString('id-ID')} {item.jamMasuk}
-                         </td>
-                         <td className="p-3">
-                           {item.tanggalKeluar && item.jamKeluar 
-                             ? `${new Date(item.tanggalKeluar).toLocaleDateString('id-ID')} ${item.jamKeluar}`
-                             : '-'
-                           }
-                         </td>
-                        <td className="p-3">
-                          <Badge variant="outline" className="bg-primary/10 text-primary">
-                            {item.diagnosis}
-                          </Badge>
-                        </td>
-                        <td className="p-3 text-center">
-                          {isEditing ? (
-                            <Input
-                              type="number"
-                              value={item.los}
-                              onChange={(e) => updateLOS(index, parseInt(e.target.value) || 0)}
-                              className="w-20 text-center"
-                              min="0"
-                            />
-                           ) : (
-                             <span className="font-semibold">{item.los || '-'} {item.los ? 'hari' : ''}</span>
-                           )}
-                        </td>
-                        <td className="p-3">
-                          {isEditing ? (
-                            <Checkbox
-                              checked={item.sesuaiTarget}
-                              onCheckedChange={(checked) => updateCheckbox(index, 'sesuaiTarget', !!checked)}
-                            />
-                          ) : (
-                            <Badge 
-                              variant={item.sesuaiTarget ? "secondary" : "destructive"}
-                              className={item.sesuaiTarget 
-                                ? "bg-success/10 text-success border-success/20" 
-                                : "bg-destructive/10 text-destructive border-destructive/20"
-                              }
-                            >
-                              {item.sesuaiTarget ? `✓ ≤ ${targetInfo.target} ${targetInfo.unit}` : `✗ > ${targetInfo.target} ${targetInfo.unit}`}
-                            </Badge>
-                          )}
-                        </td>
-                        <td className="p-3">
-                          {isEditing ? (
-                            <Checkbox
-                              checked={item.kepatuhanPenunjang}
-                              onCheckedChange={(checked) => updateCheckbox(index, 'kepatuhanPenunjang', !!checked)}
-                            />
-                          ) : (
-                            <Badge 
-                              variant="outline"
-                              className={item.kepatuhanPenunjang
-                                ? "bg-success/10 text-success border-success/20"
-                                : "bg-warning/10 text-warning border-warning/20"
-                              }
-                            >
-                              {item.kepatuhanPenunjang ? "✓ Patuh" : "✗ Tidak Patuh"}
-                            </Badge>
-                          )}
-                        </td>
-                        <td className="p-3">
-                          {isEditing ? (
-                            <Checkbox
-                              checked={item.kepatuhanTerapi}
-                              onCheckedChange={(checked) => updateCheckbox(index, 'kepatuhanTerapi', !!checked)}
-                            />
-                          ) : (
-                            <Badge 
-                              variant="outline"
-                              className={item.kepatuhanTerapi
-                                ? "bg-success/10 text-success border-success/20"
-                                : "bg-warning/10 text-warning border-warning/20"
-                              }
-                            >
-                              {item.kepatuhanTerapi ? "✓ Patuh" : "✗ Tidak Patuh"}
-                            </Badge>
-                          )}
-                        </td>
-                          <td className="p-3">
-                           {(() => {
-                             // Calculate individual patient CP compliance percentage
-                             const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
-                             const checkedItems = complianceItems.filter(Boolean).length;
-                             const totalItems = complianceItems.length;
-                             const percentage = totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
-                             
-                             return (
-                               <Badge 
-                                 variant="outline"
-                                 className={percentage >= 75
-                                   ? "bg-success/10 text-success border-success/20 font-bold"
-                                   : "bg-warning/10 text-warning border-warning/20 font-bold"
-                                 }
-                               >
-                                 {percentage.toFixed(0)}%
-                               </Badge>
-                             );
-                           })()}
-                        </td>
-                         <td className="p-3">
-                           <div className="flex gap-2">
-                             <Button
-                               size="sm"
-                               variant={isEditing ? "default" : "outline"}
-                               onClick={() => toggleEdit(rowKey)}
-                               className="medical-transition"
-                             >
-                               {isEditing ? (
-                                 <>
-                                <Save className="h-4 w-4 mr-1" />
-                                Simpan
-                              </>
-                            ) : (
-                              <>
-                                <Edit className="h-4 w-4 mr-1" />
-                                Edit
-                              </>
-                             )}
-                           </Button>
-                           <Button
-                             size="sm"
-                             variant="outline"
-                             onClick={() => window.location.href = `/clinical-pathway-checklist?id=${item.id}&mode=view`}
-                             className="medical-transition"
-                             title="Lihat Checklist"
-                           >
-                             <FileText className="h-4 w-4" />
-                           </Button>
-                         </div>
-                         </td>
+      {/* Tabs for Data and Checklist Summary */}
+      <Tabs defaultValue="patient-data" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="patient-data">Data Pasien</TabsTrigger>
+          <TabsTrigger value="checklist-summary">Ringkasan Checklist</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="patient-data">
+          {/* Data Table */}
+          {loading ? (
+            <Card className="medical-card">
+              <CardContent className="p-6">
+                <div className="text-center">Loading data...</div>
+              </CardContent>
+            </Card>
+          ) : filteredData.length > 0 ? (
+            <Card className="medical-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Data Bulan {monthOptions.find(m => m.value === selectedMonth)?.label}
+                </CardTitle>
+                <CardDescription>
+                  Daftar pasien dan statistik kepatuhan Clinical Pathways
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-3">No</th>
+                        <th className="text-left p-3">Nama Pasien</th>
+                        <th className="text-left p-3">Tanggal Masuk RS</th>
+                        <th className="text-left p-3">Tanggal Keluar RS</th>
+                        <th className="text-left p-3">Diagnosis Pasien</th>
+                        <th className="text-left p-3">LOS</th>
+                        <th className="text-left p-3">Sesuai Target</th>
+                        <th className="text-left p-3">Kepatuhan Penunjang</th>
+                        <th className="text-left p-3">Kepatuhan Terapi</th>
+                        <th className="text-left p-3">Kepatuhan CP</th>
+                        <th className="text-left p-3">Aksi</th>
                       </tr>
-                    );
-                  })}
-                  {/* Summary Row */}
-                  {summary && (
-                    <tr className="border-t-2 border-primary/20 bg-muted/30 font-semibold">
-                      <td className="p-3" colSpan={5}>
-                        <span className="text-primary">PERSENTASE KEPATUHAN (%)</span>
-                      </td>
-                      <td className="p-3 text-center">
-                        <span className="text-sm text-muted-foreground">-</span>
-                      </td>
-                      <td className="p-3 text-center">
-                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
-                          {summary.persentaseSesuaiTarget}%
-                        </Badge>
-                      </td>
-                      <td className="p-3 text-center">
-                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
-                          {summary.persentaseKepatuhanPenunjang}%
-                        </Badge>
-                      </td>
-                      <td className="p-3 text-center">
-                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
-                          {summary.persentaseKepatuhanTerapi}%
-                        </Badge>
-                      </td>
-                       <td className="p-3 text-center">
-                         <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold">
-                           {summary.avgKepatuhanCP}%
-                         </Badge>
-                       </td>
-                      <td className="p-3 text-center">
-                        <span className="text-sm text-muted-foreground">-</span>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      ) : selectedMonth ? (
-        <Card className="medical-card">
-          <CardContent className="text-center py-12">
-            <div className="text-muted-foreground">
-              <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">Tidak Ada Data</h3>
-              <p>Belum ada data Clinical Pathways untuk bulan {monthOptions.find(m => m.value === selectedMonth)?.label}</p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="medical-card">
-          <CardContent className="text-center py-12">
-            <div className="text-muted-foreground">
-              <Calendar className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">Pilih Bulan</h3>
-              <p>Silakan pilih bulan untuk melihat rekap data Clinical Pathways</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                    </thead>
+                    <tbody>
+                      {filteredData.map((item, index) => {
+                        const targetInfo = getTargetInfo(item.diagnosis);
+                        const rowKey = `${selectedMonth}-${index}`;
+                        const isEditing = editingRows[rowKey];
+                        
+                        return (
+                          <tr key={index} className="border-b hover:bg-muted/50 medical-transition">
+                            <td className="p-3">{item.no}</td>
+                            <td className="p-3">{item.namaPasien} / {item.noRM}</td>
+                            <td className="p-3">
+                              {new Date(item.tanggalMasuk).toLocaleDateString('id-ID')} {item.jamMasuk}
+                            </td>
+                            <td className="p-3">
+                              {item.tanggalKeluar && item.jamKeluar 
+                                ? `${new Date(item.tanggalKeluar).toLocaleDateString('id-ID')} ${item.jamKeluar}`
+                                : '-'
+                              }
+                            </td>
+                            <td className="p-3">
+                              <Badge variant="outline" className="bg-primary/10 text-primary">
+                                {item.diagnosis}
+                              </Badge>
+                            </td>
+                            <td className="p-3 text-center">
+                              {isEditing ? (
+                                <Input
+                                  type="number"
+                                  value={item.los}
+                                  onChange={(e) => updateLOS(index, parseInt(e.target.value) || 0)}
+                                  className="w-20 text-center"
+                                  min="0"
+                                />
+                              ) : (
+                                <span className="font-semibold">{item.los || '-'} {item.los ? 'hari' : ''}</span>
+                              )}
+                            </td>
+                            <td className="p-3">
+                              {isEditing ? (
+                                <Checkbox
+                                  checked={item.sesuaiTarget}
+                                  onCheckedChange={(checked) => updateCheckbox(index, 'sesuaiTarget', !!checked)}
+                                />
+                              ) : (
+                                <Badge 
+                                  variant={item.sesuaiTarget ? "secondary" : "destructive"}
+                                  className={item.sesuaiTarget 
+                                    ? "bg-success/10 text-success border-success/20" 
+                                    : "bg-destructive/10 text-destructive border-destructive/20"
+                                  }
+                                >
+                                  {item.sesuaiTarget ? `✓ ≤ ${targetInfo.target} ${targetInfo.unit}` : `✗ > ${targetInfo.target} ${targetInfo.unit}`}
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="p-3">
+                              {isEditing ? (
+                                <Checkbox
+                                  checked={item.kepatuhanPenunjang}
+                                  onCheckedChange={(checked) => updateCheckbox(index, 'kepatuhanPenunjang', !!checked)}
+                                />
+                              ) : (
+                                <Badge 
+                                  variant="outline"
+                                  className={item.kepatuhanPenunjang
+                                    ? "bg-success/10 text-success border-success/20"
+                                    : "bg-warning/10 text-warning border-warning/20"
+                                  }
+                                >
+                                  {item.kepatuhanPenunjang ? "✓ Patuh" : "✗ Tidak Patuh"}
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="p-3">
+                              {isEditing ? (
+                                <Checkbox
+                                  checked={item.kepatuhanTerapi}
+                                  onCheckedChange={(checked) => updateCheckbox(index, 'kepatuhanTerapi', !!checked)}
+                                />
+                              ) : (
+                                <Badge 
+                                  variant="outline"
+                                  className={item.kepatuhanTerapi
+                                    ? "bg-success/10 text-success border-success/20"
+                                    : "bg-warning/10 text-warning border-warning/20"
+                                  }
+                                >
+                                  {item.kepatuhanTerapi ? "✓ Patuh" : "✗ Tidak Patuh"}
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="p-3">
+                              {(() => {
+                                // Calculate individual patient CP compliance percentage
+                                const complianceItems = [item.sesuaiTarget, item.kepatuhanPenunjang, item.kepatuhanTerapi];
+                                const checkedItems = complianceItems.filter(Boolean).length;
+                                const totalItems = complianceItems.length;
+                                const percentage = totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
+                                
+                                return (
+                                  <Badge 
+                                    variant="outline"
+                                    className={percentage >= 75
+                                      ? "bg-success/10 text-success border-success/20"
+                                      : percentage >= 50
+                                      ? "bg-warning/10 text-warning border-warning/20"
+                                      : "bg-destructive/10 text-destructive border-destructive/20"
+                                    }
+                                  >
+                                    {percentage.toFixed(0)}%
+                                  </Badge>
+                                );
+                              })()}
+                            </td>
+                            <td className="p-3">
+                              <Button
+                                size="sm"
+                                variant={isEditing ? "default" : "outline"}
+                                onClick={() => toggleEdit(rowKey)}
+                                className="medical-transition"
+                              >
+                                {isEditing ? <Save className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          ) : selectedMonth ? (
+            <Card className="medical-card">
+              <CardContent className="text-center py-12">
+                <div className="text-muted-foreground">
+                  <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">Tidak Ada Data</h3>
+                  <p>Belum ada data Clinical Pathways untuk bulan {monthOptions.find(m => m.value === selectedMonth)?.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="medical-card">
+              <CardContent className="text-center py-12">
+                <div className="text-muted-foreground">
+                  <Calendar className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">Pilih Bulan</h3>
+                  <p>Silakan pilih bulan untuk melihat rekap data Clinical Pathways</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="checklist-summary">
+          {selectedMonth && selectedMonth !== "all" ? (
+            <Card className="medical-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Ringkasan Checklist Bulan {monthOptions.find(m => m.value === selectedMonth)?.label}
+                </CardTitle>
+                <CardDescription>
+                  Ringkasan kelengkapan checklist per jenis Clinical Pathway
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {checklistLoading ? (
+                  <div className="text-center">Loading checklist data...</div>
+                ) : checklistData.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-3">Jenis Clinical Pathway</th>
+                          <th className="text-left p-3">Total Pasien</th>
+                          <th className="text-left p-3">Total Item Checklist</th>
+                          <th className="text-left p-3">Item Selesai</th>
+                          <th className="text-left p-3">Persentase Kelengkapan</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {checklistData.map((item, index) => (
+                          <tr key={index} className="border-b hover:bg-muted/50 medical-transition">
+                            <td className="p-3">
+                              <Badge variant="outline" className="bg-primary/10 text-primary">
+                                {item.jenis_clinical_pathway}
+                              </Badge>
+                            </td>
+                            <td className="p-3 text-center font-semibold">
+                              {item.total_patients}
+                            </td>
+                            <td className="p-3 text-center">
+                              {item.total_items}
+                            </td>
+                            <td className="p-3 text-center">
+                              {item.completed_items}
+                            </td>
+                            <td className="p-3 text-center">
+                              <Badge 
+                                variant="outline"
+                                className={item.completion_percentage >= 75
+                                  ? "bg-success/10 text-success border-success/20"
+                                  : item.completion_percentage >= 50
+                                  ? "bg-warning/10 text-warning border-warning/20"
+                                  : "bg-destructive/10 text-destructive border-destructive/20"
+                                }
+                              >
+                                {item.completion_percentage.toFixed(1)}%
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    Belum ada data checklist untuk bulan ini
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="medical-card">
+              <CardContent className="p-6">
+                <div className="text-center text-muted-foreground">
+                  Pilih bulan untuk melihat ringkasan checklist
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

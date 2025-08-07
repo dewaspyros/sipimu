@@ -95,7 +95,7 @@ const pathwayConfigs = {
       "Medis : Sectio Caesaria",
       "Keperawatan : Manajemen Nyeri"
     ],
-    explanation: `Penjelasan Terapi
+    explanation: `Keterangan Terapi
 1. Antibiotik Profilaksis. Profilaksis digunakan jika leukosit > 10.000. Diberikan 15 s/d 60 menit sebelum incisi. Dilanjutkan 2x24 jam jika AL post OP >10.000
 2. Antibiotik Injeksi. Infus metronidazole diberikan, jika post SC AL > 20.000
 3. Furamin injeksi, diberikan bila post SC belum flatus`
@@ -656,7 +656,7 @@ const ClinicalPathwayChecklist = () => {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Penjelasan</CardTitle>
+            <CardTitle>Keterangan</CardTitle>
           </CardHeader>
           <CardContent>
             <Textarea
