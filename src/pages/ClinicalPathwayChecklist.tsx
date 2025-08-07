@@ -263,7 +263,6 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
       "KEPERAWATAN :",
       "ROM, positioning, mobilisasi bertahap",
       "FISIOTERAPI :",
-      "ROM, Pasif exercise, strengthening, mobilisasi bertahap, transfer ambulasi, ADL"
       "ROM, Pasif exercise, strengthening, mobilisasi bertahap, transfer ambulasi, ADL",
       "TERAPI WICARA :",
       "Oral motor, Speech exercise, swallowing exercise",
