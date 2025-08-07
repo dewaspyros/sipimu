@@ -241,7 +241,7 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
       "DISCHARGE PLANNING :",
       "Identifikasi kebutuhan di rumah",
       "Kebutuhan perawatan suportif",
-      "TERAPI/ MEDIKAMENTOSA :"
+      "TERAPI/ MEDIKAMENTOSA :",
       "CAIRAN INFUS :",
       "Infus NaCl 0.9%/RL/Asering",
       "OKSIGENASI :",
