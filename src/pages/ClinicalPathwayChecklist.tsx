@@ -44,7 +44,6 @@ const pathwayConfigs = {
     days: ["Hari ke-1", "Hari ke-2", "Hari ke-3", "Hari ke-4"],
     items: [
       "Assesmen Awal Dokter IGD",
-      "Assesmen Awal Dokter Master",
       "Assesmen Awal Dokter Spesialis",
       "Assesmen Awal Keperawatan",
       "PENUNJANG :",
@@ -93,8 +92,8 @@ const pathwayConfigs = {
       "SF 1x1",
       "Metronidazole 3x1 (bila post SC AL > 20.000)",
       "TATA LAKSANA :",
-      "Medis : Sectio Caesaria",
-      "Keperawatan : Manajemen Nyeri"
+      "Medis, Sectio Caesaria",
+      "Keperawatan, Manajemen Nyeri"
     ],
     explanation: `Keterangan Terapi
 1. Antibiotik Profilaksis. Profilaksis digunakan jika leukosit > 10.000. Diberikan 15 s/d 60 menit sebelum incisi. Dilanjutkan 2x24 jam jika AL post OP >10.000
