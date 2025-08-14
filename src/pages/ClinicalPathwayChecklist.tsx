@@ -369,7 +369,61 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
 4. Anti konvulsi. Jika terdapat akut simtomatik seizure. Pilihan, Inj. Phenitoin 100mg/12 jam atau Inj. Diazepam 5mg IV bolus pelan
 5. Osmoterapi. Inf Manitol 0,25-0,5gr/kgBB diulangi tiap 6 jam tappering off per hari. Diberikan jika ureum dan kreatinin baik.
 6. Nimodipine, dimulai dalam 96 jam dan diberikan selama 21 hari. Diberikan pada pasien dengan SAH.`
-  }
+  },
+  "Dengue Fever": {
+    days: ["Hari ke-1", "Hari ke-2", "Hari ke-3", "Hari ke-4", "Hari ke-5"],
+    items: [
+      "ASSESMEN AWAL :",
+      "Assesmen Awal Medis Dokter IGD",
+      "Assesmen Awal Medis Dokter Spesialis",
+      "Assesmen Awal Keperawatan",
+      "LABORATORIUM :",
+      "Darah Rutin Serial",
+      "SGOT SGPT",
+      "IgG dan IgM Dengue",
+      "GDS",
+      "RADIOLOGI/ IMAGING :",
+      "Thorax PA",
+      "Sp.JP",
+      "Sp.P",
+      "ASSESMEN LANJUTAN :",
+      "ASSESMEN MEDIS :",
+      "DPJP",
+      "Dokter Bangsal",
+      "ASSESMEN KEPERAWATAN :",
+      "Perawat Penanggung Jawab",
+      "ASSESMEN GIZI :",
+      "Ahli Gizi",
+      "ASSESMEN FARMASI :",
+      "Telaah Resep",
+      "Rekonsiliasi Obat",
+      "DIAGNOSIS :",
+      "DIAGNOSIS MEDIS :",
+      "Dengue Fever",
+      "DIAGNOSIS KEPERAWATAN :",
+      "DIAGNOSIS GIZI :",
+      "DISCHARGE PLANNING :",
+      "Identifikasi kebutuhan di rumah",
+      "Kebutuhan perawatan suportif",
+      "TERAPI/ MEDIKAMENTOSA :",
+      "CAIRAN INFUS :",
+      "Infus NaCl 0.9%/RL/Asering",
+      "OKSIGENASI :",
+      "INJEKSI :",
+      "Inf Paracetamol 500 mg - 1 gram (sesuai indikasi)",
+      "Inj methilprednisolon 0,5 mg - 1 mg / kgBB / hari (sesuai indikasi)"
+      "Inj ranitidine 1 amp / 12 jam (sesuai indikasi)",
+      "Inj ondancetron 1 amp / 8 jam (sesuai indikasi)",
+      "TRANSFUSI :",
+      "Transfusi Trombosit Concentrate (sesuai indikasi)",
+      "OBAT ORAL :",
+      "Paracetamol 500 mg / 8 jam"
+      "MOBILISASI / REHABILITASI :",
+      "KEPERAWATAN :",],
+    explanation: `1. Infus Paracetamol diberikan jika suhu > 39 C dan maksimal diberikan 1x. 
+    2. Trombosit concentrate diberikan AT < 100.000 dan ada perdarahan spontan masif : Epistaksis tidak terkendali, gross hematuria, hematemesis dan atau melena, hematoscezia, perdarahan otak. 
+    3. Pemeriksaan IgG dan Igm Dengue dilakukan di bangsal rawat inap oleh DPJP`
+  },
 };
 
 const ClinicalPathwayChecklist = () => {
