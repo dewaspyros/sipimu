@@ -411,7 +411,7 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
       "OKSIGENASI :",
       "INJEKSI :",
       "Inf Paracetamol 500 mg - 1 gram (sesuai indikasi)",
-      "Inj methilprednisolon 0,5 mg - 1 mg / kgBB / hari (sesuai indikasi)"
+      "Inj methilprednisolon 0,5 mg - 1 mg / kgBB / hari (sesuai indikasi)",
       "Inj ranitidine 1 amp / 12 jam (sesuai indikasi)",
       "Inj ondancetron 1 amp / 8 jam (sesuai indikasi)",
       "TRANSFUSI :",
