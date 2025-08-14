@@ -417,7 +417,7 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
       "TRANSFUSI :",
       "Transfusi Trombosit Concentrate (sesuai indikasi)",
       "OBAT ORAL :",
-      "Paracetamol 500 mg / 8 jam"
+      "Paracetamol 500 mg / 8 jam",
       "MOBILISASI / REHABILITASI :",
       "KEPERAWATAN :",],
     explanation: `1. Infus Paracetamol diberikan jika suhu > 39 C dan maksimal diberikan 1x. 
