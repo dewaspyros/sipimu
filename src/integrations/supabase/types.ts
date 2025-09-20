@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -388,15 +388,15 @@ export type Database = {
     Functions: {
       aggregate_checklist_data: {
         Args: {
+          pathway_type?: string
           target_month: number
           target_year: number
-          pathway_type?: string
         }
         Returns: {
-          jenis_clinical_pathway: string
-          total_items: number
           completed_items: number
           completion_percentage: number
+          jenis_clinical_pathway: string
+          total_items: number
           total_patients: number
         }[]
       }
