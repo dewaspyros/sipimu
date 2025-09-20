@@ -22,6 +22,7 @@ interface PatientFormData {
   dischargeDate?: string;
   dischargeTime?: string;
   lengthOfStay?: string;
+  bangsal: string;
 }
 
 const clinicalPathways = [
@@ -55,6 +56,17 @@ const dpjpOptions = [
   "dr. Arinil Haque, Sp.OG, M.Ked, Klin (DPJP AH)"
 ];
 
+const wardOptions = [
+  "Perinatal",
+  "Khadijah 2", 
+  "Khadijah 3",
+  "Aisyah 3",
+  "Hafshoh 3",
+  "Hafshoh 4",
+  "ICU",
+  "Multazam"
+];
+
 const ClinicalPathwayForm = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -77,7 +89,8 @@ const ClinicalPathwayForm = () => {
       admissionTime: "",
       dischargeDate: "",
       dischargeTime: "",
-      lengthOfStay: ""
+      lengthOfStay: "",
+      bangsal: ""
     }
   });
 
@@ -106,7 +119,8 @@ const ClinicalPathwayForm = () => {
               admissionTime: patient.jam_masuk,
               dischargeDate: patient.tanggal_keluar || "",
               dischargeTime: patient.jam_keluar || "",
-              lengthOfStay: patient.los_hari ? `${patient.los_hari} hari` : ""
+              lengthOfStay: patient.los_hari ? `${patient.los_hari} hari` : "",
+              bangsal: patient.bangsal || ""
             });
           }
         } catch (error) {
@@ -148,7 +162,8 @@ const ClinicalPathwayForm = () => {
         jam_masuk: data.admissionTime,
         tanggal_keluar: data.dischargeDate || null,
         jam_keluar: data.dischargeTime || null,
-        los_hari: losHari
+        los_hari: losHari,
+        bangsal: data.bangsal as any
       };
 
       let pathway;
@@ -419,6 +434,31 @@ const ClinicalPathwayForm = () => {
                         <FormControl>
                           <Input placeholder="Contoh: 3 hari" {...field} />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="bangsal"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bangsal</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih Bangsal" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {wardOptions.map((ward) => (
+                              <SelectItem key={ward} value={ward}>
+                                {ward}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}

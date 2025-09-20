@@ -14,6 +14,7 @@ export default function ClinicalPathway() {
   const { pathways, loading, deletePathway } = useClinicalPathways();
   const [selectedMonth, setSelectedMonth] = useState<string>("");
   const [selectedPathway, setSelectedPathway] = useState<string>("");
+  const [selectedWard, setSelectedWard] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   return (
@@ -93,6 +94,25 @@ export default function ClinicalPathway() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="w-full md:w-48">
+                  <label className="text-sm font-medium mb-2 block">Filter Bangsal:</label>
+                  <Select value={selectedWard} onValueChange={setSelectedWard}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih bangsal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Semua Bangsal</SelectItem>
+                      <SelectItem value="Perinatal">Perinatal</SelectItem>
+                      <SelectItem value="Khadijah 2">Khadijah 2</SelectItem>
+                      <SelectItem value="Khadijah 3">Khadijah 3</SelectItem>
+                      <SelectItem value="Aisyah 3">Aisyah 3</SelectItem>
+                      <SelectItem value="Hafshoh 3">Hafshoh 3</SelectItem>
+                      <SelectItem value="Hafshoh 4">Hafshoh 4</SelectItem>
+                      <SelectItem value="ICU">ICU</SelectItem>
+                      <SelectItem value="Multazam">Multazam</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -140,6 +160,10 @@ export default function ClinicalPathway() {
                           // Filter by clinical pathway type
                           if (selectedPathway && selectedPathway !== "all") {
                             if (item.jenis_clinical_pathway !== selectedPathway) return false;
+                          }
+                          // Filter by ward
+                          if (selectedWard && selectedWard !== "all") {
+                            if ((item as any).bangsal !== selectedWard) return false;
                           }
                           return true;
                         })

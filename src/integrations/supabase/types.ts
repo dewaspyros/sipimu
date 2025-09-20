@@ -111,6 +111,7 @@ export type Database = {
       }
       clinical_pathways: {
         Row: {
+          bangsal: Database["public"]["Enums"]["ward_type"] | null
           created_at: string
           dpjp: string | null
           id: string
@@ -126,6 +127,7 @@ export type Database = {
           verifikator_pelaksana: string | null
         }
         Insert: {
+          bangsal?: Database["public"]["Enums"]["ward_type"] | null
           created_at?: string
           dpjp?: string | null
           id?: string
@@ -141,6 +143,7 @@ export type Database = {
           verifikator_pelaksana?: string | null
         }
         Update: {
+          bangsal?: Database["public"]["Enums"]["ward_type"] | null
           created_at?: string
           dpjp?: string | null
           id?: string
@@ -156,6 +159,47 @@ export type Database = {
           verifikator_pelaksana?: string | null
         }
         Relationships: []
+      }
+      compliance_data: {
+        Row: {
+          created_at: string
+          id: string
+          kepatuhan_cp: boolean | null
+          kepatuhan_penunjang: boolean | null
+          kepatuhan_terapi: boolean | null
+          patient_id: string
+          sesuai_target: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kepatuhan_cp?: boolean | null
+          kepatuhan_penunjang?: boolean | null
+          kepatuhan_terapi?: boolean | null
+          patient_id: string
+          sesuai_target?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kepatuhan_cp?: boolean | null
+          kepatuhan_penunjang?: boolean | null
+          kepatuhan_terapi?: boolean | null
+          patient_id?: string
+          sesuai_target?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_data_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_pathways"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       compliance_overrides: {
         Row: {
@@ -418,6 +462,15 @@ export type Database = {
         | "Stroke Non Hemoragik"
         | "Pneumonia"
         | "Dengue Fever"
+      ward_type:
+        | "Perinatal"
+        | "Khadijah 2"
+        | "Khadijah 3"
+        | "Aisyah 3"
+        | "Hafshoh 3"
+        | "Hafshoh 4"
+        | "ICU"
+        | "Multazam"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -558,6 +611,16 @@ export const Constants = {
         "Stroke Non Hemoragik",
         "Pneumonia",
         "Dengue Fever",
+      ],
+      ward_type: [
+        "Perinatal",
+        "Khadijah 2",
+        "Khadijah 3",
+        "Aisyah 3",
+        "Hafshoh 3",
+        "Hafshoh 4",
+        "ICU",
+        "Multazam",
       ],
     },
   },
