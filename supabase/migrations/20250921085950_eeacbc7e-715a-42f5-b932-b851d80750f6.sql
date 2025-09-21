@@ -2,7 +2,7 @@
 CREATE OR REPLACE FUNCTION public.notify_whatsapp_new_pathway()
 RETURNS TRIGGER AS $$
 DECLARE
-    notification_phones TEXT[] := ARRAY['6281234567890', '6289876543210']; -- Replace with actual phone numbers
+    notification_phones TEXT[] := ARRAY['6282226325828']; -- Replace with actual phone numbers
     phone_number TEXT;
 BEGIN
     -- Log the trigger execution
