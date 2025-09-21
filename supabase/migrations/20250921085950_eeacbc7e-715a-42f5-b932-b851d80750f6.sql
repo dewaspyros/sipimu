@@ -13,7 +13,7 @@ BEGIN
     LOOP
         -- Call the edge function to send WhatsApp notification
         PERFORM net.http_post(
-            url := 'https://uxrgnwsdkkjrueoqozuq.functions.supabase.co/functions/v1/whatsapp-notification',
+            url := 'https://supVM9DxG8mSrphcKju1.functions.supabase.co/functions/v1/whatsapp-notification',
             headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4cmdud3Nka2tqcnVlb3FvenVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0MTYwMDcsImV4cCI6MjA2ODk5MjAwN30.mRXkQ1ANvj5tPtVLLsgQSzdsfkCJJ29jGzVLUmPXJ2o"}'::jsonb,
             body := json_build_object(
                 'record', json_build_object(
