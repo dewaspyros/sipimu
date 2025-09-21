@@ -40,6 +40,14 @@ export const useComplianceData = () => {
   ): Promise<boolean> => {
     setLoading(true);
     try {
+      // Check authentication state
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Auth session for compliance update:', session?.user?.id);
+      
+      if (!session?.user) {
+        throw new Error('User not authenticated');
+      }
+
       const { error } = await supabase
         .from('compliance_data')
         .upsert({
@@ -49,7 +57,10 @@ export const useComplianceData = () => {
           onConflict: 'patient_id'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error details:', error);
+        throw error;
+      }
 
       toast({
         title: "Berhasil",
