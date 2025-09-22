@@ -6,9 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, Settings, MessageSquare, Key, Save, RefreshCw, Plus, Trash2, Phone } from "lucide-react";
+import { Eye, EyeOff, Settings, MessageSquare, Key, Save, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useWhatsappSettings } from "@/hooks/useWhatsappSettings";
 
 export default function Pengaturan() {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,14 +15,32 @@ export default function Pengaturan() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   
-  // WhatsApp Settings Hook
-  const {
-    settings: whatsappSettings,
-    setSettings: setWhatsappSettings,
-    loading: whatsappLoading,
-    saving: whatsappSaving,
-    saveSettings: saveWhatsappSettings
-  } = useWhatsappSettings();
+  // WhatsApp Settings State
+  const [whatsappSettings, setWhatsappSettings] = useState({
+    apiKey: "wa_test_key_12345",
+    pesan: `Halo {nama},
+
+Anda telah terdaftar di sistem SiPi-Mu RS PKU Muhammadiyah Wonosobo.
+
+Untuk verifikasi akun, silakan gunakan kode berikut:
+{kode}
+
+Kode berlaku selama 5 menit.
+
+Terima kasih.`,
+    pesanResetPassword: `Halo {nama},
+
+Anda telah meminta reset password untuk akun SiPi-Mu.
+
+Silakan klik link berikut untuk mengatur ulang password:
+{link}
+
+Link berlaku selama 15 menit.
+
+Jika Anda tidak meminta reset password, silakan abaikan pesan ini.
+
+Terima kasih.`
+  });
 
   // Password Change State
   const [passwordForm, setPasswordForm] = useState({
@@ -33,31 +50,16 @@ export default function Pengaturan() {
   });
 
   const handleWhatsappSave = async () => {
-    await saveWhatsappSettings(whatsappSettings);
-  };
-
-  const addPhoneNumber = () => {
-    setWhatsappSettings({
-      ...whatsappSettings,
-      notification_phones: [...whatsappSettings.notification_phones, '']
-    });
-  };
-
-  const removePhoneNumber = (index: number) => {
-    const newPhones = whatsappSettings.notification_phones.filter((_, i) => i !== index);
-    setWhatsappSettings({
-      ...whatsappSettings,
-      notification_phones: newPhones.length > 0 ? newPhones : ['']
-    });
-  };
-
-  const updatePhoneNumber = (index: number, value: string) => {
-    const newPhones = [...whatsappSettings.notification_phones];
-    newPhones[index] = value;
-    setWhatsappSettings({
-      ...whatsappSettings,
-      notification_phones: newPhones
-    });
+    setLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Berhasil",
+        description: "Pengaturan WhatsApp telah disimpan",
+      });
+    }, 1000);
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -103,16 +105,28 @@ export default function Pengaturan() {
   const resetWhatsappToDefault = () => {
     setWhatsappSettings({
       ...whatsappSettings,
-      message_template: `Halo, Data Clinical Pathway baru telah ditambahkan:
+      pesan: `Halo {nama},
 
-Nama Pasien: {nama_pasien}
-No. RM: {no_rm}
-Jenis CP: {jenis_clinical_pathway}
-Tanggal Masuk: {tanggal_masuk}
-Jam Masuk: {jam_masuk}
-DPJP: {dpjp}
+Anda telah terdaftar di sistem SiPi-Mu RS PKU Muhammadiyah Wonosobo.
 
-Silakan cek sistem untuk detail lebih lanjut.`
+Untuk verifikasi akun, silakan gunakan kode berikut:
+{kode}
+
+Kode berlaku selama 5 menit.
+
+Terima kasih.`,
+      pesanResetPassword: `Halo {nama},
+
+Anda telah meminta reset password untuk akun SiPi-Mu.
+
+Silakan klik link berikut untuk mengatur ulang password:
+{link}
+
+Link berlaku selama 15 menit.
+
+Jika Anda tidak meminta reset password, silakan abaikan pesan ini.
+
+Terima kasih.`
     });
   };
 
@@ -127,14 +141,10 @@ Silakan cek sistem untuk detail lebih lanjut.`
       </div>
 
       <Tabs defaultValue="password" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="password" className="flex items-center gap-2">
             <Key className="h-4 w-4" />
             Ubah Password
-          </TabsTrigger>
-          <TabsTrigger value="whatsapp" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Pengaturan WhatsApp
           </TabsTrigger>
         </TabsList>
 
@@ -242,155 +252,6 @@ Silakan cek sistem untuk detail lebih lanjut.`
                 </Button>
               </CardFooter>
             </form>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="whatsapp">
-          <Card className="medical-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Pengaturan WhatsApp Notifikasi
-              </CardTitle>
-              <CardDescription>
-                Kelola pengaturan API WhatsApp Fonte dan nomor tujuan notifikasi untuk clinical pathway baru
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {whatsappLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : (
-                <>
-                  <Alert className="border-primary bg-primary/5">
-                    <AlertDescription>
-                      Pastikan API Key Fonte valid dan nomor WhatsApp dalam format internasional (contoh: 6281234567890).
-                      Notifikasi akan dikirim otomatis saat data clinical pathway baru ditambahkan.
-                    </AlertDescription>
-                  </Alert>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="apiKey">API Key Fonte *</Label>
-                    <Input
-                      id="apiKey"
-                      type="password"
-                      value={whatsappSettings.api_key}
-                      onChange={(e) => setWhatsappSettings({
-                        ...whatsappSettings,
-                        api_key: e.target.value
-                      })}
-                      placeholder="Masukkan API Key Fonte"
-                      className="medical-transition"
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Dapatkan API Key dari dashboard Fonte WhatsApp API
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label>Nomor Tujuan Notifikasi</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addPhoneNumber}
-                        className="flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Tambah Nomor
-                      </Button>
-                    </div>
-
-                    <div className="space-y-3">
-                      {whatsappSettings.notification_phones.map((phone, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <Input
-                            value={phone}
-                            onChange={(e) => updatePhoneNumber(index, e.target.value)}
-                            placeholder="Contoh: 6281234567890"
-                            className="flex-1 medical-transition"
-                          />
-                          {whatsappSettings.notification_phones.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => removePhoneNumber(index)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Format: 62XXXXXXXXXX (tanpa tanda + atau spasi)
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="messageTemplate">Template Pesan Notifikasi</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={resetWhatsappToDefault}
-                        className="flex items-center gap-2"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                        Reset ke Default
-                      </Button>
-                    </div>
-                    <Textarea
-                      id="messageTemplate"
-                      value={whatsappSettings.message_template}
-                      onChange={(e) => setWhatsappSettings({
-                        ...whatsappSettings,
-                        message_template: e.target.value
-                      })}
-                      placeholder="Template pesan notifikasi"
-                      rows={8}
-                      className="medical-transition"
-                    />
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>Variabel yang tersedia:</p>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <code>{"{nama_pasien}"}</code>
-                        <code>{"{no_rm}"}</code>
-                        <code>{"{jenis_clinical_pathway}"}</code>
-                        <code>{"{tanggal_masuk}"}</code>
-                        <code>{"{jam_masuk}"}</code>
-                        <code>{"{dpjp}"}</code>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={handleWhatsappSave}
-                disabled={whatsappSaving || whatsappLoading}
-                className="medical-transition"
-              >
-                {whatsappSaving ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Menyimpan...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Save className="h-4 w-4" />
-                    <span>Simpan Pengaturan</span>
-                  </div>
-                )}
-              </Button>
-            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>
