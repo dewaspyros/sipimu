@@ -350,6 +350,33 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_settings: {
+        Row: {
+          api_key: string | null
+          created_at: string
+          id: string
+          message_template: string | null
+          notification_phones: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          api_key?: string | null
+          created_at?: string
+          id?: string
+          message_template?: string | null
+          notification_phones?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string | null
+          created_at?: string
+          id?: string
+          message_template?: string | null
+          notification_phones?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       v_avg_los_compliance: {
