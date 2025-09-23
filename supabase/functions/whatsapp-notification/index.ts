@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const FONTE_API_URL = 'https://api.fonte.com.br/v1/message'; // Default Fonte API URL
+const FONTE_API_URL = 'https://api.fonnte.com/send'; // Fonnte API URL
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -134,16 +134,17 @@ serve(async (req) => {
       try {
         console.log(`Sending WhatsApp message to: ${phoneNumber}`);
         
+        // Prepare form data for Fonnte API
+        const formData = new FormData();
+        formData.append('target', phoneNumber);
+        formData.append('message', message);
+
         const fonteResponse = await fetch(FONTE_API_URL, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${whatsappSettings.api_key}`,
-            'Content-Type': 'application/json',
+            'Authorization': whatsappSettings.api_key,
           },
-          body: JSON.stringify({
-            phone: phoneNumber,
-            message: message,
-          }),
+          body: formData,
         });
 
         const responseData = await fonteResponse.json();
