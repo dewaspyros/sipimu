@@ -127,12 +127,18 @@ serve(async (req) => {
 
     console.log('Formatted message:', message);
 
-    // Send WhatsApp message to each configured phone number
-    const sendResults = [];
+    // Helper function to add delay between messages
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
     
-    for (const phoneNumber of targetPhones) {
+    // Send WhatsApp message to each configured phone number with delay
+    const sendResults = [];
+    const delayBetweenMessages = 3000; // 3 seconds delay between messages
+    
+    for (let i = 0; i < targetPhones.length; i++) {
+      const phoneNumber = targetPhones[i];
+      
       try {
-        console.log(`Sending WhatsApp message to: ${phoneNumber}`);
+        console.log(`Sending WhatsApp message to: ${phoneNumber} (${i + 1}/${targetPhones.length})`);
         
         // Prepare form data for Fonnte API
         const formData = new FormData();
@@ -165,13 +171,26 @@ serve(async (req) => {
           });
           console.error(`Fonte API error for ${phoneNumber}:`, responseData);
         }
+        
+        // Add delay between messages, except for the last one
+        if (i < targetPhones.length - 1) {
+          console.log(`Waiting ${delayBetweenMessages}ms before sending to next number...`);
+          await delay(delayBetweenMessages);
+        }
+        
       } catch (error) {
         sendResults.push({
           phone: phoneNumber,
           status: 'error',
-          error: error.message
+          error: (error as Error).message
         });
         console.error(`Error sending to ${phoneNumber}:`, error);
+        
+        // Still add delay even on error, except for the last one
+        if (i < targetPhones.length - 1) {
+          console.log(`Error occurred, still waiting ${delayBetweenMessages}ms before next attempt...`);
+          await delay(delayBetweenMessages);
+        }
       }
     }
 
@@ -192,7 +211,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: (error as Error).message 
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
