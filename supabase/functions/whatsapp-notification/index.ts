@@ -132,7 +132,7 @@ serve(async (req) => {
     
     // Send WhatsApp message to each configured phone number with delay
     const sendResults = [];
-    const delayBetweenMessages = 3000; // 3 seconds delay between messages
+    const delayBetweenMessages = 30000; // 30 seconds delay between messages
     
     for (let i = 0; i < targetPhones.length; i++) {
       const phoneNumber = targetPhones[i];
