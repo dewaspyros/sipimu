@@ -20,6 +20,7 @@ interface ClinicalPathwayData {
   jam_masuk: string;
   dpjp?: string;
   verifikator_pelaksana?: string;
+  bangsal?: string;
 }
 
 interface WhatsappSettings {
