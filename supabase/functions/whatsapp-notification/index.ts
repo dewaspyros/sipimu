@@ -123,7 +123,8 @@ serve(async (req) => {
       .replace(/{tanggal_masuk}/g, clinicalPathwayData.tanggal_masuk)
       .replace(/{jam_masuk}/g, clinicalPathwayData.jam_masuk)
       .replace(/{dpjp}/g, clinicalPathwayData.dpjp || 'Tidak diisi')
-      .replace(/{verifikator_pelaksana}/g, clinicalPathwayData.verifikator_pelaksana || 'Tidak diisi');
+      .replace(/{verifikator_pelaksana}/g, clinicalPathwayData.verifikator_pelaksana || 'Tidak diisi')
+      .replace(/{bangsal}/g, clinicalPathwayData.bangsal || 'Tidak diisi');
 
     console.log('Formatted message:', message);
 
