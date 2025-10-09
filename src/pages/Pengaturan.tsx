@@ -6,7 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, Settings, MessageSquare, Key, Save, RefreshCw, Plus, Trash2, Phone } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, EyeOff, Settings, MessageSquare, Key, Save, RefreshCw, Plus, Trash2, Phone, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWhatsappSettings } from "@/hooks/useWhatsappSettings";
 
@@ -22,8 +23,12 @@ export default function Pengaturan() {
     setSettings: setWhatsappSettings,
     loading: whatsappLoading,
     saving: whatsappSaving,
-    saveSettings: saveWhatsappSettings
+    fetchingGroups,
+    saveSettings: saveWhatsappSettings,
+    fetchGroups
   } = useWhatsappSettings();
+  
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 
   // Password Change State
   const [passwordForm, setPasswordForm] = useState({
@@ -113,6 +118,34 @@ Jam Masuk: {jam_masuk}
 DPJP: {dpjp}
 
 Silakan cek sistem untuk detail lebih lanjut.`
+    });
+  };
+
+  const handleFetchGroups = async () => {
+    await fetchGroups();
+  };
+
+  const toggleGroupSelection = (groupId: string) => {
+    setSelectedGroups(prev => {
+      if (prev.includes(groupId)) {
+        return prev.filter(id => id !== groupId);
+      } else {
+        return [...prev, groupId];
+      }
+    });
+  };
+
+  const addSelectedGroupsToPhones = () => {
+    const currentPhones = whatsappSettings.notification_phones.filter(p => p.trim() !== '');
+    const newPhones = [...new Set([...currentPhones, ...selectedGroups])];
+    setWhatsappSettings({
+      ...whatsappSettings,
+      notification_phones: newPhones
+    });
+    setSelectedGroups([]);
+    toast({
+      title: 'Berhasil',
+      description: `${selectedGroups.length} grup ditambahkan ke daftar notifikasi`,
     });
   };
 
@@ -265,7 +298,8 @@ Silakan cek sistem untuk detail lebih lanjut.`
                 <>
                   <Alert className="border-primary bg-primary/5">
                     <AlertDescription>
-                      Pastikan API Key Fonte valid dan nomor WhatsApp dalam format internasional (contoh: 6281234567890).
+                      Pastikan API Key Fonte valid. Nomor WhatsApp gunakan format internasional (contoh: 6281234567890).
+                      Untuk grup WhatsApp, gunakan tombol "Ambil Daftar Grup" untuk mendapatkan ID grup yang valid.
                       Notifikasi akan dikirim otomatis saat data clinical pathway baru ditambahkan.
                     </AlertDescription>
                   </Alert>
@@ -288,9 +322,77 @@ Silakan cek sistem untuk detail lebih lanjut.`
                     </p>
                   </div>
 
+                  {/* WhatsApp Groups Section */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label>Nomor Tujuan Notifikasi</Label>
+                      <div>
+                        <Label className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Daftar Grup WhatsApp
+                        </Label>
+                        {whatsappSettings.last_group_update && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Terakhir diperbarui: {new Date(whatsappSettings.last_group_update).toLocaleString('id-ID')}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleFetchGroups}
+                        disabled={fetchingGroups || !whatsappSettings.api_key}
+                        className="flex items-center gap-2"
+                      >
+                        <RefreshCw className={`h-4 w-4 ${fetchingGroups ? 'animate-spin' : ''}`} />
+                        Ambil Daftar Grup
+                      </Button>
+                    </div>
+
+                    {whatsappSettings.group_list && whatsappSettings.group_list.length > 0 ? (
+                      <div className="space-y-2">
+                        <div className="border rounded-lg p-4 max-h-60 overflow-y-auto space-y-2">
+                          {whatsappSettings.group_list.map((group: any) => (
+                            <div key={group.id} className="flex items-center space-x-2 p-2 hover:bg-accent rounded">
+                              <Checkbox
+                                id={group.id}
+                                checked={selectedGroups.includes(group.id)}
+                                onCheckedChange={() => toggleGroupSelection(group.id)}
+                              />
+                              <label
+                                htmlFor={group.id}
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                              >
+                                {group.name || group.subject || group.id}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                        {selectedGroups.length > 0 && (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={addSelectedGroupsToPhones}
+                            className="w-full"
+                          >
+                            Tambahkan {selectedGroups.length} Grup Terpilih
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <Alert>
+                        <AlertDescription>
+                          Klik "Ambil Daftar Grup" untuk mendapatkan daftar grup WhatsApp yang tersedia
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+
+                  {/* Phone Numbers / Group IDs Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Nomor / Grup Tujuan Notifikasi</Label>
                       <Button
                         type="button"
                         variant="outline"
@@ -299,7 +401,7 @@ Silakan cek sistem untuk detail lebih lanjut.`
                         className="flex items-center gap-2"
                       >
                         <Plus className="h-4 w-4" />
-                        Tambah Nomor
+                        Tambah Manual
                       </Button>
                     </div>
 
@@ -310,7 +412,7 @@ Silakan cek sistem untuk detail lebih lanjut.`
                           <Input
                             value={phone}
                             onChange={(e) => updatePhoneNumber(index, e.target.value)}
-                            placeholder="Contoh: 6281234567890"
+                            placeholder="Contoh: 6281234567890 atau Group ID"
                             className="flex-1 medical-transition"
                           />
                           {whatsappSettings.notification_phones.length > 1 && (
@@ -328,7 +430,7 @@ Silakan cek sistem untuk detail lebih lanjut.`
                       ))}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Format: 62XXXXXXXXXX (tanpa tanda + atau spasi)
+                      Format nomor: 62XXXXXXXXXX atau Group ID dari daftar grup
                     </p>
                   </div>
 

@@ -2,3 +2,9 @@ project_id = "uxrgnwsdkkjrueoqozuq"
 
 [functions.whatsapp-notification]
 verify_jwt = false
+
+[functions.fonnte-get-groups]
+verify_jwt = false
+
+[functions.fonnte-update-group]
+verify_jwt = false

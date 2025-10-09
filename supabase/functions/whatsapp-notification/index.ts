@@ -113,6 +113,25 @@ serve(async (req) => {
     
     console.log('Target phones:', targetPhones);
     console.log('Clinical pathway data:', record);
+    
+    // Validate target format (phone number or group ID)
+    const validateTarget = (target: string): boolean => {
+      // Valid formats:
+      // - Phone: 628xxx or 08xxx (will be normalized to 628xxx)
+      // - Group ID: format from Fonnte API (typically contains @g.us or specific format)
+      const phonePattern = /^(0|62)\d{8,}$/;
+      const groupPattern = /^[\d-]+@g\.us$|^[\d]+$/; // Fonnte group ID patterns
+      
+      return phonePattern.test(target) || groupPattern.test(target);
+    };
+    
+    // Normalize phone number (convert 08xxx to 628xxx)
+    const normalizeTarget = (target: string): string => {
+      if (target.startsWith('0')) {
+        return '62' + target.substring(1);
+      }
+      return target;
+    };
 
     const clinicalPathwayData = record as ClinicalPathwayData;
 
@@ -137,14 +156,27 @@ serve(async (req) => {
     const delayBetweenMessages = 30000; // 30 seconds delay between messages
     
     for (let i = 0; i < targetPhones.length; i++) {
-      const phoneNumber = targetPhones[i];
+      const target = targetPhones[i];
+      
+      // Validate and normalize target
+      if (!validateTarget(target)) {
+        console.error(`Invalid target format: ${target}`);
+        sendResults.push({
+          phone: target,
+          status: 'error',
+          error: 'Invalid phone number or group ID format'
+        });
+        continue;
+      }
+      
+      const normalizedTarget = normalizeTarget(target);
       
       try {
-        console.log(`Sending WhatsApp message to: ${phoneNumber} (${i + 1}/${targetPhones.length})`);
+        console.log(`Sending WhatsApp message to: ${normalizedTarget} (${i + 1}/${targetPhones.length})`);
         
         // Prepare form data for Fonnte API
         const formData = new FormData();
-        formData.append('target', phoneNumber);
+        formData.append('target', normalizedTarget);
         formData.append('message', message);
 
         const fonteResponse = await fetch(FONTE_API_URL, {
@@ -156,22 +188,38 @@ serve(async (req) => {
         });
 
         const responseData = await fonteResponse.json();
-        console.log(`Fonte API response for ${phoneNumber}:`, responseData);
+        console.log(`Fonte API response for ${normalizedTarget}:`, responseData);
 
-        if (fonteResponse.ok) {
+        // Check response status from Fonnte
+        if (responseData.status === false) {
+          const errorMsg = responseData.reason || 'Unknown error';
           sendResults.push({
-            phone: phoneNumber,
+            phone: normalizedTarget,
+            status: 'error',
+            error: errorMsg
+          });
+          console.error(`Fonte API error for ${normalizedTarget}:`, errorMsg);
+          
+          // Provide helpful error messages
+          if (errorMsg.includes('invalid group id')) {
+            console.error('Hint: Group ID may be invalid. Try updating group list first using fonnte-update-group, then fetching with fonnte-get-groups');
+          } else if (errorMsg.includes('disconnected device')) {
+            console.error('Hint: WhatsApp device is disconnected. Please reconnect your device in Fonnte dashboard');
+          }
+        } else if (fonteResponse.ok) {
+          sendResults.push({
+            phone: normalizedTarget,
             status: 'success',
             data: responseData
           });
-          console.log(`WhatsApp message sent successfully to: ${phoneNumber}`);
+          console.log(`WhatsApp message sent successfully to: ${normalizedTarget}`);
         } else {
           sendResults.push({
-            phone: phoneNumber,
+            phone: normalizedTarget,
             status: 'error',
             error: responseData
           });
-          console.error(`Fonte API error for ${phoneNumber}:`, responseData);
+          console.error(`Fonte API error for ${normalizedTarget}:`, responseData);
         }
         
         // Add delay between messages, except for the last one
@@ -182,11 +230,11 @@ serve(async (req) => {
         
       } catch (error) {
         sendResults.push({
-          phone: phoneNumber,
+          phone: normalizedTarget,
           status: 'error',
           error: (error as Error).message
         });
-        console.error(`Error sending to ${phoneNumber}:`, error);
+        console.error(`Error sending to ${normalizedTarget}:`, error);
         
         // Still add delay even on error, except for the last one
         if (i < targetPhones.length - 1) {

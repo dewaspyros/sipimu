@@ -354,7 +354,9 @@ export type Database = {
         Row: {
           api_key: string | null
           created_at: string
+          group_list: Json | null
           id: string
+          last_group_update: string | null
           message_template: string | null
           notification_phones: string[] | null
           updated_at: string
@@ -362,7 +364,9 @@ export type Database = {
         Insert: {
           api_key?: string | null
           created_at?: string
+          group_list?: Json | null
           id?: string
+          last_group_update?: string | null
           message_template?: string | null
           notification_phones?: string[] | null
           updated_at?: string
@@ -370,7 +374,9 @@ export type Database = {
         Update: {
           api_key?: string | null
           created_at?: string
+          group_list?: Json | null
           id?: string
+          last_group_update?: string | null
           message_template?: string | null
           notification_phones?: string[] | null
           updated_at?: string
