@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const FONNTE_UPDATE_GROUP_URL = 'https://api.fonnte.com/update-group';
+const FONNTE_UPDATE_GROUP_URL = 'https://api.fonnte.com/fetch-group';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

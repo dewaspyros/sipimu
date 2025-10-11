@@ -23,11 +23,18 @@ interface ClinicalPathwayData {
   bangsal?: string;
 }
 
+interface WhatsappGroup {
+  id: string;
+  name?: string;
+  subject?: string;
+}
+
 interface WhatsappSettings {
   id: string;
   api_key: string;
   notification_phones: string[];
   message_template: string;
+  group_list?: WhatsappGroup[];
 }
 
 serve(async (req) => {
@@ -84,9 +91,20 @@ serve(async (req) => {
     }
 
     if (!whatsappSettings.notification_phones || whatsappSettings.notification_phones.length === 0) {
-      console.error('No notification phone numbers configured');
+      console.error('No notification groups configured');
       return new Response(
-        JSON.stringify({ error: 'No notification phone numbers configured' }), 
+        JSON.stringify({ error: 'No notification groups configured' }), 
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    if (!whatsappSettings.group_list || whatsappSettings.group_list.length === 0) {
+      console.error('Group list is empty. Please fetch groups first.');
+      return new Response(
+        JSON.stringify({ error: 'Group list is empty. Please fetch groups using the settings page.' }), 
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -108,29 +126,23 @@ serve(async (req) => {
       );
     }
     
-    // Use phone number from request or from settings
-    const targetPhones = phone_number ? [phone_number] : whatsappSettings.notification_phones;
+    // Use targets from request or from settings (group IDs only)
+    const targetGroups = phone_number ? [phone_number] : whatsappSettings.notification_phones;
     
-    console.log('Target phones:', targetPhones);
+    console.log('Target groups:', targetGroups);
+    console.log('Available groups:', whatsappSettings.group_list);
     console.log('Clinical pathway data:', record);
     
-    // Validate target format (phone number or group ID)
-    const validateTarget = (target: string): boolean => {
-      // Valid formats:
-      // - Phone: 628xxx or 08xxx (will be normalized to 628xxx)
-      // - Group ID: format from Fonnte API (typically contains @g.us or specific format)
-      const phonePattern = /^(0|62)\d{8,}$/;
-      const groupPattern = /^[\d-]+@g\.us$|^[\d]+$/; // Fonnte group ID patterns
-      
-      return phonePattern.test(target) || groupPattern.test(target);
-    };
+    // Create a Set of valid group IDs for quick lookup
+    const validGroupIds = new Set(whatsappSettings.group_list.map(g => g.id));
     
-    // Normalize phone number (convert 08xxx to 628xxx)
-    const normalizeTarget = (target: string): string => {
-      if (target.startsWith('0')) {
-        return '62' + target.substring(1);
+    // Validate that target is in the group list
+    const validateGroupId = (groupId: string): boolean => {
+      const isValid = validGroupIds.has(groupId);
+      if (!isValid) {
+        console.error(`Group ID ${groupId} not found in group list. Available groups:`, Array.from(validGroupIds));
       }
-      return target;
+      return isValid;
     };
 
     const clinicalPathwayData = record as ClinicalPathwayData;
@@ -151,32 +163,30 @@ serve(async (req) => {
     // Helper function to add delay between messages
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
     
-    // Send WhatsApp message to each configured phone number with delay
+    // Send WhatsApp message to each configured group with delay
     const sendResults = [];
     const delayBetweenMessages = 30000; // 30 seconds delay between messages
     
-    for (let i = 0; i < targetPhones.length; i++) {
-      const target = targetPhones[i];
+    for (let i = 0; i < targetGroups.length; i++) {
+      const groupId = targetGroups[i];
       
-      // Validate and normalize target
-      if (!validateTarget(target)) {
-        console.error(`Invalid target format: ${target}`);
+      // Validate group ID
+      if (!validateGroupId(groupId)) {
+        console.error(`Invalid group ID: ${groupId} - not found in fetched group list`);
         sendResults.push({
-          phone: target,
+          group: groupId,
           status: 'error',
-          error: 'Invalid phone number or group ID format'
+          error: 'Group ID not found in available groups. Please refresh group list.'
         });
         continue;
       }
       
-      const normalizedTarget = normalizeTarget(target);
-      
       try {
-        console.log(`Sending WhatsApp message to: ${normalizedTarget} (${i + 1}/${targetPhones.length})`);
+        console.log(`Sending WhatsApp message to group: ${groupId} (${i + 1}/${targetGroups.length})`);
         
         // Prepare form data for Fonnte API
         const formData = new FormData();
-        formData.append('target', normalizedTarget);
+        formData.append('target', groupId);
         formData.append('message', message);
 
         const fonteResponse = await fetch(FONTE_API_URL, {
@@ -188,56 +198,56 @@ serve(async (req) => {
         });
 
         const responseData = await fonteResponse.json();
-        console.log(`Fonte API response for ${normalizedTarget}:`, responseData);
+        console.log(`Fonte API response for group ${groupId}:`, responseData);
 
         // Check response status from Fonnte
         if (responseData.status === false) {
           const errorMsg = responseData.reason || 'Unknown error';
           sendResults.push({
-            phone: normalizedTarget,
+            group: groupId,
             status: 'error',
             error: errorMsg
           });
-          console.error(`Fonte API error for ${normalizedTarget}:`, errorMsg);
+          console.error(`Fonte API error for group ${groupId}:`, errorMsg);
           
           // Provide helpful error messages
           if (errorMsg.includes('invalid group id')) {
-            console.error('Hint: Group ID may be invalid. Try updating group list first using fonnte-update-group, then fetching with fonnte-get-groups');
+            console.error('Hint: Group ID may be invalid or outdated. Try refreshing group list in settings page.');
           } else if (errorMsg.includes('disconnected device')) {
             console.error('Hint: WhatsApp device is disconnected. Please reconnect your device in Fonnte dashboard');
           }
         } else if (fonteResponse.ok) {
           sendResults.push({
-            phone: normalizedTarget,
+            group: groupId,
             status: 'success',
             data: responseData
           });
-          console.log(`WhatsApp message sent successfully to: ${normalizedTarget}`);
+          console.log(`WhatsApp message sent successfully to group: ${groupId}`);
         } else {
           sendResults.push({
-            phone: normalizedTarget,
+            group: groupId,
             status: 'error',
             error: responseData
           });
-          console.error(`Fonte API error for ${normalizedTarget}:`, responseData);
+          console.error(`Fonte API error for group ${groupId}:`, responseData);
         }
         
         // Add delay between messages, except for the last one
-        if (i < targetPhones.length - 1) {
-          console.log(`Waiting ${delayBetweenMessages}ms before sending to next number...`);
+        if (i < targetGroups.length - 1) {
+          console.log(`Waiting ${delayBetweenMessages}ms before sending to next group...`);
           await delay(delayBetweenMessages);
         }
         
       } catch (error) {
         sendResults.push({
-          phone: normalizedTarget,
+          group: groupId,
           status: 'error',
           error: (error as Error).message
         });
-        console.error(`Error sending to ${normalizedTarget}:`, error);
+        console.error(`Error sending to group ${groupId}:`, error);
         
         // Still add delay even on error, except for the last one
-        if (i < targetPhones.length - 1) {
+        if (i < targetGroups.length - 1) {
           console.log(`Error occurred, still waiting ${delayBetweenMessages}ms before next attempt...`);
           await delay(delayBetweenMessages);
         }

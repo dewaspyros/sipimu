@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Settings, MessageSquare, Key, Save, RefreshCw, Plus, Trash2, Phone, Users } from "lucide-react";
+import { Eye, EyeOff, Settings, MessageSquare, Key, Save, RefreshCw, Trash2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWhatsappSettings } from "@/hooks/useWhatsappSettings";
 
@@ -41,24 +41,8 @@ export default function Pengaturan() {
     await saveWhatsappSettings(whatsappSettings);
   };
 
-  const addPhoneNumber = () => {
-    setWhatsappSettings({
-      ...whatsappSettings,
-      notification_phones: [...whatsappSettings.notification_phones, '']
-    });
-  };
-
-  const removePhoneNumber = (index: number) => {
-    const newPhones = whatsappSettings.notification_phones.filter((_, i) => i !== index);
-    setWhatsappSettings({
-      ...whatsappSettings,
-      notification_phones: newPhones.length > 0 ? newPhones : ['']
-    });
-  };
-
-  const updatePhoneNumber = (index: number, value: string) => {
-    const newPhones = [...whatsappSettings.notification_phones];
-    newPhones[index] = value;
+  const removeGroup = (groupId: string) => {
+    const newPhones = whatsappSettings.notification_phones.filter(p => p !== groupId);
     setWhatsappSettings({
       ...whatsappSettings,
       notification_phones: newPhones
@@ -135,18 +119,25 @@ Silakan cek sistem untuk detail lebih lanjut.`
     });
   };
 
-  const addSelectedGroupsToPhones = () => {
-    const currentPhones = whatsappSettings.notification_phones.filter(p => p.trim() !== '');
-    const newPhones = [...new Set([...currentPhones, ...selectedGroups])];
+  const addSelectedGroupsToNotifications = () => {
+    if (selectedGroups.length === 0) return;
+    
+    const currentGroups = whatsappSettings.notification_phones;
+    const newGroups = [...new Set([...currentGroups, ...selectedGroups])];
     setWhatsappSettings({
       ...whatsappSettings,
-      notification_phones: newPhones
+      notification_phones: newGroups
     });
     setSelectedGroups([]);
     toast({
       title: 'Berhasil',
       description: `${selectedGroups.length} grup ditambahkan ke daftar notifikasi`,
     });
+  };
+
+  const getGroupName = (groupId: string): string => {
+    const group = whatsappSettings.group_list?.find(g => g.id === groupId);
+    return group?.name || group?.subject || groupId;
   };
 
   return (
@@ -298,9 +289,8 @@ Silakan cek sistem untuk detail lebih lanjut.`
                 <>
                   <Alert className="border-primary bg-primary/5">
                     <AlertDescription>
-                      Pastikan API Key Fonte valid. Nomor WhatsApp gunakan format internasional (contoh: 6281234567890).
-                      Untuk grup WhatsApp, gunakan tombol "Ambil Daftar Grup" untuk mendapatkan ID grup yang valid.
-                      Notifikasi akan dikirim otomatis saat data clinical pathway baru ditambahkan.
+                      Pastikan API Key Fonte valid. Gunakan tombol "Ambil Daftar Grup" untuk mendapatkan grup WhatsApp yang tersedia,
+                      kemudian pilih grup yang ingin menerima notifikasi. Notifikasi akan dikirim otomatis saat data clinical pathway baru ditambahkan.
                     </AlertDescription>
                   </Alert>
 
@@ -373,7 +363,7 @@ Silakan cek sistem untuk detail lebih lanjut.`
                             type="button"
                             variant="secondary"
                             size="sm"
-                            onClick={addSelectedGroupsToPhones}
+                            onClick={addSelectedGroupsToNotifications}
                             className="w-full"
                           >
                             Tambahkan {selectedGroups.length} Grup Terpilih
@@ -389,49 +379,40 @@ Silakan cek sistem untuk detail lebih lanjut.`
                     )}
                   </div>
 
-                  {/* Phone Numbers / Group IDs Section */}
+                  {/* Selected Groups for Notifications */}
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label>Nomor / Grup Tujuan Notifikasi</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addPhoneNumber}
-                        className="flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Tambah Manual
-                      </Button>
-                    </div>
+                    <Label className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Grup Terpilih untuk Notifikasi
+                    </Label>
 
-                    <div className="space-y-3">
-                      {whatsappSettings.notification_phones.map((phone, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <Input
-                            value={phone}
-                            onChange={(e) => updatePhoneNumber(index, e.target.value)}
-                            placeholder="Contoh: 6281234567890 atau Group ID"
-                            className="flex-1 medical-transition"
-                          />
-                          {whatsappSettings.notification_phones.length > 1 && (
+                    {whatsappSettings.notification_phones.length > 0 ? (
+                      <div className="border rounded-lg divide-y">
+                        {whatsappSettings.notification_phones.map((groupId) => (
+                          <div key={groupId} className="flex items-center justify-between p-3 hover:bg-accent">
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm font-medium">{getGroupName(groupId)}</span>
+                            </div>
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="ghost"
                               size="icon"
-                              onClick={() => removePhoneNumber(index)}
+                              onClick={() => removeGroup(groupId)}
                               className="text-destructive hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Format nomor: 62XXXXXXXXXX atau Group ID dari daftar grup
-                    </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <Alert>
+                        <AlertDescription>
+                          Belum ada grup yang dipilih. Pilih grup dari daftar di atas untuk menerima notifikasi.
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </div>
 
                   <div className="space-y-2">
