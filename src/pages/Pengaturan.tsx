@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Settings, MessageSquare, Key, Save, RefreshCw, Trash2, Users } from "lucide-react";
+import { Eye, EyeOff, Settings, MessageSquare, Key, Save, RefreshCw, Trash2, Users, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWhatsappSettings } from "@/hooks/useWhatsappSettings";
 
@@ -41,11 +41,28 @@ export default function Pengaturan() {
     await saveWhatsappSettings(whatsappSettings);
   };
 
-  const removeGroup = (groupId: string) => {
-    const newPhones = whatsappSettings.notification_phones.filter(p => p !== groupId);
+  const addManualGroup = () => {
+    const newGroups = [...whatsappSettings.notification_phones, ''];
     setWhatsappSettings({
       ...whatsappSettings,
-      notification_phones: newPhones
+      notification_phones: newGroups
+    });
+  };
+
+  const updateManualGroup = (index: number, value: string) => {
+    const newGroups = [...whatsappSettings.notification_phones];
+    newGroups[index] = value;
+    setWhatsappSettings({
+      ...whatsappSettings,
+      notification_phones: newGroups
+    });
+  };
+
+  const removeGroup = (index: number) => {
+    const newGroups = whatsappSettings.notification_phones.filter((_, i) => i !== index);
+    setWhatsappSettings({
+      ...whatsappSettings,
+      notification_phones: newGroups.length > 0 ? newGroups : []
     });
   };
 
@@ -384,24 +401,39 @@ Silakan cek sistem untuk detail lebih lanjut.`
 
                   {/* Selected Groups for Notifications */}
                   <div className="space-y-4">
-                    <Label className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Grup Terpilih untuk Notifikasi
-                    </Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Grup Terpilih untuk Notifikasi
+                      </Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addManualGroup}
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Tambah Manual
+                      </Button>
+                    </div>
 
                     {whatsappSettings.notification_phones.length > 0 ? (
-                      <div className="border rounded-lg divide-y">
-                        {whatsappSettings.notification_phones.map((groupId) => (
-                          <div key={groupId} className="flex items-center justify-between p-3 hover:bg-accent">
-                            <div className="flex items-center gap-2">
-                              <Users className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm font-medium">{getGroupName(groupId)}</span>
-                            </div>
+                      <div className="space-y-3">
+                        {whatsappSettings.notification_phones.map((groupId, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <Input
+                              value={groupId}
+                              onChange={(e) => updateManualGroup(index, e.target.value)}
+                              placeholder="Contoh: 120363321533648377@g.us"
+                              className="flex-1 medical-transition font-mono text-sm"
+                            />
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="outline"
                               size="icon"
-                              onClick={() => removeGroup(groupId)}
+                              onClick={() => removeGroup(index)}
                               className="text-destructive hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -412,10 +444,13 @@ Silakan cek sistem untuk detail lebih lanjut.`
                     ) : (
                       <Alert>
                         <AlertDescription>
-                          Belum ada grup yang dipilih. Pilih grup dari daftar di atas untuk menerima notifikasi.
+                          Belum ada grup yang dipilih. Pilih grup dari daftar di atas atau tambahkan Group ID secara manual.
                         </AlertDescription>
                       </Alert>
                     )}
+                    <p className="text-sm text-muted-foreground">
+                      Format Group ID: 120363xxxxxxxxx@g.us (dapatkan dari daftar grup di atas atau dari Fonnte dashboard)
+                    </p>
                   </div>
 
                   <div className="space-y-2">
