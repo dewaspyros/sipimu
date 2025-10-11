@@ -144,7 +144,6 @@ export function useWhatsappSettings() {
         return;
       }
       
-      // Then fetch the updated group list
       const getResponse = await supabase.functions.invoke('fonnte-get-groups');
       
       if (getResponse.error) {
@@ -156,13 +155,26 @@ export function useWhatsappSettings() {
         });
         return;
       }
+
+      const responseData = getResponse.data;
+      console.log('Get groups response:', responseData);
+
+      if (!responseData?.success) {
+        toast({
+          title: 'Error',
+          description: responseData?.error || 'Gagal mengambil daftar grup',
+          variant: 'destructive'
+        });
+        return;
+      }
       
       // Refresh settings to get updated group list
       await fetchSettings();
-      
+
+      const groupCount = responseData.groups?.length || 0;
       toast({
         title: 'Berhasil',
-        description: 'Daftar grup WhatsApp berhasil diperbarui',
+        description: `${groupCount} grup WhatsApp berhasil diperbarui`,
       });
       
     } catch (error) {

@@ -72,23 +72,53 @@ serve(async (req) => {
       );
     }
 
+    // Check if response has the expected structure
+    if (responseData.status === false) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Fonnte API returned error', 
+          details: responseData 
+        }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Extract the groups data from response
+    const groupsData = responseData.data || responseData;
+    console.log('Extracted groups data:', groupsData);
+
     // Update the group list in database
     const { error: updateError } = await supabase
       .from('whatsapp_settings')
       .update({ 
-        group_list: responseData,
+        group_list: groupsData,
         last_group_update: new Date().toISOString()
       })
       .eq('api_key', settings.api_key);
 
     if (updateError) {
       console.error('Error updating group list:', updateError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to save groups to database', 
+          details: updateError 
+        }), 
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
+
+    console.log('Successfully saved groups to database');
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        groups: responseData 
+        groups: groupsData 
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
