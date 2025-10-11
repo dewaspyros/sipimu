@@ -49,12 +49,15 @@ export function useWhatsappSettings() {
       }
 
       if (data) {
+        const groupList = data.group_list ? 
+          (Array.isArray(data.group_list) ? data.group_list : []) : [];
+        
         setSettings({
           id: data.id,
           api_key: data.api_key || '',
           notification_phones: data.notification_phones || [''],
           message_template: data.message_template || '',
-          group_list: (data.group_list as unknown as WhatsappGroup[]) || [],
+          group_list: groupList as unknown as WhatsappGroup[],
           last_group_update: data.last_group_update || undefined
         });
       }

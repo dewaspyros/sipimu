@@ -136,7 +136,10 @@ Silakan cek sistem untuk detail lebih lanjut.`
   };
 
   const getGroupName = (groupId: string): string => {
-    const group = whatsappSettings.group_list?.find(g => g.id === groupId);
+    if (!whatsappSettings.group_list || !Array.isArray(whatsappSettings.group_list)) {
+      return groupId;
+    }
+    const group = whatsappSettings.group_list.find(g => g.id === groupId);
     return group?.name || group?.subject || groupId;
   };
 
