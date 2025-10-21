@@ -118,6 +118,7 @@ export type Database = {
           jam_keluar: string | null
           jam_masuk: string
           jenis_clinical_pathway: Database["public"]["Enums"]["clinical_pathway_type"]
+          keterangan: string | null
           los_hari: number | null
           nama_pasien: string
           no_rm: string
@@ -134,6 +135,7 @@ export type Database = {
           jam_keluar?: string | null
           jam_masuk: string
           jenis_clinical_pathway: Database["public"]["Enums"]["clinical_pathway_type"]
+          keterangan?: string | null
           los_hari?: number | null
           nama_pasien: string
           no_rm: string
@@ -150,6 +152,7 @@ export type Database = {
           jam_keluar?: string | null
           jam_masuk?: string
           jenis_clinical_pathway?: Database["public"]["Enums"]["clinical_pathway_type"]
+          keterangan?: string | null
           los_hari?: number | null
           nama_pasien?: string
           no_rm?: string

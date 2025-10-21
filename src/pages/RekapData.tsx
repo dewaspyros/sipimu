@@ -39,6 +39,7 @@ const pathwayOptions = [
 export default function RekapData() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedPathway, setSelectedPathway] = useState("all");
+  const [selectedDPJP, setSelectedDPJP] = useState("all");
   const [filteredData, setFilteredData] = useState<RekapDataItem[]>([]);
   const [editingRows, setEditingRows] = useState<{[key: string]: boolean}>({});
   const [checklistData, setChecklistData] = useState<AggregatedChecklistData[]>([]);
@@ -61,17 +62,32 @@ export default function RekapData() {
 
   const handlePathwayChange = (pathway: string) => {
     setSelectedPathway(pathway);
-    if (selectedMonth && data.length > 0) {
-      setFilteredData(filterDataByPathway(pathway));
-    }
   };
+
+  const handleDPJPChange = (dpjp: string) => {
+    setSelectedDPJP(dpjp);
+  };
+
+  // Get unique DPJP list from data
+  const dpjpOptions = [
+    { value: "all", label: "Semua DPJP" },
+    ...Array.from(new Set(data.map(item => item.dpjp).filter(Boolean)))
+      .map(dpjp => ({ value: dpjp, label: dpjp }))
+  ];
 
   // Update filtered data when main data changes
   useEffect(() => {
     if (data.length > 0) {
-      setFilteredData(filterDataByPathway(selectedPathway));
+      let filtered = filterDataByPathway(selectedPathway);
+      
+      // Apply DPJP filter
+      if (selectedDPJP !== "all") {
+        filtered = filtered.filter(item => item.dpjp === selectedDPJP);
+      }
+      
+      setFilteredData(filtered);
     }
-  }, [data, selectedPathway, filterDataByPathway]);
+  }, [data, selectedPathway, selectedDPJP, filterDataByPathway]);
 
   const getTargetInfo = (diagnosis: string) => {
     const target = getTargetLOS(diagnosis);
@@ -121,7 +137,8 @@ export default function RekapData() {
           los: patient.los,
           sesuaiTarget: patient.sesuaiTarget,
           kepatuhanPenunjang: patient.kepatuhanPenunjang,
-          kepatuhanTerapi: patient.kepatuhanTerapi
+          kepatuhanTerapi: patient.kepatuhanTerapi,
+          keterangan: patient.keterangan
         });
       }
     }
@@ -141,6 +158,15 @@ export default function RekapData() {
       
       // Update in database
       await updatePatientData(patient.id, { los: newLOS });
+    }
+  };
+
+  const updateKeterangan = async (index: number, newKeterangan: string) => {
+    const patient = filteredData[index];
+    if (patient) {
+      const updatedData = [...filteredData];
+      updatedData[index] = { ...patient, keterangan: newKeterangan };
+      setFilteredData(updatedData);
     }
   };
 
@@ -249,6 +275,22 @@ export default function RekapData() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="w-full md:w-64">
+              <label className="text-sm font-medium mb-2 block">DPJP:</label>
+              <Select value={selectedDPJP} onValueChange={handleDPJPChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih DPJP" />
+                </SelectTrigger>
+                <SelectContent>
+                   {dpjpOptions.map((option) => (
+                     <SelectItem key={option.value} value={option.value}>
+                       {option.label}
+                     </SelectItem>
+                   ))}
+                </SelectContent>
+              </Select>
+            </div>
             
             {summary && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1">
@@ -323,6 +365,7 @@ export default function RekapData() {
                         <th className="text-left p-3">Kepatuhan Penunjang</th>
                         <th className="text-left p-3">Kepatuhan Terapi</th>
                         <th className="text-left p-3">Kepatuhan CP</th>
+                        <th className="text-left p-3">Keterangan</th>
                         <th className="text-left p-3">Aksi</th>
                       </tr>
                     </thead>
@@ -439,6 +482,19 @@ export default function RekapData() {
                                   </Badge>
                                 );
                               })()}
+                            </td>
+                            <td className="p-3">
+                              {isEditing ? (
+                                <Input
+                                  type="text"
+                                  value={item.keterangan || ''}
+                                  onChange={(e) => updateKeterangan(index, e.target.value)}
+                                  className="w-full"
+                                  placeholder="Tambahkan keterangan"
+                                />
+                              ) : (
+                                <span className="text-sm text-muted-foreground">{item.keterangan || '-'}</span>
+                              )}
                             </td>
                             <td className="p-3">
                               <Button

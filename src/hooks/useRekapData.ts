@@ -20,6 +20,7 @@ export interface RekapDataItem {
   kepatuhanTerapi: boolean;
   dpjp: string;
   verifikatorPelaksana: string;
+  keterangan: string | null;
 }
 
 export const useRekapData = () => {
@@ -48,7 +49,8 @@ export const useRekapData = () => {
           los_hari,
           dpjp,
           verifikator_pelaksana,
-          bangsal
+          bangsal,
+          keterangan
         `)
         .gte('tanggal_masuk', `${year}-${month.toString().padStart(2, '0')}-01`)
         .lt('tanggal_masuk', `${year}-${(month + 1).toString().padStart(2, '0')}-01`)
@@ -95,6 +97,7 @@ export const useRekapData = () => {
           kepatuhanTerapi: kepatuhanTerapi,
           dpjp: pathway.dpjp || '',
           verifikatorPelaksana: pathway.verifikator_pelaksana || '',
+          keterangan: pathway.keterangan || null,
         };
       }) || [];
 
@@ -143,6 +146,7 @@ export const useRekapData = () => {
       if (updates.los !== undefined) dbUpdates.los_hari = updates.los;
       if (updates.tanggalKeluar !== undefined) dbUpdates.tanggal_keluar = updates.tanggalKeluar;
       if (updates.jamKeluar !== undefined) dbUpdates.jam_keluar = updates.jamKeluar;
+      if (updates.keterangan !== undefined) dbUpdates.keterangan = updates.keterangan;
 
       const { error } = await supabase
         .from('clinical_pathways')
@@ -247,7 +251,8 @@ export const useRekapData = () => {
           los_hari,
           dpjp,
           verifikator_pelaksana,
-          bangsal
+          bangsal,
+          keterangan
         `)
         .order('tanggal_masuk', { ascending: true });
 
@@ -292,6 +297,7 @@ export const useRekapData = () => {
           kepatuhanTerapi: kepatuhanTerapi,
           dpjp: pathway.dpjp || '',
           verifikatorPelaksana: pathway.verifikator_pelaksana || '',
+          keterangan: pathway.keterangan || null,
         };
       }) || [];
 
