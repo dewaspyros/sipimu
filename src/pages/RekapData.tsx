@@ -164,9 +164,21 @@ export default function RekapData() {
   const updateKeterangan = async (index: number, newKeterangan: string) => {
     const patient = filteredData[index];
     if (patient) {
-      const updatedData = [...filteredData];
-      updatedData[index] = { ...patient, keterangan: newKeterangan };
-      setFilteredData(updatedData);
+      try {
+        // Update keterangan in database immediately
+        await updatePatientData(patient.id, { keterangan: newKeterangan });
+        
+        // Update local state after successful database update
+        setFilteredData(prev => {
+          const updatedData = [...prev];
+          updatedData[index] = { ...updatedData[index], keterangan: newKeterangan };
+          return updatedData;
+        });
+        
+        console.log(`Updated keterangan for patient ${patient.namaPasien}`);
+      } catch (error) {
+        console.error('Failed to update keterangan:', error);
+      }
     }
   };
 
@@ -360,6 +372,7 @@ export default function RekapData() {
                         <th className="text-left p-3">Tanggal Masuk RS</th>
                         <th className="text-left p-3">Tanggal Keluar RS</th>
                         <th className="text-left p-3">Diagnosis Pasien</th>
+                        <th className="text-left p-3">DPJP</th>
                         <th className="text-left p-3">LOS</th>
                         <th className="text-left p-3">Sesuai Target</th>
                         <th className="text-left p-3">Kepatuhan Penunjang</th>
@@ -393,6 +406,7 @@ export default function RekapData() {
                                 {item.diagnosis}
                               </Badge>
                             </td>
+                            <td className="p-3">{item.dpjp || '-'}</td>
                             <td className="p-3 text-center">
                               {isEditing ? (
                                 <Input
