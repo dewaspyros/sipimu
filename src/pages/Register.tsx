@@ -54,10 +54,10 @@ export default function Register() {
     if (signUpError) {
       setError(signUpError.message);
     } else {
-      setSuccess("Akun berhasil didaftarkan! Silakan login.");
+      setSuccess("Akun berhasil didaftarkan! Mohon tunggu persetujuan admin sebelum dapat login.");
       setTimeout(() => {
         navigate("/login");
-      }, 2000);
+      }, 3000);
     }
   };
 

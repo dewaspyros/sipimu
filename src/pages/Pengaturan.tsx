@@ -7,10 +7,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Settings, MessageSquare, Key, Save, RefreshCw, Trash2, Users, Plus } from "lucide-react";
+import { Eye, EyeOff, Settings, MessageSquare, Key, Save, RefreshCw, Trash2, Users, Plus, UserCheck, UserX, Shield, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWhatsappSettings } from "@/hooks/useWhatsappSettings";
-
+import { useUserManagement } from "@/hooks/useUserManagement";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 export default function Pengaturan() {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -27,6 +30,17 @@ export default function Pengaturan() {
     saveSettings: saveWhatsappSettings,
     fetchGroups
   } = useWhatsappSettings();
+  
+  // User Management Hook
+  const {
+    users,
+    pendingUsers,
+    loading: usersLoading,
+    isAdmin,
+    approveUser,
+    rejectUser,
+    updateUserRole
+  } = useUserManagement();
   
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 
@@ -171,15 +185,21 @@ Silakan cek sistem untuk detail lebih lanjut.`
       </div>
 
       <Tabs defaultValue="password" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
           <TabsTrigger value="password" className="flex items-center gap-2">
             <Key className="h-4 w-4" />
             Ubah Password
           </TabsTrigger>
           <TabsTrigger value="whatsapp" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
-            Pengaturan WhatsApp
+            WhatsApp
           </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Manajemen User
+            </TabsTrigger>
+          )}
         </TabsList>
 
 
@@ -514,6 +534,151 @@ Silakan cek sistem untuk detail lebih lanjut.`
             </CardFooter>
           </Card>
         </TabsContent>
+
+        {/* User Management Tab - Admin Only */}
+        {isAdmin && (
+          <TabsContent value="users">
+            <Card className="medical-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Manajemen User
+                </CardTitle>
+                <CardDescription>
+                  Kelola persetujuan pendaftaran dan role pengguna
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {usersLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Pending Approvals Section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <UserCheck className="h-5 w-5 text-warning" />
+                        <h3 className="font-semibold">Menunggu Persetujuan ({pendingUsers.length})</h3>
+                      </div>
+                      
+                      {pendingUsers.length === 0 ? (
+                        <Alert>
+                          <AlertDescription>
+                            Tidak ada pengguna yang menunggu persetujuan.
+                          </AlertDescription>
+                        </Alert>
+                      ) : (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>NIK</TableHead>
+                              <TableHead>Nama Lengkap</TableHead>
+                              <TableHead>Tanggal Daftar</TableHead>
+                              <TableHead className="text-right">Aksi</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {pendingUsers.map((user) => (
+                              <TableRow key={user.id}>
+                                <TableCell className="font-mono">{user.nik}</TableCell>
+                                <TableCell>{user.full_name || '-'}</TableCell>
+                                <TableCell>
+                                  {new Date(user.created_at).toLocaleDateString('id-ID', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  })}
+                                </TableCell>
+                                <TableCell className="text-right space-x-2">
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() => approveUser(user.user_id)}
+                                    className="bg-success hover:bg-success/90"
+                                  >
+                                    <UserCheck className="h-4 w-4 mr-1" />
+                                    Setujui
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => rejectUser(user.user_id)}
+                                  >
+                                    <UserX className="h-4 w-4 mr-1" />
+                                    Tolak
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+                    </div>
+
+                    {/* All Users Section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        <h3 className="font-semibold">Pengguna Aktif ({users.length})</h3>
+                      </div>
+                      
+                      {users.length === 0 ? (
+                        <Alert>
+                          <AlertDescription>
+                            Belum ada pengguna yang disetujui.
+                          </AlertDescription>
+                        </Alert>
+                      ) : (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>NIK</TableHead>
+                              <TableHead>Nama Lengkap</TableHead>
+                              <TableHead>Role</TableHead>
+                              <TableHead className="text-right">Ubah Role</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {users.map((user) => (
+                              <TableRow key={user.id}>
+                                <TableCell className="font-mono">{user.nik}</TableCell>
+                                <TableCell>{user.full_name || '-'}</TableCell>
+                                <TableCell>
+                                  <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                                    {user.role === 'admin' ? (
+                                      <><ShieldCheck className="h-3 w-3 mr-1" /> Admin</>
+                                    ) : (
+                                      <>User</>
+                                    )}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <Select
+                                    value={user.role}
+                                    onValueChange={(value: 'admin' | 'user') => updateUserRole(user.user_id, value)}
+                                  >
+                                    <SelectTrigger className="w-32">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="user">User</SelectItem>
+                                      <SelectItem value="admin">Admin</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

@@ -46,7 +46,7 @@ export const useAuth = () => {
       // Use consistent email format with signUp
       const email = `${nik}@hospital.local`;
       
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
@@ -57,6 +57,25 @@ export const useAuth = () => {
           return { error: new Error('NIK atau password salah') };
         }
         return { error: new Error('NIK atau password salah') };
+      }
+
+      // Check if user is approved
+      if (data.user) {
+        const { data: isApproved, error: approvalError } = await supabase.rpc('is_user_approved', {
+          _user_id: data.user.id
+        });
+
+        if (approvalError) {
+          console.error('Error checking approval status:', approvalError);
+          await supabase.auth.signOut();
+          return { error: new Error('Gagal memeriksa status persetujuan') };
+        }
+
+        if (!isApproved) {
+          // Sign out the user immediately
+          await supabase.auth.signOut();
+          return { error: new Error('Akun Anda belum disetujui oleh admin. Silakan tunggu persetujuan.') };
+        }
       }
 
       return { error: null };
