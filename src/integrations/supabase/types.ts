@@ -328,6 +328,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          is_approved: boolean
           nik: string
           role: string | null
           updated_at: string
@@ -337,6 +338,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_approved?: boolean
           nik: string
           role?: string | null
           updated_at?: string
@@ -346,9 +348,31 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_approved?: boolean
           nik?: string
           role?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
@@ -484,8 +508,17 @@ export type Database = {
         Args: { cp_type: Database["public"]["Enums"]["clinical_pathway_type"] }
         Returns: number
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_user_approved: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
+      app_role: "admin" | "user"
       clinical_pathway_type:
         | "Sectio Caesaria"
         | "Stroke Hemoragik"
@@ -634,6 +667,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "user"],
       clinical_pathway_type: [
         "Sectio Caesaria",
         "Stroke Hemoragik",
