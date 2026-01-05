@@ -59,7 +59,7 @@ export const useAuth = () => {
         return { error: new Error('NIK atau password salah') };
       }
 
-      // Check if user is approved
+      // Check if user is approved BEFORE allowing login to complete
       if (data.user) {
         const { data: isApproved, error: approvalError } = await supabase.rpc('is_user_approved', {
           _user_id: data.user.id
@@ -67,19 +67,28 @@ export const useAuth = () => {
 
         if (approvalError) {
           console.error('Error checking approval status:', approvalError);
+          // Force sign out and clear state
           await supabase.auth.signOut();
+          setUser(null);
+          setSession(null);
           return { error: new Error('Gagal memeriksa status persetujuan') };
         }
 
-        if (!isApproved) {
-          // Sign out the user immediately
+        if (isApproved !== true) {
+          // Sign out the user immediately and clear state
           await supabase.auth.signOut();
+          setUser(null);
+          setSession(null);
           return { error: new Error('Akun Anda belum disetujui oleh admin. Silakan tunggu persetujuan.') };
         }
       }
 
       return { error: null };
     } catch (error) {
+      // Ensure clean state on any error
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
       return { error: error as Error };
     }
   };
