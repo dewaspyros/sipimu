@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from "recharts";
 import { Activity, TrendingUp, Users, FileCheck } from "lucide-react";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { yearOptions } from "@/constants/yearOptions";
 
 // Custom label function for bars
 const CustomBarLabel = (props: any) => {
@@ -50,6 +51,7 @@ const diagnosisOptions = [
 export default function Dashboard() {
   const [selectedDiagnosis, setSelectedDiagnosis] = useState("Sectio Caesaria");
   const [selectedMonth, setSelectedMonth] = useState("1");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const { 
     loading, 
     getComplianceByType, 
@@ -61,18 +63,18 @@ export default function Dashboard() {
   // Memoize data to prevent blinking - use useMemo for better performance
   const complianceData = React.useMemo(() => {
     if (loading) return { pathwayCompliance: 0, losCompliance: 0, therapyCompliance: 0, supportCompliance: 0, totalPatients: 0, avgLOS: 0 };
-    return getComplianceByType(selectedDiagnosis, selectedMonth);
-  }, [selectedDiagnosis, selectedMonth, loading, getComplianceByType]);
+    return getComplianceByType(selectedDiagnosis, selectedMonth, selectedYear);
+  }, [selectedDiagnosis, selectedMonth, selectedYear, loading, getComplianceByType]);
 
   const monthlyChartData = React.useMemo(() => {
     if (loading) return [];
-    return getMonthlyChartData(selectedDiagnosis);
-  }, [selectedDiagnosis, loading, getMonthlyChartData]);
+    return getMonthlyChartData(selectedDiagnosis, selectedYear);
+  }, [selectedDiagnosis, selectedYear, loading, getMonthlyChartData]);
 
   const componentChartData = React.useMemo(() => {
     if (loading) return [];
-    return getComponentComplianceData(selectedDiagnosis);
-  }, [selectedDiagnosis, loading, getComponentComplianceData]);
+    return getComponentComplianceData(selectedDiagnosis, selectedYear);
+  }, [selectedDiagnosis, selectedYear, loading, getComponentComplianceData]);
   
   const getTargetInfo = (diagnosis: string) => {
     switch (diagnosis) {
@@ -146,6 +148,18 @@ export default function Dashboard() {
               </CardDescription>
             </div>
             <div className="flex flex-col md:flex-row gap-4">
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger className="w-full md:w-[120px]">
+                  <SelectValue placeholder="Pilih Tahun" />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Select value={selectedDiagnosis} onValueChange={setSelectedDiagnosis}>
                 <SelectTrigger className="w-full md:w-[250px]">
                   <SelectValue placeholder="Pilih Diagnosis" />
@@ -200,6 +214,18 @@ export default function Dashboard() {
               </CardDescription>
             </div>
             <div className="flex flex-col md:flex-row gap-4">
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger className="w-full md:w-[120px]">
+                  <SelectValue placeholder="Pilih Tahun" />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Select value={selectedDiagnosis} onValueChange={setSelectedDiagnosis}>
                 <SelectTrigger className="w-full md:w-[250px]">
                   <SelectValue placeholder="Pilih Diagnosis" />

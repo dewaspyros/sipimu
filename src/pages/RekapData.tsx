@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRekapData, type RekapDataItem } from "@/hooks/useRekapData";
 import { useChecklistSummary, type AggregatedChecklistData } from "@/hooks/useChecklistSummary";
+import { yearOptions } from "@/constants/yearOptions";
 
 // Remove dummy data - now using real Supabase data
 
@@ -38,6 +39,7 @@ const pathwayOptions = [
 
 export default function RekapData() {
   const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedPathway, setSelectedPathway] = useState("all");
   const [selectedDPJP, setSelectedDPJP] = useState("all");
   const [filteredData, setFilteredData] = useState<RekapDataItem[]>([]);
@@ -49,14 +51,25 @@ export default function RekapData() {
 
   const handleMonthChange = async (month: string) => {
     setSelectedMonth(month);
+    const yearNum = parseInt(selectedYear);
     if (month && month !== "all") {
-      await fetchDataByMonth(parseInt(month));
+      await fetchDataByMonth(parseInt(month), yearNum);
       // Also fetch checklist data for the selected month
-      const checklistSummary = await aggregateChecklistData(parseInt(month));
+      const checklistSummary = await aggregateChecklistData(parseInt(month), yearNum);
       setChecklistData(checklistSummary);
     } else if (month === "all") {
       await fetchAllData();
       setChecklistData([]);
+    }
+  };
+
+  const handleYearChange = async (year: string) => {
+    setSelectedYear(year);
+    const yearNum = parseInt(year);
+    if (selectedMonth && selectedMonth !== "all") {
+      await fetchDataByMonth(parseInt(selectedMonth), yearNum);
+      const checklistSummary = await aggregateChecklistData(parseInt(selectedMonth), yearNum);
+      setChecklistData(checklistSummary);
     }
   };
 
@@ -207,7 +220,8 @@ export default function RekapData() {
 
   const generateSummary = async () => {
     if (selectedMonth && selectedMonth !== "all") {
-      await generateChecklistSummaryForMonth(parseInt(selectedMonth));
+      const yearNum = parseInt(selectedYear);
+      await generateChecklistSummaryForMonth(parseInt(selectedMonth), yearNum);
     }
   };
 
@@ -256,6 +270,21 @@ export default function RekapData() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
+            <div className="w-full md:w-48">
+              <label className="text-sm font-medium mb-2 block">Pilih Tahun:</label>
+              <Select value={selectedYear} onValueChange={handleYearChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih tahun" />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="w-full md:w-64">
               <label className="text-sm font-medium mb-2 block">Pilih Bulan:</label>
               <Select value={selectedMonth} onValueChange={handleMonthChange}>
