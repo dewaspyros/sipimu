@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Edit, Trash2, Eye, FileText, Search } from "lucide-react";
 import { useClinicalPathways } from "@/hooks/useClinicalPathways";
+import { yearOptions } from "@/constants/yearOptions";
 
 export default function ClinicalPathway() {
   const navigate = useNavigate();
   const { pathways, loading, deletePathway } = useClinicalPathways();
   const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [selectedPathway, setSelectedPathway] = useState<string>("");
   const [selectedWard, setSelectedWard] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -54,6 +56,22 @@ export default function ClinicalPathway() {
                       className="pl-10"
                     />
                   </div>
+                </div>
+                <div className="w-full md:w-48">
+                  <label className="text-sm font-medium mb-2 block">Filter Tahun:</label>
+                  <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih tahun" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Semua Tahun</SelectItem>
+                      {yearOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="w-full md:w-48">
                   <label className="text-sm font-medium mb-2 block">Filter Bulan:</label>
@@ -151,6 +169,11 @@ export default function ClinicalPathway() {
                             const matchesName = item.nama_pasien.toLowerCase().includes(query);
                             const matchesRM = item.no_rm.toLowerCase().includes(query);
                             if (!matchesName && !matchesRM) return false;
+                          }
+                          // Filter by year
+                          if (selectedYear && selectedYear !== "all") {
+                            const admissionYear = new Date(item.tanggal_masuk).getFullYear();
+                            if (admissionYear.toString() !== selectedYear) return false;
                           }
                           // Filter by month
                           if (selectedMonth && selectedMonth !== "all") {

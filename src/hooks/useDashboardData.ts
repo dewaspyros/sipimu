@@ -124,13 +124,23 @@ export const useDashboardData = () => {
     }
   };
 
-  // Get compliance data by clinical pathway type and month
-  const getComplianceByType = (type: string, month: string = "all") => {
-    // Filter data by month first
-    let filteredByMonth = rekapData;
+  // Get compliance data by clinical pathway type, month, and year
+  const getComplianceByType = (type: string, month: string = "all", year: string = "all") => {
+    // Filter data by year first
+    let filteredByYear = rekapData;
+    if (year !== "all") {
+      const yearNum = parseInt(year);
+      filteredByYear = rekapData.filter(item => {
+        const admissionYear = new Date(item.tanggalMasuk).getFullYear();
+        return admissionYear === yearNum;
+      });
+    }
+
+    // Filter data by month
+    let filteredByMonth = filteredByYear;
     if (month !== "all") {
       const monthNum = parseInt(month);
-      filteredByMonth = rekapData.filter(item => {
+      filteredByMonth = filteredByYear.filter(item => {
         const admissionMonth = new Date(item.tanggalMasuk).getMonth() + 1;
         return admissionMonth === monthNum;
       });
@@ -230,8 +240,8 @@ export const useDashboardData = () => {
     };
   };
 
-  // Transform monthly data for charts with pathway type filtering
-  const getMonthlyChartData = (type: string = "all") => {
+  // Transform monthly data for charts with pathway type and year filtering
+  const getMonthlyChartData = (type: string = "all", year: string = "all") => {
     if (!rekapData.length) return [];
 
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -249,7 +259,13 @@ export const useDashboardData = () => {
     };
     
     const targetType = type === "all" ? null : pathwayMap[type];
-    const filteredData = targetType ? rekapData.filter(item => item.diagnosis === targetType) : rekapData;
+    let filteredData = targetType ? rekapData.filter(item => item.diagnosis === targetType) : rekapData;
+    
+    // Filter by year
+    if (year !== "all") {
+      const yearNum = parseInt(year);
+      filteredData = filteredData.filter(item => new Date(item.tanggalMasuk).getFullYear() === yearNum);
+    }
     
     // Group by month
     filteredData.forEach(item => {
@@ -313,8 +329,8 @@ export const useDashboardData = () => {
     return chartData;
   };
 
-  // Get component compliance data for charts with pathway type filtering
-  const getComponentComplianceData = (type: string = "all") => {
+  // Get component compliance data for charts with pathway type and year filtering
+  const getComponentComplianceData = (type: string = "all", year: string = "all") => {
     if (!rekapData.length) return [];
 
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -332,7 +348,13 @@ export const useDashboardData = () => {
     };
     
     const targetType = type === "all" ? null : pathwayMap[type];
-    const filteredData = targetType ? rekapData.filter(item => item.diagnosis === targetType) : rekapData;
+    let filteredData = targetType ? rekapData.filter(item => item.diagnosis === targetType) : rekapData;
+    
+    // Filter by year
+    if (year !== "all") {
+      const yearNum = parseInt(year);
+      filteredData = filteredData.filter(item => new Date(item.tanggalMasuk).getFullYear() === yearNum);
+    }
     
     // Group by month
     filteredData.forEach(item => {
