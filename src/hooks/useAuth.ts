@@ -203,7 +203,7 @@ const useAuthValue = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const auth = useProvideAuth();
-  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+  return createElement(AuthContext.Provider, { value: auth }, children);
 };
 
 export const useAuth = useAuthValue;
