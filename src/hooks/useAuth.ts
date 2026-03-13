@@ -22,23 +22,52 @@ export const useAuth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    let isMounted = true;
+
+    const applySession = async (nextSession: Session | null) => {
+      if (!isMounted) return;
+
+      if (!nextSession?.user) {
+        setSession(null);
+        setUser(null);
         setLoading(false);
+        return;
+      }
+
+      const { data: isApproved, error } = await supabase.rpc('is_user_approved', {
+        _user_id: nextSession.user.id
+      });
+
+      if (!isMounted) return;
+
+      if (error || isApproved !== true) {
+        await supabase.auth.signOut();
+        if (!isMounted) return;
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      setSession(nextSession);
+      setUser(nextSession.user);
+      setLoading(false);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, nextSession) => {
+        void applySession(nextSession);
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      void applySession(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (nik: string, password: string) => {
@@ -98,7 +127,7 @@ export const useAuth = () => {
       const email = `${nik}@hospital.local`; // Consistent email format
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -118,6 +147,13 @@ export const useAuth = () => {
           return { error: new Error('Password minimal 6 karakter') };
         }
         return { error: new Error('Gagal mendaftar akun') };
+      }
+
+      // Prevent newly registered unapproved users from keeping an active session
+      if (data.session) {
+        await supabase.auth.signOut();
+        setUser(null);
+        setSession(null);
       }
 
       return { error: null };
