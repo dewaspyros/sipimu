@@ -19,33 +19,38 @@ export default function Register() {
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
   const navigate = useNavigate();
   const { signUp, user, loading } = useAuth();
 
-  // Redirect if already logged in
+  // Redirect if already logged in (except during registration flow)
   useEffect(() => {
-    if (user) {
+    if (user && !isRegistering) {
       navigate("/dashboard");
     }
-  }, [user, navigate]);
+  }, [user, isRegistering, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsRegistering(true);
 
     // Validate form
     if (!formData.nik || !formData.fullName || !formData.password || !formData.confirmPassword) {
       setError("Silakan lengkapi semua field");
+      setIsRegistering(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError("Password tidak cocok");
+      setIsRegistering(false);
       return;
     }
 
     if (formData.password.length < 6) {
       setError("Password minimal 6 karakter");
+      setIsRegistering(false);
       return;
     }
 
@@ -59,6 +64,8 @@ export default function Register() {
         navigate("/login");
       }, 3000);
     }
+
+    setIsRegistering(false);
   };
 
   return (
