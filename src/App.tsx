@@ -14,16 +14,14 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import { Layout } from "./components/Layout";
 import NotFound from "./pages/NotFound";
-import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const authContext = useAuth();
-  
   return (
-    <AuthProvider value={authContext}>
+    <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -33,39 +31,57 @@ const AppContent = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/daftar" element={<Register />} />
             <Route path="/lupa-password" element={<ForgotPassword />} />
-            
+
             {/* Protected Routes with Layout */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Layout><Dashboard /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clinical-pathway" element={
-              <ProtectedRoute>
-                <Layout><ClinicalPathway /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clinical-pathway-form" element={
-              <ProtectedRoute>
-                <Layout><ClinicalPathwayForm /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/clinical-pathway-checklist" element={
-              <ProtectedRoute>
-                <Layout><ClinicalPathwayChecklist /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/rekap-data" element={
-              <ProtectedRoute>
-                <Layout><RekapData /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/pengaturan" element={
-              <ProtectedRoute>
-                <Layout><Pengaturan /></Layout>
-              </ProtectedRoute>
-            } />
-            
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Layout><Dashboard /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clinical-pathway"
+              element={
+                <ProtectedRoute>
+                  <Layout><ClinicalPathway /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clinical-pathway-form"
+              element={
+                <ProtectedRoute>
+                  <Layout><ClinicalPathwayForm /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clinical-pathway-checklist"
+              element={
+                <ProtectedRoute>
+                  <Layout><ClinicalPathwayChecklist /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rekap-data"
+              element={
+                <ProtectedRoute>
+                  <Layout><RekapData /></Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pengaturan"
+              element={
+                <ProtectedRoute>
+                  <Layout><Pengaturan /></Layout>
+                </ProtectedRoute>
+              }
+            />
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
