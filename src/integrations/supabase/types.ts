@@ -525,12 +525,16 @@ export type Database = {
         | "Stroke Non Hemoragik"
         | "Intracranial Hemorrhagia"
         | "Post Partum Hemorrhagia"
+        | "Pneumonia"
+        | "Dengue Fever"
       daftar_cps:
         | "Sectio Caesaria"
         | "Stroke Hemoragik"
         | "Stroke Non Hemoragik"
         | "Intracranial Hemorrhagia"
         | "Post Partum Hemorrhagia"
+        | "Pneumonia"
+        | "Dengue Fever"
       ward_type:
         | "Perinatal"
         | "Khadijah 2"
@@ -674,6 +678,8 @@ export const Constants = {
         "Stroke Non Hemoragik",
         "Intracranial Hemorrhagia",
         "Post Partum Hemorrhagia",
+        "Pneumonia",
+        "Dengue Fever",
       ],
       daftar_cps: [
         "Sectio Caesaria",
@@ -681,6 +687,8 @@ export const Constants = {
         "Stroke Non Hemoragik",
         "Intracranial Hemorrhagia",
         "Post Partum Hemorrhagia",
+        "Pneumonia",
+        "Dengue Fever",
       ],
       ward_type: [
         "Perinatal",
