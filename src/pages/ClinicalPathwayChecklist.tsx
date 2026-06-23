@@ -118,11 +118,11 @@ const pathwayConfigs = {
       "INTERVENSI GIZI :",
       "Diet makanan lunak atau makan biasa ",
       "Cukup cairan dari makanan dan minuman ",
-          ],
+    ],
     explanation: `Keterangan Terapi
 1. Antibiotik Profilaksis. Profilaksis digunakan jika leukosit > 10.000. Diberikan 15 s/d 60 menit sebelum incisi. Dilanjutkan 2x24 jam jika AL post OP >10.000
 2. Antibiotik Injeksi. Infus metronidazole diberikan, jika post SC AL > 20.000
-3. Furamin injeksi, diberikan bila post SC belum flatus`
+3. Furamin injeksi, diberikan bila post SC belum flatus`,
   },
   "Intracranial Hemorrhagia": {
     days: ["Hari ke-1", "Hari ke-2", "Hari ke-3", "Hari ke-4", "Hari ke-5"],
@@ -130,69 +130,76 @@ const pathwayConfigs = {
       "ASSESMEN AWAL :",
       "Assesmen Awal Medis Dokter IGD",
       "Assesmen Awal Medis Dokter Spesialis",
-      "Assesmen Awal Keperawatan",
+      "Assesmen Awal Keperawatan (Perawat Primer)",
       "LABORATORIUM :",
       "Darah Rutin",
       "Ureum Creatinin",
-      "SGOT SGPT",
       "Elektrolit",
       "GDS",
-      "AGD (sesuai indikasi)",
-      "Sputum Gram",
-      "Kultur darah (sesuai indikasi)",
+      "AGD",
+      "HbsAg",
+      "HCV",
+      "HIV",
+      "PT, aPTT",
       "RADIOLOGI / IMAGING :",
-      "Thorax PA",
-      "REKAM JANTUNG "
-,      "EKG (sesuai indikasi)",
+      "Ro Thorax",
+      "CT Scan Kepala Non Kontras",
+      "REKAM JANTUNG ",
+      "EKG (sesuai indikasi)",
       "KONSULTASI :",
-      "Sp.JP",
+      "Sp.An-TI",
+      "Sp.BS",
       "Sp.KFR",
+      "Sp.PD / Sp.JP / Sp.P (sesuai indikasi)",
       "ASSESMEN LANJUTAN :",
       "ASSESMEN MEDIS :",
       "DPJP",
       "Dokter Bangsal",
-      "ASSESMEN KEPERAWATAN :",
-      "Perawat Penanggung Jawab",
+      "KEPERAWATAN :",
+      "Assesmen Perawat Penanggung Jawab",
       "ASSESEMEN GIZI :",
-      "Ahli Gizi",
+      "Ahli Gizi (Asesmen dilakukan dalam waktu 48 jam pertama)",
       "ASSESMEN FARMASI :",
-      "Telaah Resep ",
-      "Rekonsiliasi Obat",
-      "DIAGNOSIS :",
+      "Assesmen Farmasi",
+      "REHABILITASI :",
+      "Fisioterapi",
+      "Terapi Wicara",
+      "Terapi Okupasi",
       "DIAGNOSIS MEDIS :",
       "Intracranial Hemorrhagia",
+      "Hipertensi",
+      "DISCHARGE PLANNING (maksimal sebelum 1x24 jam pasien pulang) :",
       "TERAPI/ MEDIKAMENTOSA :",
       "CAIRAN INFUS :",
-      "Infus NaCl 0.9%/RL/Dektrosa",
+      "Ringer Laktat / NaCl 0.9% / Asering / Stereofudin",
+      "B-Fluid (sesuai indikasi)",
       "OKSIGENASI :",
       "Suplementasi Oksigen",
       "INJEKSI :",
-      "Inj levofloxacin 1x750 mg (Pilihan lain, sesuai PPK)",
-      "Inj proton pump inhibitor (tidak wajib)",
-      "Inj ondansetron (tidak wajib)",
-      "Inj dexamethason (Pilihan lain, methylprednislon) (tidak wajib)",
-      "Inj solvinex (sesuai indikasi)",
-      "Infus paracetamol (sesuai indikasi)",
-      "Inj aminofilin drip (sesuai indikasi)",
-      "NEBULIZER :",
-      "Ventolin Pulmicort 3x1",
+      "Inf Manitol loading dose 0,5 gram - 1 gram/kgBB lanjut 0,25- 0,5gr/kgBB diulangi tiap 6 jam tappering off per hari",
+      "SP Neodex 0.4 mcg/kgBB/menit",
+      "SP Nicardipine 0,5 – 6 mcg/kgBB/menit",
+      "Inj. Citicolin 500 mg/24 jam",
+      "Inj. Omeprazole 40 mg/12 jam",
+      "Inj. Ondancetron 8 mg/8jam",
+      "Inf paracetamol 3x1gr",
+      "Inj. Asam tranexamat 500mg per 6-8 jam per hari",
+      "Inj. Ceftriaxon 2gr/24jam",
       "OBAT ORAL :",
-      "Mukolitik, acetylsistein, ambroxol",
-      "Azitromicin 1x500 mg (Pilhan lain, levofloxacin 1x750 mg)",
-      "Methylpredinisolon 2x1",
-      "Teofilin 1x1 tab",
-      "Teosal 3x1",
-      "Antihistamin",
-      "Roborantia",
+      "Nimotop 5x60mg",
+      "Candesartan 1x16mg pagi",
+      "Amlodipin 1x10mg malam",
+      "Clonidine 2x0.15mg",
+      "Paracetamol 3x 500 mg",
+      "Ranitidine 2x1",
+      "Cefixime 2x200 mg",
+      "TINDAKAN :",
+      "Craniotomi",
+      "Transfusi Darah",
+      "Ventilator",
+      "PDT",
     ],
-    explanation: `1. Antibiotik Injeksi. Pilihan lain, Inj. β laktam (sefotaksim, seftriakson atau ampisilin sulbaktam) ditambah azitromicin atau levofloxacin. Atau, meropenem ditambah levofloxacin Atau, meropenem ditambah gentamycin dan azitromicin Atau, meropenem ditambah gentamycin dan levofloxacin Atau, jika pasien dengan faktor resiko pdeudomonas diberikan antibiotik Inj ciprofloxacin 2x200 mg atau Inj ceftazidim 2x1 gr
-2. PPI/H2Blocker. Pilhan lain, Inj. Ranitidine 2x50 mg
-3. Anti Emetik. Pilhan lain, Inj. metoclorpramide 3x1 amp
-4. Kortikosteroid. Pilhan lain, Inj. methylprednisolon
-5. Mukolitik. Pilihan, Ambroxol, Acetylsistein, Erdostein
-6. Antibotik Oral. Pilihan lain, Levofloxacin 1x750 mg
-7. Antihistamin. Pilihan, Cetirizine, loratadine, ciproheptadine
-Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, Frekuensi napas < 24/ menit, Tekanan darah sistolik > 90 mmHg dan < 140 mmHg, Saturasi oksigen > 90%, Bisa makan peroral`
+    explanation: `Outcome. Kesadaran membaik, TTV stabil, Makan Minum per Sonde / oral`,
   },
   "Stroke Non Hemoragik": {
     days: ["Hari ke-1", "Hari ke-2", "Hari ke-3", "Hari ke-4", "Hari ke-5", "Hari ke-6"],
@@ -276,7 +283,7 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
 5. Osmoterapi. Inf Manitol 0,25-0,5gr/kgBB diulangi tiap 6 jam tappering off per hari
 6. Antiplatelet. Aspirin dosis awal 160-320mg dalam 24-48 jam setelah onset dilanjutkan 80mg per hari. Clopidogrel 75mg per hari.
 7. Anti koagulan oral. Pada pasien dengan riwayat fibrilasi atrium, antikoagulan oral dapat dimulai 4-14 hari setelah onset
-8. Anti kolesterol. Jika didapatkan bukti dislipidemia berdasarkan laboratorium.`
+8. Anti kolesterol. Jika didapatkan bukti dislipidemia berdasarkan laboratorium.`,
   },
   "Stroke Hemoragik": {
     days: ["Hari ke-1", "Hari ke-2", "Hari ke-3", "Hari ke-4", "Hari ke-5", "Hari ke-6"],
@@ -368,7 +375,7 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
 3. PPI. Hanya jika terdapat stress ulcer
 4. Anti konvulsi. Jika terdapat akut simtomatik seizure. Pilihan, Inj. Phenitoin 100mg/12 jam atau Inj. Diazepam 5mg IV bolus pelan
 5. Osmoterapi. Inf Manitol 0,25-0,5gr/kgBB diulangi tiap 6 jam tappering off per hari. Diberikan jika ureum dan kreatinin baik.
-6. Nimodipine, dimulai dalam 96 jam dan diberikan selama 21 hari. Diberikan pada pasien dengan SAH.`
+6. Nimodipine, dimulai dalam 96 jam dan diberikan selama 21 hari. Diberikan pada pasien dengan SAH.`,
   },
   "Post Partum Hemorrhagia": {
     days: ["Hari ke-1", "Hari ke-2", "Hari ke-3", "Hari ke-4", "Hari ke-5"],
@@ -419,10 +426,11 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
       "OBAT ORAL :",
       "Paracetamol 500 mg / 8 jam",
       "MOBILISASI / REHABILITASI :",
-      "KEPERAWATAN :",],
+      "KEPERAWATAN :",
+    ],
     explanation: `1. Infus Paracetamol diberikan jika suhu > 39 C dan maksimal diberikan 1x. 
     2. Trombosit concentrate diberikan AT < 100.000 dan ada perdarahan spontan masif : Epistaksis tidak terkendali, gross hematuria, hematemesis dan atau melena, hematoscezia, perdarahan otak. 
-    3. Pemeriksaan IgG dan Igm Dengue dilakukan di bangsal rawat inap oleh DPJP`
+    3. Pemeriksaan IgG dan Igm Dengue dilakukan di bangsal rawat inap oleh DPJP`,
   },
 };
 
@@ -437,18 +445,18 @@ const ClinicalPathwayChecklist = () => {
   const [variantData, setVariantData] = useState<VariantData>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  const pathwayId = searchParams.get('id');
-  const mode = searchParams.get('mode') || 'edit'; // 'view' or 'edit'
-  const isReadOnly = mode === 'view';
 
-  console.log('ClinicalPathwayChecklist - Debug Info:', {
+  const pathwayId = searchParams.get("id");
+  const mode = searchParams.get("mode") || "edit"; // 'view' or 'edit'
+  const isReadOnly = mode === "view";
+
+  console.log("ClinicalPathwayChecklist - Debug Info:", {
     pathwayId,
     mode,
     isReadOnly,
     pathwaysCount: pathways.length,
     pathwaysLoading,
-    patientData: patientData?.noRM
+    patientData: patientData?.noRM,
   });
 
   useEffect(() => {
@@ -456,43 +464,43 @@ const ClinicalPathwayChecklist = () => {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         // Check if coming from form (session storage)
-        const storedData = sessionStorage.getItem('clinicalPathwayFormData');
+        const storedData = sessionStorage.getItem("clinicalPathwayFormData");
         if (storedData && !pathwayId) {
           setPatientData(JSON.parse(storedData));
           setIsLoading(false);
           return;
         }
-        
+
         // If no pathwayId, redirect
         if (!pathwayId) {
-          navigate('/clinical-pathway');
+          navigate("/clinical-pathway");
           return;
         }
-        
+
         // Wait for pathways to load if needed
         if (pathwaysLoading) {
           return;
         }
-        
+
         // Find pathway data
-        const pathway = pathways.find(p => p.id === pathwayId);
+        const pathway = pathways.find((p) => p.id === pathwayId);
         if (!pathway) {
           setError(`Pathway dengan ID ${pathwayId} tidak ditemukan`);
           toast({
             title: "Error",
             description: "Data clinical pathway tidak ditemukan",
-            variant: "destructive"
+            variant: "destructive",
           });
-          setTimeout(() => navigate('/clinical-pathway'), 2000);
+          setTimeout(() => navigate("/clinical-pathway"), 2000);
           return;
         }
-        
+
         const patientInfo = {
           clinicalPathway: pathway.jenis_clinical_pathway,
-          verifikator: pathway.verifikator_pelaksana || '',
-          dpjp: pathway.dpjp || '',
+          verifikator: pathway.verifikator_pelaksana || "",
+          dpjp: pathway.dpjp || "",
           noRM: pathway.no_rm,
           patientNameAge: pathway.nama_pasien,
           admissionDate: pathway.tanggal_masuk,
@@ -500,53 +508,53 @@ const ClinicalPathwayChecklist = () => {
           dischargeDate: pathway.tanggal_keluar || undefined,
           dischargeTime: pathway.jam_keluar || undefined,
           lengthOfStay: pathway.los_hari?.toString() || undefined,
-          pathwayId: pathway.id
+          pathwayId: pathway.id,
         };
-        
+
         setPatientData(patientInfo);
-        
+
         // Load existing checklist data in parallel
         try {
           const existingChecklist = await getChecklistByPathwayId(pathwayId);
           if (existingChecklist && existingChecklist.length > 0) {
             const checklistMap: ChecklistData = {};
             const variantMap: VariantData = {};
-            
+
             existingChecklist.forEach((item, index) => {
               checklistMap[index.toString()] = {
-                'Hari ke-1': item.checklist_hari_1 || false,
-                'Hari ke-2': item.checklist_hari_2 || false,
-                'Hari ke-3': item.checklist_hari_3 || false,
-                'Hari ke-4': item.checklist_hari_4 || false,
-                'Hari ke-5': item.checklist_hari_5 || false,
-                'Hari ke-6': item.checklist_hari_6 || false,
+                "Hari ke-1": item.checklist_hari_1 || false,
+                "Hari ke-2": item.checklist_hari_2 || false,
+                "Hari ke-3": item.checklist_hari_3 || false,
+                "Hari ke-4": item.checklist_hari_4 || false,
+                "Hari ke-5": item.checklist_hari_5 || false,
+                "Hari ke-6": item.checklist_hari_6 || false,
               };
             });
-            
+
             setChecklistData(checklistMap);
             setVariantData(variantMap);
           }
         } catch (error) {
-          console.error('Error loading checklist:', error);
+          console.error("Error loading checklist:", error);
           toast({
             title: "Warning",
             description: "Gagal memuat data checklist yang ada, dimulai dengan checklist kosong",
-            variant: "destructive"
+            variant: "destructive",
           });
         }
       } catch (error) {
-        console.error('Error in loadData:', error);
-        setError('Terjadi kesalahan saat memuat data');
+        console.error("Error in loadData:", error);
+        setError("Terjadi kesalahan saat memuat data");
         toast({
           title: "Error",
           description: "Terjadi kesalahan saat memuat data",
-          variant: "destructive"
+          variant: "destructive",
         });
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     loadData();
   }, [pathwayId, pathwaysLoading, pathways.length]); // Simplified dependencies
 
@@ -593,7 +601,7 @@ const ClinicalPathwayChecklist = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/clinical-pathway')}
+              onClick={() => navigate("/clinical-pathway")}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -607,10 +615,7 @@ const ClinicalPathwayChecklist = () => {
               <div>
                 <h3 className="font-semibold text-lg">Terjadi Kesalahan</h3>
                 <p className="text-muted-foreground">{error}</p>
-                <Button 
-                  className="mt-4" 
-                  onClick={() => navigate('/clinical-pathway')}
-                >
+                <Button className="mt-4" onClick={() => navigate("/clinical-pathway")}>
                   Kembali ke Daftar Clinical Pathway
                 </Button>
               </div>
@@ -632,10 +637,7 @@ const ClinicalPathwayChecklist = () => {
               <div>
                 <h3 className="font-semibold text-lg">Data Tidak Ditemukan</h3>
                 <p className="text-muted-foreground">Data pasien tidak dapat dimuat</p>
-                <Button 
-                  className="mt-4" 
-                  onClick={() => navigate('/clinical-pathway')}
-                >
+                <Button className="mt-4" onClick={() => navigate("/clinical-pathway")}>
                   Kembali ke Daftar Clinical Pathway
                 </Button>
               </div>
@@ -648,7 +650,7 @@ const ClinicalPathwayChecklist = () => {
 
   // Alias nama lama (data sebelum 2026) ke konfigurasi yang sama dengan nama baru
   const pathwayAliasMap: Record<string, string> = {
-    "Pneumonia": "Intracranial Hemorrhagia",
+    Pneumonia: "Intracranial Hemorrhagia",
     "Dengue Fever": "Post Partum Hemorrhagia",
   };
   const configKey = pathwayAliasMap[patientData.clinicalPathway] || patientData.clinicalPathway;
@@ -665,10 +667,7 @@ const ClinicalPathwayChecklist = () => {
                 <p className="text-muted-foreground">
                   Konfigurasi untuk "{patientData.clinicalPathway}" tidak tersedia
                 </p>
-                <Button 
-                  className="mt-4" 
-                  onClick={() => navigate('/clinical-pathway')}
-                >
+                <Button className="mt-4" onClick={() => navigate("/clinical-pathway")}>
                   Kembali ke Daftar Clinical Pathway
                 </Button>
               </div>
@@ -681,20 +680,20 @@ const ClinicalPathwayChecklist = () => {
 
   const handleCheckboxChange = (itemIndex: string, day: string, checked: boolean) => {
     if (isReadOnly) return; // Prevent changes in view mode
-    
-    setChecklistData(prev => ({
+
+    setChecklistData((prev) => ({
       ...prev,
       [itemIndex]: {
         ...prev[itemIndex],
-        [day]: checked
-      }
+        [day]: checked,
+      },
     }));
   };
 
   const handleVariantChange = (itemIndex: string, value: string) => {
-    setVariantData(prev => ({
+    setVariantData((prev) => ({
       ...prev,
-      [itemIndex]: value
+      [itemIndex]: value,
     }));
   };
 
@@ -703,7 +702,7 @@ const ClinicalPathwayChecklist = () => {
       toast({
         title: "Error",
         description: "ID pathway tidak ditemukan",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -712,21 +711,21 @@ const ClinicalPathwayChecklist = () => {
       // Prepare checklist items for saving
       const checklistItems = config.items.map((item, index) => ({
         text: item,
-        day1: checklistData[index.toString()]?.['Hari ke-1'] || false,
-        day2: checklistData[index.toString()]?.['Hari ke-2'] || false,
-        day3: checklistData[index.toString()]?.['Hari ke-3'] || false,
-        day4: checklistData[index.toString()]?.['Hari ke-4'] || false,
-        day5: checklistData[index.toString()]?.['Hari ke-5'] || false,
-        day6: checklistData[index.toString()]?.['Hari ke-6'] || false,
-        variant: variantData[index.toString()] || ''
+        day1: checklistData[index.toString()]?.["Hari ke-1"] || false,
+        day2: checklistData[index.toString()]?.["Hari ke-2"] || false,
+        day3: checklistData[index.toString()]?.["Hari ke-3"] || false,
+        day4: checklistData[index.toString()]?.["Hari ke-4"] || false,
+        day5: checklistData[index.toString()]?.["Hari ke-5"] || false,
+        day6: checklistData[index.toString()]?.["Hari ke-6"] || false,
+        variant: variantData[index.toString()] || "",
       }));
 
       await saveChecklist(patientData.pathwayId, checklistItems);
-      
-      sessionStorage.removeItem('clinicalPathwayFormData');
-      navigate('/clinical-pathway');
+
+      sessionStorage.removeItem("clinicalPathwayFormData");
+      navigate("/clinical-pathway");
     } catch (error) {
-      console.error('Error saving checklist:', error);
+      console.error("Error saving checklist:", error);
     }
   };
 
@@ -737,14 +736,14 @@ const ClinicalPathwayChecklist = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(pathwayId ? '/clinical-pathway' : '/clinical-pathway-form')}
+            onClick={() => navigate(pathwayId ? "/clinical-pathway" : "/clinical-pathway-form")}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Kembali
           </Button>
           <h1 className="text-2xl font-bold">
-            {isReadOnly ? 'Detail' : 'Checklist'} {patientData.clinicalPathway}
+            {isReadOnly ? "Detail" : "Checklist"} {patientData.clinicalPathway}
           </h1>
         </div>
 
@@ -754,10 +753,18 @@ const ClinicalPathwayChecklist = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div><strong>No RM:</strong> {patientData.noRM}</div>
-              <div><strong>Nama/Umur:</strong> {patientData.patientNameAge}</div>
-              <div><strong>Verifikator:</strong> {patientData.verifikator}</div>
-              <div><strong>DPJP:</strong> {patientData.dpjp}</div>
+              <div>
+                <strong>No RM:</strong> {patientData.noRM}
+              </div>
+              <div>
+                <strong>Nama/Umur:</strong> {patientData.patientNameAge}
+              </div>
+              <div>
+                <strong>Verifikator:</strong> {patientData.verifikator}
+              </div>
+              <div>
+                <strong>DPJP:</strong> {patientData.dpjp}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -783,20 +790,27 @@ const ClinicalPathwayChecklist = () => {
                 <tbody>
                   {config.items.map((item, index) => {
                     const itemKey = index.toString();
-                    const isHeader = item.includes(':') || item === 'PENUNJANG :' || item === 'KONSULTASI' || item === 'ASSESMEN LANJUTAN :' || item === 'TERAPI/ MEDIKAMENTOSA :' || item === 'OBAT ORAL' || item === 'TATA LAKSANA :';
-                    
+                    const isHeader =
+                      item.includes(":") ||
+                      item === "PENUNJANG :" ||
+                      item === "KONSULTASI" ||
+                      item === "ASSESMEN LANJUTAN :" ||
+                      item === "TERAPI/ MEDIKAMENTOSA :" ||
+                      item === "OBAT ORAL" ||
+                      item === "TATA LAKSANA :";
+
                     return (
                       <tr key={index} className={isHeader ? "bg-muted/50" : ""}>
-                        <td className={`border border-border p-3 ${isHeader ? 'font-semibold' : ''}`}>
-                          {item}
-                        </td>
+                        <td className={`border border-border p-3 ${isHeader ? "font-semibold" : ""}`}>{item}</td>
                         {config.days.map((day) => (
                           <td key={day} className="border border-border p-3 text-center">
                             {!isHeader && (
                               <Checkbox
                                 checked={checklistData[itemKey]?.[day] || false}
-                                onCheckedChange={isReadOnly ? undefined : (checked) => 
-                                  handleCheckboxChange(itemKey, day, checked as boolean)
+                                onCheckedChange={
+                                  isReadOnly
+                                    ? undefined
+                                    : (checked) => handleCheckboxChange(itemKey, day, checked as boolean)
                                 }
                                 disabled={isReadOnly}
                               />
@@ -806,7 +820,7 @@ const ClinicalPathwayChecklist = () => {
                         <td className="border border-border p-3">
                           {!isHeader && (
                             <Input
-                              value={variantData[itemKey] || ''}
+                              value={variantData[itemKey] || ""}
                               onChange={isReadOnly ? undefined : (e) => handleVariantChange(itemKey, e.target.value)}
                               placeholder="Keterangan varian"
                               className="text-sm"
@@ -829,18 +843,14 @@ const ClinicalPathwayChecklist = () => {
             <CardTitle>Keterangan</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
-              value={config.explanation}
-              readOnly
-              className="min-h-[200px] text-sm"
-            />
+            <Textarea value={config.explanation} readOnly className="min-h-[200px] text-sm" />
           </CardContent>
         </Card>
 
         <div className="flex justify-end gap-4">
           <Button
             variant="outline"
-            onClick={() => navigate(pathwayId ? '/clinical-pathway' : '/clinical-pathway-form')}
+            onClick={() => navigate(pathwayId ? "/clinical-pathway" : "/clinical-pathway-form")}
           >
             Kembali
           </Button>
