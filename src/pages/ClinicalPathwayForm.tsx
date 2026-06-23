@@ -10,6 +10,7 @@ import { ArrowLeft } from "lucide-react";
 import { useClinicalPathways } from "@/hooks/useClinicalPathways";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { getPathwayOptions } from "@/constants/pathwayOptions";
 
 interface PatientFormData {
   clinicalPathway: string;
@@ -25,13 +26,7 @@ interface PatientFormData {
   bangsal: string;
 }
 
-const clinicalPathways = [
-  "Sectio Caesaria",
-  "Stroke Hemoragik", 
-  "Stroke Non Hemoragik",
-  "Intracranial Hemorrhagia",
-  "Post Partum Hemorrhagia"
-];
+// Daftar pathway dipilih dinamis berdasarkan tahun tanggal masuk
 
 const verifikators = [
   "dr. Ivan Jazid Adam",
@@ -139,6 +134,21 @@ const ClinicalPathwayForm = () => {
     loadPatientData();
   }, [mode, patientId, form]);
 
+  // Pathway options dinamis: pakai tahun dari tanggal_masuk (default tahun berjalan)
+  const admissionDateValue = form.watch("admissionDate");
+  const admissionYear = admissionDateValue
+    ? new Date(admissionDateValue).getFullYear()
+    : new Date().getFullYear();
+  const clinicalPathways = getPathwayOptions(admissionYear).map((opt) => opt.value);
+
+  // Reset clinicalPathway jika nilainya tidak valid untuk tahun terpilih
+  useEffect(() => {
+    const current = form.getValues("clinicalPathway");
+    if (current && !clinicalPathways.includes(current)) {
+      form.setValue("clinicalPathway", "");
+    }
+  }, [admissionYear]);
+
   const onSubmit = async (data: PatientFormData) => {
     try {
       setIsLoading(true);
@@ -236,7 +246,7 @@ const ClinicalPathwayForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Clinical Pathway</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Pilih Clinical Pathway" />

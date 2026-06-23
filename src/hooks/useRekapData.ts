@@ -126,11 +126,13 @@ export const useRekapData = () => {
     switch (diagnosis) {
       case "Sectio Caesaria":
         return 2;
+      case "Pneumonia":
       case "Intracranial Hemorrhagia":
         return 6;
       case "Stroke Hemoragik":
       case "Stroke Non Hemoragik":
         return 5;
+      case "Dengue Fever":
       case "Post Partum Hemorrhagia":
         return 3;
       default:

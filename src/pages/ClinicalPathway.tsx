@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Edit, Trash2, Eye, FileText, Search } from "lucide-react";
 import { useClinicalPathways } from "@/hooks/useClinicalPathways";
 import { yearOptions } from "@/constants/yearOptions";
+import { getPathwayOptions } from "@/constants/pathwayOptions";
 
 export default function ClinicalPathway() {
   const navigate = useNavigate();
@@ -18,6 +19,16 @@ export default function ClinicalPathway() {
   const [selectedPathway, setSelectedPathway] = useState<string>("");
   const [selectedWard, setSelectedWard] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Reset filter pathway jika nilai saat ini tidak ada di opsi tahun terpilih
+  useEffect(() => {
+    const valid = getPathwayOptions(selectedYear, { includeAll: true }).some(
+      (opt) => opt.value === selectedPathway
+    );
+    if (selectedPathway && !valid) {
+      setSelectedPathway("all");
+    }
+  }, [selectedYear, selectedPathway]);
 
   return (
     <div className="space-y-6">
@@ -103,12 +114,11 @@ export default function ClinicalPathway() {
                       <SelectValue placeholder="Pilih jenis" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Semua Clinical Pathway</SelectItem>
-                      <SelectItem value="Sectio Caesaria">Sectio Caesaria</SelectItem>
-                      <SelectItem value="Intracranial Hemorrhagia">Intracranial Hemorrhagia</SelectItem>
-                      <SelectItem value="Stroke Non Hemoragik">Stroke Non Hemoragik</SelectItem>
-                      <SelectItem value="Stroke Hemoragik">Stroke Hemoragik</SelectItem>
-                      <SelectItem value="Post Partum Hemorrhagia">Post Partum Hemorrhagia</SelectItem>
+                      {getPathwayOptions(selectedYear, { includeAll: true }).map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

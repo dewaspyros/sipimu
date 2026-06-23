@@ -646,7 +646,13 @@ const ClinicalPathwayChecklist = () => {
     );
   }
 
-  const config = pathwayConfigs[patientData.clinicalPathway as keyof typeof pathwayConfigs];
+  // Alias nama lama (data sebelum 2026) ke konfigurasi yang sama dengan nama baru
+  const pathwayAliasMap: Record<string, string> = {
+    "Pneumonia": "Intracranial Hemorrhagia",
+    "Dengue Fever": "Post Partum Hemorrhagia",
+  };
+  const configKey = pathwayAliasMap[patientData.clinicalPathway] || patientData.clinicalPathway;
+  const config = pathwayConfigs[configKey as keyof typeof pathwayConfigs];
   if (!config) {
     return (
       <div className="min-h-screen bg-background p-6">
