@@ -354,9 +354,11 @@ export const useDashboardData = () => {
       "Stroke Non Hemoragik": "Stroke Non Hemoragik",
       Pneumonia: "Pneumonia",
       "Dengue Fever": "Dengue Fever",
+      "Intracranial Hemorrhagia": "Intracranial Hemorrhagia",
+      "Post Partum Hemorrhagia": "Post Partum Hemorrhagia",
     };
 
-    const targetType = type === "all" ? null : pathwayMap[type];
+    const targetType = type === "all" ? null : (pathwayMap[type] || type);
     let filteredData = targetType ? rekapData.filter((item) => item.diagnosis === targetType) : rekapData;
 
     // Filter by year
