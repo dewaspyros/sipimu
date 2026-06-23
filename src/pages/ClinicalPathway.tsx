@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,16 @@ export default function ClinicalPathway() {
   const [selectedPathway, setSelectedPathway] = useState<string>("");
   const [selectedWard, setSelectedWard] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Reset filter pathway jika nilai saat ini tidak ada di opsi tahun terpilih
+  useEffect(() => {
+    const valid = getPathwayOptions(selectedYear, { includeAll: true }).some(
+      (opt) => opt.value === selectedPathway
+    );
+    if (selectedPathway && !valid) {
+      setSelectedPathway("all");
+    }
+  }, [selectedYear, selectedPathway]);
 
   return (
     <div className="space-y-6">
