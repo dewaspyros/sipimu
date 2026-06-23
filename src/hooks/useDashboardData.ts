@@ -196,6 +196,8 @@ export const useDashboardData = () => {
       "Stroke Non Hemoragik": "Stroke Non Hemoragik",
       Pneumonia: "Pneumonia",
       "Dengue Fever": "Dengue Fever",
+      "Intracranial Hemorrhagia": "Intracranial Hemorrhagia",
+      "Post Partum Hemorrhagia": "Post Partum Hemorrhagia",
     };
 
     const targetType = pathwayMap[type] || type;
