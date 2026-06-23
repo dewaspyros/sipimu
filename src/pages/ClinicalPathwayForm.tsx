@@ -246,7 +246,7 @@ const ClinicalPathwayForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Clinical Pathway</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Pilih Clinical Pathway" />
