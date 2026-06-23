@@ -105,10 +105,10 @@ export default function ClinicalPathway() {
                     <SelectContent>
                       <SelectItem value="all">Semua Clinical Pathway</SelectItem>
                       <SelectItem value="Sectio Caesaria">Sectio Caesaria</SelectItem>
-                      <SelectItem value="Pneumonia">Pneumonia</SelectItem>
+                      <SelectItem value="Intracranial Hemorrhagia">Intracranial Hemorrhagia</SelectItem>
                       <SelectItem value="Stroke Non Hemoragik">Stroke Non Hemoragik</SelectItem>
                       <SelectItem value="Stroke Hemoragik">Stroke Hemoragik</SelectItem>
-                      <SelectItem value="Dengue Fever">Dengue Fever</SelectItem>
+                      <SelectItem value="Post Partum Hemorrhagia">Post Partum Hemorrhagia</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

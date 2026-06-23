@@ -33,8 +33,8 @@ const pathwayOptions = [
   { value: "Sectio Caesaria", label: "Sectio Caesaria" },
   { value: "Stroke Hemoragik", label: "Stroke Hemoragik" },
   { value: "Stroke Non Hemoragik", label: "Stroke Non Hemoragik" },
-  { value: "Pneumonia", label: "Pneumonia" },
-  { value: "Dengue Fever", label: "Dengue Fever" }
+  { value: "Intracranial Hemorrhagia", label: "Intracranial Hemorrhagia" },
+  { value: "Post Partum Hemorrhagia", label: "Post Partum Hemorrhagia" }
 ];
 
 export default function RekapData() {

@@ -44,8 +44,8 @@ const diagnosisOptions = [
   { value: "Sectio Caesaria", label: "Sectio Caesaria" },
   { value: "Stroke Hemoragik", label: "Stroke Hemoragik" },
   { value: "Stroke Non Hemoragik", label: "Stroke Non Hemoragik" },
-  { value: "Pneumonia", label: "Pneumonia" },
-  { value: "Dengue Fever", label: "Dengue Fever" }
+  { value: "Intracranial Hemorrhagia", label: "Intracranial Hemorrhagia" },
+  { value: "Post Partum Hemorrhagia", label: "Post Partum Hemorrhagia" }
 ].filter(option => option.value && option.value.trim() !== "");
 
 export default function Dashboard() {
@@ -85,9 +85,9 @@ export default function Dashboard() {
       case "Stroke Hemoragik":
       case "Stroke Non Hemoragik":
         return { target: "< 5x24 jam", compliance: "> 75%" };
-      case "Pneumonia":
+      case "Intracranial Hemorrhagia":
         return { target: "< 6x24 jam", compliance: "> 75%" };
-      case "Dengue Fever":
+      case "Post Partum Hemorrhagia":
         return { target: "< 3x24 jam", compliance: "> 75%" };
       default:
         return { target: "< 2x24 jam", compliance: "> 75%" };

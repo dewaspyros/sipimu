@@ -124,7 +124,7 @@ const pathwayConfigs = {
 2. Antibiotik Injeksi. Infus metronidazole diberikan, jika post SC AL > 20.000
 3. Furamin injeksi, diberikan bila post SC belum flatus`
   },
-  "Pneumonia": {
+  "Intracranial Hemorrhagia": {
     days: ["Hari ke-1", "Hari ke-2", "Hari ke-3", "Hari ke-4", "Hari ke-5"],
     items: [
       "ASSESMEN AWAL :",
@@ -160,7 +160,7 @@ const pathwayConfigs = {
       "Rekonsiliasi Obat",
       "DIAGNOSIS :",
       "DIAGNOSIS MEDIS :",
-      "Pneumonia",
+      "Intracranial Hemorrhagia",
       "TERAPI/ MEDIKAMENTOSA :",
       "CAIRAN INFUS :",
       "Infus NaCl 0.9%/RL/Dektrosa",
@@ -370,7 +370,7 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
 5. Osmoterapi. Inf Manitol 0,25-0,5gr/kgBB diulangi tiap 6 jam tappering off per hari. Diberikan jika ureum dan kreatinin baik.
 6. Nimodipine, dimulai dalam 96 jam dan diberikan selama 21 hari. Diberikan pada pasien dengan SAH.`
   },
-  "Dengue Fever": {
+  "Post Partum Hemorrhagia": {
     days: ["Hari ke-1", "Hari ke-2", "Hari ke-3", "Hari ke-4", "Hari ke-5"],
     items: [
       "ASSESMEN AWAL :",
@@ -399,7 +399,7 @@ Outcome. Bebas demam 1x24 jam tanpa antipiretik, Frekuensi jantung < 100/menit, 
       "Rekonsiliasi Obat",
       "DIAGNOSIS :",
       "DIAGNOSIS MEDIS :",
-      "Dengue Fever",
+      "Post Partum Hemorrhagia",
       "DIAGNOSIS KEPERAWATAN :",
       "DIAGNOSIS GIZI :",
       "DISCHARGE PLANNING :",
