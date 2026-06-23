@@ -408,7 +408,7 @@ const pathwayConfigs = {
       "ASSESMEN MEDIS :",
       "DPJP",
       "Dokter Bangsal",
-      "ASSESMEN KEPERAWATAN :",
+      "ASSESMEN KEBIDANAN :",
       "Bidan Penanggung Jawab",
       "ASSESMEN GIZI :",
       "Ahli Gizi",
