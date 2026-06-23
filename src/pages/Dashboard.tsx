@@ -6,6 +6,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { Activity, TrendingUp, Users, FileCheck } from "lucide-react";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { yearOptions } from "@/constants/yearOptions";
+import { getPathwayOptions } from "@/constants/pathwayOptions";
 
 // Custom label function for bars
 const CustomBarLabel = (props: any) => {
@@ -40,13 +41,7 @@ const CustomBarLabel = (props: any) => {
 
 // Removed dummy data - now using real data from Supabase
 
-const diagnosisOptions = [
-  { value: "Sectio Caesaria", label: "Sectio Caesaria" },
-  { value: "Stroke Hemoragik", label: "Stroke Hemoragik" },
-  { value: "Stroke Non Hemoragik", label: "Stroke Non Hemoragik" },
-  { value: "Intracranial Hemorrhagia", label: "Intracranial Hemorrhagia" },
-  { value: "Post Partum Hemorrhagia", label: "Post Partum Hemorrhagia" }
-].filter(option => option.value && option.value.trim() !== "");
+// diagnosisOptions dipindah ke dalam komponen agar dinamis berdasarkan tahun
 
 export default function Dashboard() {
   const [selectedDiagnosis, setSelectedDiagnosis] = useState("Sectio Caesaria");
@@ -59,6 +54,19 @@ export default function Dashboard() {
     getComponentComplianceData,
     totalPatients 
   } = useDashboardData();
+
+  const diagnosisOptions = React.useMemo(
+    () => getPathwayOptions(selectedYear),
+    [selectedYear]
+  );
+
+  // Reset selectedDiagnosis jika nilai saat ini tidak ada di opsi baru
+  useEffect(() => {
+    if (!diagnosisOptions.some((opt) => opt.value === selectedDiagnosis)) {
+      setSelectedDiagnosis(diagnosisOptions[0]?.value ?? "Sectio Caesaria");
+    }
+  }, [diagnosisOptions, selectedDiagnosis]);
+  
   
   // Memoize data to prevent blinking - use useMemo for better performance
   const complianceData = React.useMemo(() => {
@@ -85,8 +93,10 @@ export default function Dashboard() {
       case "Stroke Hemoragik":
       case "Stroke Non Hemoragik":
         return { target: "< 5x24 jam", compliance: "> 75%" };
+      case "Pneumonia":
       case "Intracranial Hemorrhagia":
         return { target: "< 6x24 jam", compliance: "> 75%" };
+      case "Dengue Fever":
       case "Post Partum Hemorrhagia":
         return { target: "< 3x24 jam", compliance: "> 75%" };
       default:
