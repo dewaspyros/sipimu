@@ -190,8 +190,8 @@ export const useDashboardData = () => {
       "Sectio Caesaria": "Sectio Caesaria",
       "Stroke Hemoragik": "Stroke Hemoragik", 
       "Stroke Non Hemoragik": "Stroke Non Hemoragik",
-      "Pneumonia": "Pneumonia",
-      "Dengue Fever": "Dengue Fever"
+      "Intracranial Hemorrhagia": "Intracranial Hemorrhagia",
+      "Post Partum Hemorrhagia": "Post Partum Hemorrhagia"
     };
     
     const targetType = pathwayMap[type] || type;
@@ -254,8 +254,8 @@ export const useDashboardData = () => {
       "Sectio Caesaria": "Sectio Caesaria",
       "Stroke Hemoragik": "Stroke Hemoragik", 
       "Stroke Non Hemoragik": "Stroke Non Hemoragik",
-      "Pneumonia": "Pneumonia",
-      "Dengue Fever": "Dengue Fever"
+      "Intracranial Hemorrhagia": "Intracranial Hemorrhagia",
+      "Post Partum Hemorrhagia": "Post Partum Hemorrhagia"
     };
     
     const targetType = type === "all" ? null : pathwayMap[type];
@@ -343,8 +343,8 @@ export const useDashboardData = () => {
       "Sectio Caesaria": "Sectio Caesaria",
       "Stroke Hemoragik": "Stroke Hemoragik", 
       "Stroke Non Hemoragik": "Stroke Non Hemoragik",
-      "Pneumonia": "Pneumonia",
-      "Dengue Fever": "Dengue Fever"
+      "Intracranial Hemorrhagia": "Intracranial Hemorrhagia",
+      "Post Partum Hemorrhagia": "Post Partum Hemorrhagia"
     };
     
     const targetType = type === "all" ? null : pathwayMap[type];

@@ -29,8 +29,8 @@ const clinicalPathways = [
   "Sectio Caesaria",
   "Stroke Hemoragik", 
   "Stroke Non Hemoragik",
-  "Pneumonia",
-  "Dengue Fever"
+  "Intracranial Hemorrhagia",
+  "Post Partum Hemorrhagia"
 ];
 
 const verifikators = [
