@@ -1,63 +1,41 @@
+## Tujuan
+- Data clinical pathway dengan `tanggal_masuk` tahun **< 2026** tetap memakai nama lama: **Pneumonia** dan **Dengue Fever**.
+- Data dengan `tanggal_masuk` tahun **≥ 2026** memakai nama baru: **Intracranial Hemorrhagia** dan **Post Partum Hemorrhagia**.
+- Dropdown filter & form input menyesuaikan nama yang ditampilkan berdasarkan tahun yang dipilih/aktif.
 
+## Perubahan Database (migration)
+1. Tambahkan kembali nilai enum lama pada kedua enum:
+   - `clinical_pathway_type`: tambahkan `'Pneumonia'` dan `'Dengue Fever'`.
+   - `daftar_cps`: tambahkan `'Pneumonia'` dan `'Dengue Fever'`.
+2. Kembalikan data historis di `clinical_pathways`:
+   - `UPDATE` baris dengan `EXTRACT(YEAR FROM tanggal_masuk) < 2026` dan `jenis_clinical_pathway = 'Intracranial Hemorrhagia'` → `'Pneumonia'`.
+   - `UPDATE` baris dengan `EXTRACT(YEAR FROM tanggal_masuk) < 2026` dan `jenis_clinical_pathway = 'Post Partum Hemorrhagia'` → `'Dengue Fever'`.
+   - Baris tahun 2026+ tidak diubah.
+3. Pastikan tabel master `daftar_cp` punya baris target LOS untuk **kedua** nama (Pneumonia, Dengue Fever, Intracranial Hemorrhagia, Post Partum Hemorrhagia) supaya kalkulasi LOS bekerja untuk pasien dari era manapun. Tambahkan baris yang belum ada via `INSERT ... ON CONFLICT DO NOTHING`.
 
-## Rencana: Tambah Pilihan Tahun pada Dashboard, Clinical Pathway, dan Rekap Data
+## Perubahan Frontend
+Logika umum: tampilkan nama lama jika tahun terpilih < 2026; nama baru jika ≥ 2026. Untuk komponen tanpa konteks tahun (mis. checklist patient detail), kedua kunci di-map ke template yang sama.
 
-### Gambaran Umum
-Saat ini ketiga halaman (Dashboard, Clinical Pathway, Rekap Data) tidak memiliki filter tahun. Data ditampilkan tanpa pembatasan tahun, atau menggunakan tahun berjalan secara default. Perubahan ini akan menambahkan dropdown "Pilih Tahun" di ketiga halaman sehingga pengguna bisa memfilter data berdasarkan tahun.
+1. `src/constants/pathwayOptions.ts` (file baru, opsional) — fungsi `getPathwayOptions(year: number)` yang mengembalikan daftar opsi pathway sesuai tahun. Dipakai di Dashboard, RekapData, ClinicalPathway, ClinicalPathwayForm.
+2. `src/pages/Dashboard.tsx`:
+   - Daftar `pathwayOptions` dibuat dinamis dari `selectedYear`.
+   - Saat user mengganti tahun, reset `selectedDiagnosis` jika nilainya tidak ada di opsi baru.
+   - `getTargetInfo` menerima kedua nama lama & baru (case `'Pneumonia'`/`'Intracranial Hemorrhagia'` → `< 6x24 jam`; `'Dengue Fever'`/`'Post Partum Hemorrhagia'` → `< 3x24 jam`).
+3. `src/hooks/useDashboardData.ts`:
+   - Mapping label diagnosis (di tiga tempat: chart, compliance, dsb.) menerima kedua nama lama & baru dan menampilkannya apa adanya.
+4. `src/pages/RekapData.tsx`:
+   - `pathwayOptions` dinamis berdasarkan `selectedYear`.
+   - Reset filter pathway jika tahun berubah dan nilai tidak valid.
+5. `src/pages/ClinicalPathway.tsx`:
+   - Dropdown filter pathway dinamis sesuai tahun.
+6. `src/pages/ClinicalPathwayForm.tsx`:
+   - `clinicalPathwayOptions` dipilih berdasarkan tahun dari `tanggal_masuk` form (default: tahun berjalan). Saat user mengubah `tanggal_masuk`, daftar opsi pathway ikut menyesuaikan; reset nilai jika tidak valid.
+7. `src/pages/ClinicalPathwayChecklist.tsx`:
+   - Tambahkan kembali key `"Pneumonia"` dan `"Dengue Fever"` pada objek template (referensi ke isi yang sama dengan key baru) supaya pasien lama tetap punya checklist. Pengembangan: ekspor objek bersama lalu daftarkan keduanya, atau cukup duplikasi dua entri map yang menunjuk ke definisi yang sama.
+8. `src/hooks/useRekapData.ts`:
+   - `getTargetLOS` mengenali kedua nama lama & baru (Pneumonia/Intracranial Hemorrhagia → 6; Dengue Fever/Post Partum Hemorrhagia → 3).
 
-### Perubahan yang Dilakukan
-
-#### 1. Dashboard (`src/pages/Dashboard.tsx`)
-- Tambah state `selectedYear` dengan default tahun berjalan (2026)
-- Tambah dropdown Select "Pilih Tahun" di sebelah dropdown diagnosis (pada kedua grafik)
-- Pilihan tahun: 2024, 2025, 2026 (dan bisa diperluas)
-- Kirim `selectedYear` ke fungsi `getMonthlyChartData`, `getComponentComplianceData`, dan `getComplianceByType`
-
-#### 2. Clinical Pathway (`src/pages/ClinicalPathway.tsx`)
-- Tambah state `selectedYear` dengan default tahun berjalan
-- Tambah dropdown Select "Filter Tahun" di bagian filter (sebelah filter bulan)
-- Filter data tabel berdasarkan tahun dari `tanggal_masuk`
-
-#### 3. Rekap Data (`src/pages/RekapData.tsx`)
-- Tambah state `selectedYear` dengan default tahun berjalan
-- Tambah dropdown Select "Pilih Tahun" di bagian filter (sebelah filter bulan)
-- Kirim tahun ke fungsi `fetchDataByMonth` dan `aggregateChecklistData`
-
-#### 4. Hook `useDashboardData` (`src/hooks/useDashboardData.ts`)
-- Update `getMonthlyChartData(type, year)` untuk memfilter data berdasarkan tahun
-- Update `getComponentComplianceData(type, year)` untuk memfilter data berdasarkan tahun
-- Update `getComplianceByType(type, month, year)` untuk memfilter data berdasarkan tahun
-
-#### 5. Hook `useRekapData` (`src/hooks/useRekapData.ts`)
-- Update `fetchDataByMonth(month, year)` - parameter `year` sudah ada tapi saat ini di-default ke tahun berjalan, pastikan parameter tahun dari UI diteruskan dengan benar
-
-#### 6. Hook `useChecklistSummary` (`src/hooks/useChecklistSummary.ts`)
-- Update `aggregateChecklistData(month, year)` untuk menerima parameter tahun
-
-### Detail Teknis
-
-**Opsi Tahun (shared constant):**
-```
-const yearOptions = [
-  { value: "2024", label: "2024" },
-  { value: "2025", label: "2025" },
-  { value: "2026", label: "2026" },
-];
-```
-
-**Filter pada Dashboard Charts:**
-- `getMonthlyChartData` dan `getComponentComplianceData` saat ini mengelompokkan per bulan tanpa filter tahun, lalu mengambil 12 bulan terakhir. Dengan filter tahun, data akan difilter hanya untuk tahun yang dipilih sebelum dikelompokkan per bulan.
-
-**Filter pada Clinical Pathway:**
-- Menambahkan logika filter di `.filter()` yang sudah ada untuk memeriksa `getFullYear()` dari `tanggal_masuk` sesuai tahun yang dipilih.
-
-**Filter pada Rekap Data:**
-- Fungsi `fetchDataByMonth` sudah menerima parameter `year` (default ke tahun berjalan). Perlu memastikan dropdown tahun mengirimkan nilai yang benar ke fungsi ini.
-
-### File yang Akan Diubah
-1. `src/pages/Dashboard.tsx` - Tambah dropdown tahun + kirim parameter tahun
-2. `src/pages/ClinicalPathway.tsx` - Tambah dropdown tahun + filter berdasarkan tahun
-3. `src/pages/RekapData.tsx` - Tambah dropdown tahun + kirim parameter tahun
-4. `src/hooks/useDashboardData.ts` - Update fungsi chart/compliance untuk menerima parameter tahun
-5. `src/hooks/useChecklistSummary.ts` - Update untuk menerima parameter tahun (jika perlu)
-
+## Catatan
+- `src/integrations/supabase/types.ts` otomatis di-generate setelah migration.
+- Tidak ada perubahan pada notifikasi WhatsApp; pesan akan otomatis memuat nama sesuai data baris.
+- Setelah selesai, verifikasi: data 2025 dan sebelumnya tampil sebagai Pneumonia/Dengue Fever; data 2026 tampil sebagai Intracranial/Post Partum Hemorrhagia; form pendaftaran pasien baru di tahun 2026 hanya menampilkan nama baru.
