@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRekapData, type RekapDataItem } from "@/hooks/useRekapData";
 import { useChecklistSummary, type AggregatedChecklistData } from "@/hooks/useChecklistSummary";
 import { yearOptions } from "@/constants/yearOptions";
+import { getPathwayOptions } from "@/constants/pathwayOptions";
 
 // Remove dummy data - now using real Supabase data
 
@@ -28,14 +29,7 @@ const monthOptions = [
   { value: "12", label: "Desember" }
 ];
 
-const pathwayOptions = [
-  { value: "all", label: "Semua Clinical Pathway" },
-  { value: "Sectio Caesaria", label: "Sectio Caesaria" },
-  { value: "Stroke Hemoragik", label: "Stroke Hemoragik" },
-  { value: "Stroke Non Hemoragik", label: "Stroke Non Hemoragik" },
-  { value: "Intracranial Hemorrhagia", label: "Intracranial Hemorrhagia" },
-  { value: "Post Partum Hemorrhagia", label: "Post Partum Hemorrhagia" }
-];
+// pathwayOptions dipindah ke dalam komponen agar dinamis berdasarkan tahun
 
 export default function RekapData() {
   const [selectedMonth, setSelectedMonth] = useState("");
@@ -66,12 +60,19 @@ export default function RekapData() {
   const handleYearChange = async (year: string) => {
     setSelectedYear(year);
     const yearNum = parseInt(year);
+    // Reset pathway filter jika nilai saat ini tidak ada di opsi tahun baru
+    const newOptions = getPathwayOptions(year, { includeAll: true });
+    if (!newOptions.some((opt) => opt.value === selectedPathway)) {
+      setSelectedPathway("all");
+    }
     if (selectedMonth && selectedMonth !== "all") {
       await fetchDataByMonth(parseInt(selectedMonth), yearNum);
       const checklistSummary = await aggregateChecklistData(parseInt(selectedMonth), yearNum);
       setChecklistData(checklistSummary);
     }
   };
+
+  const pathwayOptions = getPathwayOptions(selectedYear, { includeAll: true });
 
   const handlePathwayChange = (pathway: string) => {
     setSelectedPathway(pathway);
