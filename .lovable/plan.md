@@ -1,46 +1,39 @@
-## Diagnosis Baru
+## Penyebab Error
 
-Pesan **"404 — There isn't a GitHub Pages site here."** saat membuka `https://sipimu.web.id` artinya domain Anda **sedang mengarah ke server GitHub Pages**, bukan ke Lovable (`185.158.133.1`). Jadi penyebab blank page bukan proxy Sumopod / Cloudflare seperti dugaan sebelumnya — melainkan **DNS A record-nya masih (atau sudah berubah jadi) IP GitHub Pages**.
+`Conflicts with pre-existing non-CNAME RRset` artinya Anda mencoba menambahkan record **CNAME** pada nama yang sudah punya record lain (A / TXT / MX / NS) untuk nama yang sama. Aturan DNS: **CNAME tidak boleh berdampingan dengan record tipe lain di nama yang sama persis.**
 
-Kemungkinan penyebab:
-- A record `@` di Sumopod diisi IP GitHub (185.199.108.153 / 109.153 / 110.153 / 111.153) bukan `185.158.133.1`.
-- Ada **A record ganda** untuk `@` — satu ke Lovable, beberapa ke GitHub — dan resolver memilih GitHub.
-- Domain pernah dipakai untuk GitHub Pages dan record lama belum dihapus.
+Dua kemungkinan kasus:
 
-## Langkah Perbaikan
+**Kasus A — Anda menambahkan CNAME di root `@` (`sipimu.web.id`)**
+Root domain hampir selalu punya NS + SOA (wajib) dan biasanya TXT `_lovable` / lainnya, sehingga CNAME `@` selalu konflik. Root domain **tidak boleh** pakai CNAME murni.
 
-1. **Cek DNS aktual** `sipimu.web.id`
-   - Buka [dnschecker.org](https://dnschecker.org) → pilih type **A** → masukkan `sipimu.web.id`.
-   - Jika muncul IP `185.199.108.153` / `.109.153` / `.110.153` / `.111.153` → itu IP GitHub Pages (penyebab error 404 GitHub).
-   - Yang benar harus **hanya** `185.158.133.1` (IP Lovable).
+**Kasus B — Anda menambahkan CNAME di `www` tapi sudah ada A record `www`**
+Hapus A record `www` lama dulu, baru tambahkan CNAME `www`.
 
-2. **Bersihkan DNS di panel Sumopod**
-   - Hapus **SEMUA** A record `@` yang mengarah ke IP GitHub (`185.199.x.x`).
-   - Hapus juga CNAME `@` atau `www` yang mengarah ke `*.github.io` jika ada.
-   - Sisakan / pastikan:
-     - `A   @     185.158.133.1`
-     - `A   www   185.158.133.1`
-     - `TXT _lovable   lovable_verify=795553458f89e4704880abfa63b21651d1f778768b3a36f4c87ac712c44b8f07`
+## Rencana Perbaikan
 
-3. **Tambahkan `www` di Lovable**
-   - Project Settings → Domains → Connect Domain → `www.sipimu.web.id` (root sudah ada).
-   - Karena DNS langsung (bukan via Cloudflare/proxy), JANGAN centang opsi "Domain uses Cloudflare or a similar proxy" — pakai mode A record default.
+Pilih salah satu jalur tergantung apa yang Lovable minta:
 
-4. **Tunggu propagasi**
-   - Biasanya 10 menit – beberapa jam (maks 72 jam).
-   - Cek ulang di dnschecker.org sampai semua region menunjukkan **hanya** `185.158.133.1`.
-   - Status di Lovable Project Settings → Domains harus berubah jadi **Active**.
+### Jalur 1 — Tetap pakai A record (paling sederhana, sesuai plan sebelumnya)
 
-5. **Verifikasi**
-   - Buka `https://sipimu.web.id` di incognito → harus tampil halaman login SiPi-Mu.
-   - Jika masih 404 GitHub padahal dnschecker sudah bersih → clear DNS cache lokal (`ipconfig /flushdns` di Windows) atau coba dari jaringan lain.
+Jangan tambah CNAME sama sekali. Cukup:
+- `A   @     185.158.133.1`
+- `A   www   185.158.133.1`
+- `TXT _lovable   lovable_verify=795553458f89e4704880abfa63b21651d1f778768b3a36f4c87ac712c44b8f07`
 
-## Catatan
+Pastikan TIDAK ADA A record `185.199.x.x` (GitHub Pages) tersisa.
 
-- Tidak ada perubahan kode yang diperlukan. Aplikasi sehat (`https://sipimu.lovable.app` normal).
-- Abaikan rencana proxy mode sebelumnya — itu hanya relevan jika domain memang dilewatkan Cloudflare. Kasus Anda murni DNS salah sasaran ke GitHub.
+### Jalur 2 — Pakai CNAME (hanya jika Lovable secara eksplisit memberi target CNAME)
 
-## Pertanyaan klarifikasi sebelum saya finalkan langkah
+- **Untuk root `@`**: hapus dulu semua A/AAAA `@` yang konflik. Karena CNAME murni di root dilarang RFC, Sumopod kemungkinan **tidak mengizinkan** — gunakan fitur **ALIAS / ANAME** kalau tersedia. Kalau Sumopod tidak punya ALIAS, **jangan pakai CNAME di root** — kembali ke Jalur 1.
+- **Untuk `www`**: hapus dulu A record `www` lama → baru tambahkan `CNAME www → <target dari Lovable>`. TXT `_lovable` tetap di root, tidak konflik karena beda tipe + beda subdomain.
 
-1. Apakah domain `sipimu.web.id` ini sebelumnya pernah dipakai untuk **GitHub Pages** (mis. dokumentasi, landing lama)?
-2. Bisa kirim **screenshot daftar DNS record** di panel Sumopod sekarang (semua record `@`, `www`, TXT)? Supaya saya bisa pastikan record GitHub mana yang harus dihapus.
+## Pertanyaan Klarifikasi
+
+Supaya saya bisa pilih jalur tepat:
+
+1. Nama record apa yang Anda isi saat error muncul — `@` (root) atau `www`?
+2. Anda dapat instruksi **CNAME dari Lovable Project Settings → Domains** (misal target `*.lovable.app` / `cname.lovable.app`)? Atau Anda mengetik CNAME sendiri?
+3. Bisa screenshot daftar DNS record `sipimu.web.id` di Sumopod sekarang (semua row terlihat: name, type, value)?
+
+Rekomendasi default kalau Anda tidak yakin: **pakai Jalur 1 (A record)** — paling kompatibel dengan Sumopod dan sesuai dokumentasi Lovable default.
