@@ -1,38 +1,38 @@
-## Masalah
+## Diagnosis
 
-Di `src/hooks/useDashboardData.ts`, fungsi `getMonthlyChartData` dan `getComponentComplianceData` memakai `pathwayMap` yang hanya berisi 5 diagnosis lama:
+Domain `sipimu.web.id` di-pointing ke Lovable via A record `185.158.133.1`, namun halaman blank dan console hanya menampilkan script `OffscreenCanvas` worker (script proxy/CDN) tanpa memuat `index.html` Lovable. Ini ciri khas domain yang dilewatkan **proxy Sumopod / Cloudflare-like** — request tidak sampai langsung ke origin Lovable, jadi A record `185.158.133.1` tidak cukup. Lovable butuh setup khusus **Proxy Mode (CNAME-based)** untuk domain seperti ini.
 
-```ts
-const pathwayMap = {
-  "Sectio Caesaria": "Sectio Caesaria",
-  "Stroke Hemoragik": "Stroke Hemoragik",
-  "Stroke Non Hemoragik": "Stroke Non Hemoragik",
-  Pneumonia: "Pneumonia",
-  "Dengue Fever": "Dengue Fever",
-};
-const targetType = type === "all" ? null : pathwayMap[type];
-let filteredData = targetType ? rekapData.filter(...) : rekapData;
-```
+URL Lovable langsung (`https://sipimu.lovable.app`) seharusnya tetap normal — itu konfirmasi bahwa app sehat, masalahnya murni di layer custom domain + proxy.
 
-Ketika user memilih **Intracranial Hemorrhagia** atau **Post Partum Hemorrhagia**, `pathwayMap[type]` = `undefined`, lalu `targetType ? ... : rekapData` jatuh ke cabang `rekapData` — sehingga grafik menampilkan **SEMUA pasien dari semua diagnosis** untuk tahun 2026, bukan filter yang dipilih. Itulah kenapa Jan–April 2026 terlihat "terisi" di Dashboard padahal di Rekap Data memang kosong (tidak ada pasien Intracranial / Post Partum di bulan tersebut).
+## Langkah Perbaikan
 
-`getComplianceByType` juga punya `pathwayMap` yang sama, tapi memakai fallback `pathwayMap[type] || type` sehingga filternya benar — itu kebetulan tidak terdampak.
+1. **Hapus konfigurasi custom domain `sipimu.web.id` yang lama** di Lovable
+   - Project Settings → Domains → titik tiga di `sipimu.web.id` → Remove.
 
-## Perubahan
+2. **Tambahkan ulang domain dengan Proxy Mode aktif**
+   - Project Settings → Domains → Connect Domain → masukkan `sipimu.web.id`.
+   - Klik **Advanced** → centang **"Domain uses Cloudflare or a similar proxy"**.
+   - Lovable akan menampilkan record **CNAME** (bukan A record lagi) untuk verifikasi & routing.
+   - Ulangi untuk `www.sipimu.web.id` jika ingin www juga aktif.
 
-**File:** `src/hooks/useDashboardData.ts`
+3. **Update DNS di Sumopod**
+   - Hapus A record lama `@ → 185.158.133.1`.
+   - Tambahkan CNAME yang diberikan Lovable untuk `@` (atau ALIAS/ANAME jika Sumopod tidak mengizinkan CNAME pada root) dan `www`.
+   - Pertahankan TXT `_lovable` untuk verifikasi.
+   - Jika Sumopod punya toggle "Proxy / Cloud" pada DNS record, biarkan ON (mode proxy) — itulah alasan kita pakai CNAME mode.
 
-1. Tambahkan dua entri ke ketiga `pathwayMap` (di `getComplianceByType`, `getMonthlyChartData`, `getComponentComplianceData`):
-   - `"Intracranial Hemorrhagia": "Intracranial Hemorrhagia"`
-   - `"Post Partum Hemorrhagia": "Post Partum Hemorrhagia"`
-2. Ubah fallback di `getMonthlyChartData` dan `getComponentComplianceData` agar konsisten:
-   ```ts
-   const targetType = type === "all" ? null : (pathwayMap[type] || type);
-   ```
-   Ini mencegah bug serupa di masa depan jika ada diagnosis baru ditambahkan tanpa update map.
+4. **Tunggu propagasi & SSL** (umumnya menit–jam, maksimal 72 jam).
+   - Cek status di Project Settings → Domains hingga berubah jadi **Active**.
+   - Verifikasi via [dnschecker.org](https://dnschecker.org) bahwa CNAME sudah merata.
 
-## Hasil yang diharapkan
+5. **Verifikasi hasil**
+   - Buka `https://sipimu.web.id` dalam incognito — harus tampil halaman login SiPi-Mu yang sama dengan `https://sipimu.lovable.app`.
+   - Cek DevTools → Network: request `/` harus mengembalikan `index.html` Lovable, bukan script worker proxy.
 
-- Dashboard tahun 2026, filter **Intracranial Hemorrhagia** / **Post Partum Hemorrhagia**: grafik Jan–April **kosong** (0%), konsisten dengan Rekap Data.
-- Diagnosis lain tetap berfungsi seperti sebelumnya.
-- Tidak ada perubahan data di database, hanya logika filter di frontend.
+## Catatan
+
+- Jangan publish ulang aplikasi — masalah ini bukan dari kode, tidak ada perubahan source yang dibutuhkan.
+- Jika Sumopod **tidak** menyediakan opsi CNAME pada root domain dan tidak punya ALIAS/ANAME, opsi alternatif: gunakan `www.sipimu.web.id` sebagai primary dan redirect root → www di panel Sumopod.
+- Compliance: dalam proxy mode, traffic tetap melewati edge proxy; cookie scanner mungkin melaporkan lokasi edge, bukan origin Lovable.
+
+Konfirmasi setelah Anda menghapus & menambahkan ulang domain dengan opsi Proxy aktif, saya bantu verifikasi.
