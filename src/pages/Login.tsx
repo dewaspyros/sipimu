@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,7 +36,7 @@ export default function Login() {
     }
 
     const { error: signInError } = await signIn(formData.nik, formData.password);
-    
+
     if (signInError) {
       setError(signInError.message);
     } else {
@@ -50,30 +50,20 @@ export default function Login() {
         {/* Logo and Title */}
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <img 
-              src={hospitalLogo} 
-              alt="PKU Muhammadiyah Wonosobo" 
-              className="w-20 h-20 rounded-full medical-shadow"
-            />
+            <img src={hospitalLogo} alt="PKU Muhammadiyah Wonosobo" className="w-20 h-20 rounded-full medical-shadow" />
           </div>
           <h1 className="text-3xl font-bold text-white">SiPi-Mu</h1>
-          <p className="text-white/90 text-sm">
-            Sistem Pelaporan Clinical Pathways
-          </p>
-          <p className="text-white/80 text-xs mt-1">
-            RS PKU Muhammadiyah Wonosobo
-          </p>
+          <p className="text-white/90 text-sm">Sistem Pelaporan Clinical Pathways</p>
+          <p className="text-white/80 text-xs mt-1">RS PKU Muhammadiyah Wonosobo</p>
         </div>
 
         {/* Login Form */}
         <Card className="medical-card medical-shadow">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Masuk</CardTitle>
-            <CardDescription className="text-center">
-              Masukkan NIK dan password Anda
-            </CardDescription>
+            <CardDescription className="text-center">Masukkan NIK dan password Anda</CardDescription>
           </CardHeader>
-          
+
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               {error && (
@@ -81,7 +71,7 @@ export default function Login() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="nik">NIK </Label>
                 <Input
@@ -94,7 +84,7 @@ export default function Login() {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -122,23 +112,16 @@ export default function Login() {
                   </Button>
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between">
-                <Link
-                  to="/lupa-password"
-                  className="text-sm text-primary hover:underline medical-transition"
-                >
+                <Link to="/lupa-password" className="text-sm text-primary hover:underline medical-transition">
                   Lupa password?
                 </Link>
               </div>
             </CardContent>
-            
+
             <CardFooter className="flex flex-col space-y-4">
-              <Button
-                type="submit"
-                className="w-full medical-transition"
-                disabled={loading}
-              >
+              <Button type="submit" className="w-full medical-transition" disabled={loading}>
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -151,14 +134,11 @@ export default function Login() {
                   </div>
                 )}
               </Button>
-              
+
               <div className="text-center">
                 <span className="text-sm text-muted-foreground">
                   Belum memiliki akun?{" "}
-                  <Link
-                    to="/daftar"
-                    className="text-primary hover:underline medical-transition"
-                  >
+                  <Link to="/daftar" className="text-primary hover:underline medical-transition">
                     Daftar disini
                   </Link>
                 </span>
@@ -169,7 +149,7 @@ export default function Login() {
 
         <div className="text-center">
           <p className="text-white/70 text-xs">
-            © 2025 RS PKU Muhammadiyah Wonosobo. Semua hak dilindungi.
+            © 2026 RS PKU Muhammadiyah Wonosobo. Tim Case Manajer RS PKU Muhammadiyah Wonosobo.
           </p>
         </div>
       </div>
