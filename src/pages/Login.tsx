@@ -148,9 +148,7 @@ export default function Login() {
         </Card>
 
         <div className="text-center">
-          <p className="text-white/70 text-xs">
-            © 2026 RS PKU Muhammadiyah Wonosobo. Tim Case Manajer RS PKU Muhammadiyah Wonosobo.
-          </p>
+          <p className="text-white/70 text-xs">© 2026 RS PKU Muhammadiyah Wonosobo. Tim Case Manajer.</p>
         </div>
       </div>
     </div>
