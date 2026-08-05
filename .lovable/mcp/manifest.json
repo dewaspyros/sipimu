@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://uxrgnwsdkkjrueoqozuq.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "sipimu",
+      "version": "0.1.0",
+      "title": "sipimu"
+    },
+    "tools": [
+      {
+        "name": "list_pathway_types",
+        "title": "Daftar jenis clinical pathway",
+        "description": "List the clinical pathway types (jenis CP) configured in the app along with their LOS target in days.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_patients",
+        "title": "Daftar pasien clinical pathway",
+        "description": "List clinical pathway patient records, optionally filtered by year, month, pathway type, ward, or patient name / medical record number.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "year": {
+              "type": "integer",
+              "description": "Filter by admission year, e.g. 2026."
+            },
+            "month": {
+              "type": "integer",
+              "description": "Filter by admission month 1-12 (requires year)."
+            },
+            "pathway_type": {
+              "type": "string",
+              "description": "Exact jenis clinical pathway, e.g. 'Intracranial Hemorrhagia'."
+            },
+            "ward": {
+              "type": "string",
+              "description": "Exact bangsal / ward name."
+            },
+            "search": {
+              "type": "string",
+              "description": "Partial match on patient name or medical record number (no_rm)."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max rows to return, default 50, capped at 200."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_patient",
+        "title": "Detail pasien & kepatuhan",
+        "description": "Get one clinical pathway patient record together with its compliance data (kepatuhan CP, penunjang, terapi, sesuai target) and checklist items.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "patient_id": {
+              "type": "string",
+              "description": "Clinical pathway record UUID."
+            },
+            "no_rm": {
+              "type": "string",
+              "description": "Medical record number; used when patient_id is not given."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "compliance_summary",
+        "title": "Rekap kepatuhan clinical pathway",
+        "description": "Summarise clinical pathway compliance for a given year (optionally one pathway type): patient counts and percentage of kepatuhan CP, penunjang, terapi, and LOS sesuai target, broken down per month.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "year": {
+              "type": "integer",
+              "description": "Year of admission, e.g. 2026."
+            },
+            "pathway_type": {
+              "type": "string",
+              "description": "Limit to one jenis clinical pathway."
+            }
+          },
+          "required": [
+            "year"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
