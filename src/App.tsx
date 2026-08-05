@@ -14,6 +14,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import { Layout } from "./components/Layout";
 import NotFound from "./pages/NotFound";
+import OAuthConsent from "./pages/OAuthConsent";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -31,6 +32,7 @@ const AppContent = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/daftar" element={<Register />} />
             <Route path="/lupa-password" element={<ForgotPassword />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
 
             {/* Protected Routes with Layout */}
             <Route
