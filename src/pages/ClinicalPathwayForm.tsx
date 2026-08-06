@@ -119,6 +119,15 @@ const ClinicalPathwayForm = () => {
               lengthOfStay: patient.los_hari ? `${patient.los_hari} hari` : "",
               bangsal: patient.bangsal || ""
             });
+
+            if (patient.verifikator_pelaksana && !verifikators.includes(patient.verifikator_pelaksana)) {
+              setUseCustomVerifikator(true);
+              setCustomVerifikator(patient.verifikator_pelaksana);
+            }
+            if (patient.dpjp && !dpjpOptions.includes(patient.dpjp)) {
+              setUseCustomDPJP(true);
+              setCustomDPJP(patient.dpjp);
+            }
           }
         } catch (error) {
           console.error('Error loading patient data:', error);
