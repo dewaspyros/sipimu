@@ -68,6 +68,8 @@ const ClinicalPathwayForm = () => {
   const { createPathway, updatePathway } = useClinicalPathways();
   const [customVerifikator, setCustomVerifikator] = useState("");
   const [customDPJP, setCustomDPJP] = useState("");
+  const [useCustomVerifikator, setUseCustomVerifikator] = useState(false);
+  const [useCustomDPJP, setUseCustomDPJP] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
   const patientId = searchParams.get('id');
@@ -151,6 +153,8 @@ const ClinicalPathwayForm = () => {
         if (parsed?.values) form.reset(parsed.values);
         if (parsed?.customVerifikator) setCustomVerifikator(parsed.customVerifikator);
         if (parsed?.customDPJP) setCustomDPJP(parsed.customDPJP);
+        if (parsed?.useCustomVerifikator) setUseCustomVerifikator(true);
+        if (parsed?.useCustomDPJP) setUseCustomDPJP(true);
       }
     } catch (e) {
       console.error('Gagal memulihkan draft form:', e);
@@ -165,14 +169,28 @@ const ClinicalPathwayForm = () => {
       try {
         localStorage.setItem(
           draftKey,
-          JSON.stringify({ values, customVerifikator, customDPJP })
+          JSON.stringify({
+            values,
+            customVerifikator,
+            customDPJP,
+            useCustomVerifikator,
+            useCustomDPJP,
+          })
         );
       } catch (e) {
         console.error('Gagal menyimpan draft form:', e);
       }
     });
     return () => subscription.unsubscribe();
-  }, [form, draftKey, draftRestored, customVerifikator, customDPJP]);
+  }, [
+    form,
+    draftKey,
+    draftRestored,
+    customVerifikator,
+    customDPJP,
+    useCustomVerifikator,
+    useCustomDPJP,
+  ]);
 
   const clearDraft = () => {
     try {
@@ -322,14 +340,19 @@ const ClinicalPathwayForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Verifikator Pelaksana</FormLabel>
-                        <Select onValueChange={(value) => {
-                          if (value === "custom") {
-                            field.onChange(customVerifikator);
-                          } else {
-                            field.onChange(value);
-                            setCustomVerifikator("");
-                          }
-                        }} defaultValue={field.value}>
+                        <Select
+                          value={useCustomVerifikator ? "custom" : field.value}
+                          onValueChange={(value) => {
+                            if (value === "custom") {
+                              setUseCustomVerifikator(true);
+                              field.onChange(customVerifikator);
+                            } else {
+                              setUseCustomVerifikator(false);
+                              field.onChange(value);
+                              setCustomVerifikator("");
+                            }
+                          }}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Pilih Verifikator" />
@@ -344,7 +367,7 @@ const ClinicalPathwayForm = () => {
                             <SelectItem value="custom">Lainnya (isi manual)</SelectItem>
                           </SelectContent>
                         </Select>
-                        {form.watch("verifikator") === "custom" && (
+                        {useCustomVerifikator && (
                           <Input
                             placeholder="Masukkan nama verifikator"
                             value={customVerifikator}
@@ -365,14 +388,19 @@ const ClinicalPathwayForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>DPJP</FormLabel>
-                        <Select onValueChange={(value) => {
-                          if (value === "custom") {
-                            field.onChange(customDPJP);
-                          } else {
-                            field.onChange(value);
-                            setCustomDPJP("");
-                          }
-                        }} defaultValue={field.value}>
+                        <Select
+                          value={useCustomDPJP ? "custom" : field.value}
+                          onValueChange={(value) => {
+                            if (value === "custom") {
+                              setUseCustomDPJP(true);
+                              field.onChange(customDPJP);
+                            } else {
+                              setUseCustomDPJP(false);
+                              field.onChange(value);
+                              setCustomDPJP("");
+                            }
+                          }}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Pilih DPJP" />
@@ -387,7 +415,7 @@ const ClinicalPathwayForm = () => {
                             <SelectItem value="custom">Lainnya (isi manual)</SelectItem>
                           </SelectContent>
                         </Select>
-                        {form.watch("dpjp") === "custom" && (
+                        {useCustomDPJP && (
                           <Input
                             placeholder="Masukkan nama DPJP"
                             value={customDPJP}
@@ -506,7 +534,7 @@ const ClinicalPathwayForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Bangsal</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Pilih Bangsal" />
