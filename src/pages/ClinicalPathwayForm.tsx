@@ -134,6 +134,55 @@ const ClinicalPathwayForm = () => {
     loadPatientData();
   }, [mode, patientId, form]);
 
+  // --- Draft autosave: jaga data tetap ada saat pindah tab/window ---
+  const draftKey = `clinicalPathwayFormDraft:${mode}:${patientId ?? 'new'}`;
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  // Restore draft (khusus mode create; mode edit menunggu data server selesai dimuat)
+  useEffect(() => {
+    if (mode === 'edit') {
+      setDraftRestored(true);
+      return;
+    }
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.values) form.reset(parsed.values);
+        if (parsed?.customVerifikator) setCustomVerifikator(parsed.customVerifikator);
+        if (parsed?.customDPJP) setCustomDPJP(parsed.customDPJP);
+      }
+    } catch (e) {
+      console.error('Gagal memulihkan draft form:', e);
+    }
+    setDraftRestored(true);
+  }, [draftKey, mode, form]);
+
+  // Simpan setiap perubahan ke localStorage
+  useEffect(() => {
+    if (!draftRestored) return;
+    const subscription = form.watch((values) => {
+      try {
+        localStorage.setItem(
+          draftKey,
+          JSON.stringify({ values, customVerifikator, customDPJP })
+        );
+      } catch (e) {
+        console.error('Gagal menyimpan draft form:', e);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form, draftKey, draftRestored, customVerifikator, customDPJP]);
+
+  const clearDraft = () => {
+    try {
+      localStorage.removeItem(draftKey);
+    } catch (e) {
+      console.error('Gagal menghapus draft form:', e);
+    }
+  };
+
+
   // Pathway options dinamis: pakai tahun dari tanggal_masuk (default tahun berjalan)
   const admissionDateValue = form.watch("admissionDate");
   const admissionYear = admissionDateValue
@@ -184,6 +233,7 @@ const ClinicalPathwayForm = () => {
           title: "Berhasil",
           description: "Data pasien berhasil diperbarui",
         });
+        clearDraft();
         navigate('/clinical-pathway');
       } else {
         // Create new pathway
@@ -200,6 +250,7 @@ const ClinicalPathwayForm = () => {
           description: "Data pasien berhasil disimpan",
         });
         
+        clearDraft();
         navigate('/clinical-pathway-checklist');
       }
     } catch (error) {
