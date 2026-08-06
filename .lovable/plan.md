@@ -1,39 +1,24 @@
-## Penyebab Error
+# Perbaikan Draft Form Pasien: Dropdown Tidak Ikut Tersimpan
 
-`Conflicts with pre-existing non-CNAME RRset` artinya Anda mencoba menambahkan record **CNAME** pada nama yang sudah punya record lain (A / TXT / MX / NS) untuk nama yang sama. Aturan DNS: **CNAME tidak boleh berdampingan dengan record tipe lain di nama yang sama persis.**
+## Masalah
 
-Dua kemungkinan kasus:
+Setelah pindah tab/jendela, hanya pilihan **Clinical Pathway** yang kembali muncul. **Verifikator Pelaksana**, **DPJP**, dan **Bangsal** tampil kosong (placeholder) lagi.
 
-**Kasus A — Anda menambahkan CNAME di root `@` (`sipimu.web.id`)**
-Root domain hampir selalu punya NS + SOA (wajib) dan biasanya TXT `_lovable` / lainnya, sehingga CNAME `@` selalu konflik. Root domain **tidak boleh** pakai CNAME murni.
+## Penyebab
 
-**Kasus B — Anda menambahkan CNAME di `www` tapi sudah ada A record `www`**
-Hapus A record `www` lama dulu, baru tambahkan CNAME `www`.
+Di `src/pages/ClinicalPathwayForm.tsx`, dropdown Clinical Pathway memakai `value={field.value}` (terkendali penuh oleh form), sedangkan dropdown Verifikator, DPJP, dan Bangsal memakai `defaultValue={field.value}`. `defaultValue` hanya dibaca sekali saat komponen pertama kali dirender, jadi ketika draft dipulihkan lewat `form.reset(...)`, nilai dropdown tersebut tidak ikut diperbarui di tampilan — nilainya sebenarnya ada di form, tetapi tidak terlihat dan mudah tertimpa.
 
-## Rencana Perbaikan
+Selain itu, mode isian manual ("Lainnya (isi manual)") pada Verifikator/DPJP tidak dipulihkan: nama manual tersimpan, tetapi kolom input manualnya tidak muncul kembali karena hanya tampil saat nilai form persis `"custom"`.
 
-Pilih salah satu jalur tergantung apa yang Lovable minta:
+## Perbaikan
 
-### Jalur 1 — Tetap pakai A record (paling sederhana, sesuai plan sebelumnya)
+1. Ubah dropdown **Verifikator Pelaksana**, **DPJP**, dan **Bangsal** menjadi terkendali: ganti `defaultValue={field.value}` menjadi `value={field.value}` sehingga selalu mengikuti nilai form (termasuk hasil pemulihan draft dan mode edit).
+2. Pulihkan mode isian manual: simpan penanda "pakai isian manual" untuk Verifikator dan DPJP di dalam draft, dan tampilkan kembali kolom input manual beserta isinya saat draft dipulihkan.
+3. Pastikan seluruh isian teks (No RM, Nama Pasien/Umur, tanggal, jam, LOS) tetap ikut dipulihkan dari draft yang sama.
+4. Draft tetap dihapus otomatis setelah data berhasil disimpan.
 
-Jangan tambah CNAME sama sekali. Cukup:
-- `A   @     185.158.133.1`
-- `A   www   185.158.133.1`
-- `TXT _lovable   lovable_verify=795553458f89e4704880abfa63b21651d1f778768b3a36f4c87ac712c44b8f07`
+## Catatan Teknis
 
-Pastikan TIDAK ADA A record `185.199.x.x` (GitHub Pages) tersisa.
-
-### Jalur 2 — Pakai CNAME (hanya jika Lovable secara eksplisit memberi target CNAME)
-
-- **Untuk root `@`**: hapus dulu semua A/AAAA `@` yang konflik. Karena CNAME murni di root dilarang RFC, Sumopod kemungkinan **tidak mengizinkan** — gunakan fitur **ALIAS / ANAME** kalau tersedia. Kalau Sumopod tidak punya ALIAS, **jangan pakai CNAME di root** — kembali ke Jalur 1.
-- **Untuk `www`**: hapus dulu A record `www` lama → baru tambahkan `CNAME www → <target dari Lovable>`. TXT `_lovable` tetap di root, tidak konflik karena beda tipe + beda subdomain.
-
-## Pertanyaan Klarifikasi
-
-Supaya saya bisa pilih jalur tepat:
-
-1. Nama record apa yang Anda isi saat error muncul — `@` (root) atau `www`?
-2. Anda dapat instruksi **CNAME dari Lovable Project Settings → Domains** (misal target `*.lovable.app` / `cname.lovable.app`)? Atau Anda mengetik CNAME sendiri?
-3. Bisa screenshot daftar DNS record `sipimu.web.id` di Sumopod sekarang (semua row terlihat: name, type, value)?
-
-Rekomendasi default kalau Anda tidak yakin: **pakai Jalur 1 (A record)** — paling kompatibel dengan Sumopod dan sesuai dokumentasi Lovable default.
+- File yang diubah: `src/pages/ClinicalPathwayForm.tsx` saja. Tidak ada perubahan database.
+- Penyimpanan draft tetap di `localStorage` dengan kunci per mode/ID pasien, mekanisme autosave `form.watch` yang sudah ada dipertahankan; struktur draft ditambah dua penanda mode manual.
+- Perbaikan `value=` juga memperbaiki mode edit, di mana dropdown bisa tampil kosong sebelum data server selesai dimuat.
