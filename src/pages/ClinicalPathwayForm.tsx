@@ -233,6 +233,7 @@ const ClinicalPathwayForm = () => {
           title: "Berhasil",
           description: "Data pasien berhasil diperbarui",
         });
+        clearDraft();
         navigate('/clinical-pathway');
       } else {
         // Create new pathway
@@ -249,6 +250,7 @@ const ClinicalPathwayForm = () => {
           description: "Data pasien berhasil disimpan",
         });
         
+        clearDraft();
         navigate('/clinical-pathway-checklist');
       }
     } catch (error) {
