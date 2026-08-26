@@ -83,25 +83,26 @@ export default function RekapData() {
   };
 
   // Get unique DPJP list from data
-  const dpjpOptions = [
-    { value: "all", label: "Semua DPJP" },
-    ...Array.from(new Set(data.map(item => item.dpjp).filter(Boolean)))
-      .map(dpjp => ({ value: dpjp, label: dpjp }))
-  ];
+  const dpjpOptions = useMemo(
+    () => [
+      { value: "all", label: "Semua DPJP" },
+      ...Array.from(new Set(data.map((item) => item.dpjp).filter(Boolean))).map((dpjp) => ({
+        value: dpjp,
+        label: dpjp,
+      })),
+    ],
+    [data]
+  );
 
-  // Update filtered data when main data changes
-  useEffect(() => {
-    if (data.length > 0) {
-      let filtered = filterDataByPathway(selectedPathway);
-      
-      // Apply DPJP filter
-      if (selectedDPJP !== "all") {
-        filtered = filtered.filter(item => item.dpjp === selectedDPJP);
-      }
-      
-      setFilteredData(filtered);
+  // Derived filter — dihitung saat render, tanpa state ganda + render ekstra
+  const filteredData = useMemo(() => {
+    let filtered = selectedPathway === "all" ? data : data.filter((item) => item.diagnosis === selectedPathway);
+    if (selectedDPJP !== "all") {
+      filtered = filtered.filter((item) => item.dpjp === selectedDPJP);
     }
-  }, [data, selectedPathway, selectedDPJP, filterDataByPathway]);
+    return filtered;
+  }, [data, selectedPathway, selectedDPJP]);
+
 
   const getTargetInfo = (diagnosis: string) => {
     const target = getTargetLOS(diagnosis);
