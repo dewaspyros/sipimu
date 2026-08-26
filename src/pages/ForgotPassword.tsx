@@ -39,23 +39,9 @@ export default function ForgotPassword() {
 
   if (step === 2) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 medical-gradient">
-        <div className="w-full max-w-md space-y-6">
-          <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <img 
-                src={hospitalLogo} 
-                alt="PKU Muhammadiyah Wonosobo" 
-                className="w-20 h-20 rounded-full medical-shadow"
-              />
-            </div>
-            <h1 className="text-3xl font-bold text-white">SiPi-Mu</h1>
-            <p className="text-white/90 text-sm">
-              Sistem Pelaporan Clinical Pathways
-            </p>
-          </div>
+      <AuthLayout>
+          <Card className="medical-card border-border/70">
 
-          <Card className="medical-card medical-shadow">
             <CardHeader className="text-center">
               <div className="mx-auto w-12 h-12 bg-success/20 rounded-full flex items-center justify-center mb-4">
                 <Send className="h-6 w-6 text-success" />
