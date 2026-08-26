@@ -731,6 +731,15 @@ const ClinicalPathwayChecklist = () => {
 
       await saveChecklist(patientData.pathwayId, checklistItems);
 
+      await logActivity({
+        action: "save_checklist",
+        pathwayId: patientData.pathwayId,
+        namaPasien: patientData.patientNameAge,
+        noRM: patientData.noRM,
+        jenisClinicalPathway: patientData.clinicalPathway,
+      });
+
+
       sessionStorage.removeItem("clinicalPathwayFormData");
       navigate("/clinical-pathway");
     } catch (error) {
