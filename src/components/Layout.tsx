@@ -1,7 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Bell, User, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/common";
 import { useAuthContext } from "@/hooks/useAuth";
 import {
   DropdownMenu,
@@ -19,7 +19,7 @@ export function Layout({ children }: LayoutProps) {
   
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
+      <div className="flex min-h-dvh w-full bg-background">
         <AppSidebar />
         
         <main className="flex-1 flex flex-col">
@@ -39,15 +39,15 @@ export function Layout({ children }: LayoutProps) {
               </div>
               
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="medical-transition">
-                  <Bell className="h-5 w-5" />
-                </Button>
+                <IconButton variant="ghost" label="Notifikasi" className="medical-transition">
+                  <Bell className="h-5 w-5" aria-hidden="true" />
+                </IconButton>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="medical-transition">
-                      <User className="h-5 w-5" />
-                    </Button>
+                    <IconButton variant="ghost" label="Menu akun pengguna" className="medical-transition">
+                      <User className="h-5 w-5" aria-hidden="true" />
+                    </IconButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {user && (
