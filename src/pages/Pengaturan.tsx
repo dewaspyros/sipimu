@@ -183,15 +183,17 @@ Silakan cek sistem untuk detail lebih lanjut.`
       />
 
       <Tabs defaultValue="password" className="space-y-6">
-        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-3' : 'grid-cols-1'}`}>
           <TabsTrigger value="password" className="flex items-center gap-2">
             <Key className="h-4 w-4" />
             Ubah Password
           </TabsTrigger>
-          <TabsTrigger value="whatsapp" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            WhatsApp
-          </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="whatsapp" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              WhatsApp
+            </TabsTrigger>
+          )}
           {isAdmin && (
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
@@ -299,6 +301,8 @@ Silakan cek sistem untuk detail lebih lanjut.`
           </Card>
         </TabsContent>
 
+        {/* WhatsApp Tab - Admin Only */}
+        {isAdmin && (
         <TabsContent value="whatsapp">
           <Card className="medical-card">
             <CardHeader>
@@ -515,6 +519,7 @@ Silakan cek sistem untuk detail lebih lanjut.`
             </CardFooter>
           </Card>
         </TabsContent>
+        )}
 
         {/* User Management Tab - Admin Only */}
         {isAdmin && (
