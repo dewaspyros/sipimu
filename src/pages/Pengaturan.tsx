@@ -14,6 +14,7 @@ import { useUserManagement } from "@/hooks/useUserManagement";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AsyncButton, LoadingState, PageHeader } from "@/components/common";
 export default function Pengaturan() {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -176,13 +177,10 @@ Silakan cek sistem untuk detail lebih lanjut.`
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold">Pengaturan</h1>
-        <p className="text-muted-foreground">
-          Kelola konfigurasi sistem dan pengaturan akun
-        </p>
-      </div>
+      <PageHeader
+        title="Pengaturan"
+        description="Kelola konfigurasi sistem dan pengaturan akun"
+      />
 
       <Tabs defaultValue="password" className="space-y-6">
         <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
@@ -287,23 +285,15 @@ Silakan cek sistem untuk detail lebih lanjut.`
                 </div>
               </CardContent>
               <CardFooter>
-                <Button
+                <AsyncButton
                   type="submit"
-                  disabled={loading}
+                  isLoading={loading}
+                  loadingText="Mengubah Password..."
                   className="medical-transition"
                 >
-                  {loading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Mengubah Password...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Key className="h-4 w-4" />
-                      <span>Ubah Password</span>
-                    </div>
-                  )}
-                </Button>
+                  <Key className="mr-2 h-4 w-4" aria-hidden="true" />
+                  Ubah Password
+                </AsyncButton>
               </CardFooter>
             </form>
           </Card>
@@ -322,9 +312,7 @@ Silakan cek sistem untuk detail lebih lanjut.`
             </CardHeader>
             <CardContent className="space-y-6">
               {whatsappLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
+                <LoadingState label="Memuat pengaturan WhatsApp..." />
               ) : (
                 <>
                   <Alert className="border-primary bg-primary/5">
@@ -374,7 +362,7 @@ Silakan cek sistem untuk detail lebih lanjut.`
                         disabled={fetchingGroups || !whatsappSettings.api_key}
                         className="flex items-center gap-2"
                       >
-                        <RefreshCw className={`h-4 w-4 ${fetchingGroups ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`h-4 w-4 ${fetchingGroups ? 'animate-spin' : ''}`} aria-hidden="true" />
                         Ambil Daftar Grup
                       </Button>
                     </div>
@@ -514,23 +502,16 @@ Silakan cek sistem untuk detail lebih lanjut.`
               )}
             </CardContent>
             <CardFooter>
-              <Button
+              <AsyncButton
                 onClick={handleWhatsappSave}
-                disabled={whatsappSaving || whatsappLoading}
+                isLoading={whatsappSaving}
+                loadingText="Menyimpan..."
+                disabled={whatsappLoading}
                 className="medical-transition"
               >
-                {whatsappSaving ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Menyimpan...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Save className="h-4 w-4" />
-                    <span>Simpan Pengaturan</span>
-                  </div>
-                )}
-              </Button>
+                <Save className="mr-2 h-4 w-4" aria-hidden="true" />
+                Simpan Pengaturan
+              </AsyncButton>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -550,9 +531,7 @@ Silakan cek sistem untuk detail lebih lanjut.`
               </CardHeader>
               <CardContent className="space-y-6">
                 {usersLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  </div>
+                  <LoadingState label="Memuat data pengguna..." />
                 ) : (
                   <>
                     {/* Pending Approvals Section */}
