@@ -164,7 +164,7 @@ export function AppSidebar() {
             <SidebarMenuItem>
               <div className="flex items-center gap-3 rounded-lg px-2 py-2">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-heading text-sm font-bold uppercase text-primary">
-                  {displayName.slice(0, 2)}
+                  {initials}
                 </span>
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-semibold text-sidebar-foreground">

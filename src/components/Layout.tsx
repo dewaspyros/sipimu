@@ -154,7 +154,7 @@ export function Layout({ children }: LayoutProps) {
                       className="rounded-full medical-transition"
                     >
                       <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 font-heading text-xs font-bold uppercase text-primary">
-                        {displayName.slice(0, 2)}
+                        {initials}
                       </span>
                     </IconButton>
                   </DropdownMenuTrigger>
