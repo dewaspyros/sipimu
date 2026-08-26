@@ -281,39 +281,39 @@ export default function RekapData() {
               options={dpjpOptions}
               placeholder="Pilih DPJP"
               widthClassName="md:w-64"
-            />
-
-            {summary && (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{summary.totalPatients}</div>
-                  <div className="text-xs text-muted-foreground">Total Pasien</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-success">{summary.persentaseSesuaiTarget}%</div>
-                  <div className="text-xs text-muted-foreground">Sesuai Target</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{summary.avgKepatuhanCP}%</div>
-                  <div className="text-xs text-muted-foreground">Kepatuhan CP</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{summary.persentaseKepatuhanPenunjang}%</div>
-                  <div className="text-xs text-muted-foreground">Kepatuhan Penunjang</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{summary.persentaseKepatuhanTerapi}%</div>
-                  <div className="text-xs text-muted-foreground">Kepatuhan Terapi</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-warning">{summary.avgLOS}</div>
-                  <div className="text-xs text-muted-foreground">Rata-rata LOS</div>
-                </div>
-              </div>
-            )}
           </div>
+
+          {summary && (
+            <div className="mt-6 grid grid-cols-2 gap-4 border-t border-border/60 pt-5 sm:grid-cols-3 xl:grid-cols-6">
+              <div className="min-w-0 text-center">
+                <div className="text-xl font-bold text-primary lg:text-2xl">{summary.totalPatients}</div>
+                <div className="text-xs leading-snug text-muted-foreground">Total Pasien</div>
+              </div>
+              <div className="min-w-0 text-center">
+                <div className="text-xl font-bold text-success lg:text-2xl">{summary.persentaseSesuaiTarget}%</div>
+                <div className="text-xs leading-snug text-muted-foreground">Sesuai Target</div>
+              </div>
+              <div className="min-w-0 text-center">
+                <div className="text-xl font-bold text-primary lg:text-2xl">{summary.avgKepatuhanCP}%</div>
+                <div className="text-xs leading-snug text-muted-foreground">Kepatuhan CP</div>
+              </div>
+              <div className="min-w-0 text-center">
+                <div className="text-xl font-bold text-primary lg:text-2xl">{summary.persentaseKepatuhanPenunjang}%</div>
+                <div className="text-xs leading-snug text-muted-foreground">Kepatuhan Penunjang</div>
+              </div>
+              <div className="min-w-0 text-center">
+                <div className="text-xl font-bold text-primary lg:text-2xl">{summary.persentaseKepatuhanTerapi}%</div>
+                <div className="text-xs leading-snug text-muted-foreground">Kepatuhan Terapi</div>
+              </div>
+              <div className="min-w-0 text-center">
+                <div className="text-xl font-bold text-warning lg:text-2xl">{summary.avgLOS}</div>
+                <div className="text-xs leading-snug text-muted-foreground">Rata-rata LOS</div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
 
       {/* Tabs for Data and Checklist Summary */}
       <Tabs defaultValue="patient-data" className="space-y-6">
