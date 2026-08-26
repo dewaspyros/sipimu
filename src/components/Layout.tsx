@@ -1,9 +1,16 @@
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Bell, LogOut, HeartPulse } from "lucide-react";
 import { IconButton } from "@/components/common";
 import { useAuthContext } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import {
+  useNotifications,
+  ACTION_LABELS,
+  formatRelativeTime,
+} from "@/hooks/useNotifications";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 
 interface LayoutProps {
   children: React.ReactNode;
