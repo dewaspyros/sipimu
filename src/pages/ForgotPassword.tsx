@@ -82,8 +82,8 @@ export default function ForgotPassword() {
               </Button>
             </CardFooter>
           </Card>
-        </div>
-      </div>
+      </AuthLayout>
+
     );
   }
 
