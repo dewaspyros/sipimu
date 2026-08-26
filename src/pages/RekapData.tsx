@@ -166,59 +166,31 @@ export default function RekapData() {
 
   const updateLOS = async (index: number, newLOS: number) => {
     const patient = filteredData[index];
-    if (patient) {
-      const updatedData = [...filteredData];
-      updatedData[index] = { ...patient, los: newLOS, sesuaiTarget: newLOS <= getTargetLOS(patient.diagnosis) };
-      setFilteredData(updatedData);
-      
-      // Update in database
-      await updatePatientData(patient.id, { los: newLOS });
-    }
+    if (!patient) return;
+    // State sumber (data) diperbarui di hook; filteredData ikut otomatis.
+    await updatePatientData(patient.id, { los: newLOS });
   };
 
   const updateKeterangan = async (index: number, newKeterangan: string) => {
     const patient = filteredData[index];
-    if (patient) {
-      try {
-        // Update keterangan in database immediately
-        await updatePatientData(patient.id, { keterangan: newKeterangan });
-        
-        // Update local state after successful database update
-        setFilteredData(prev => {
-          const updatedData = [...prev];
-          updatedData[index] = { ...updatedData[index], keterangan: newKeterangan };
-          return updatedData;
-        });
-        
-        console.log(`Updated keterangan for patient ${patient.namaPasien}`);
-      } catch (error) {
-        console.error('Failed to update keterangan:', error);
-      }
+    if (!patient) return;
+    try {
+      await updatePatientData(patient.id, { keterangan: newKeterangan });
+    } catch (error) {
+      console.error('Failed to update keterangan:', error);
     }
   };
 
   const updateCheckbox = async (index: number, field: string, value: boolean) => {
     const patient = filteredData[index];
-    if (patient) {
-      try {
-        // Update compliance data in database first
-        await updateComplianceData(patient.id, field, value);
-        
-        // CRITICAL: Update filteredData immediately after successful database update
-        // This ensures the change is visible immediately and persists when switching months
-        setFilteredData(prev => {
-          const updatedData = [...prev];
-          updatedData[index] = { ...updatedData[index], [field]: value };
-          return updatedData;
-        });
-        
-        console.log(`Updated ${field} to ${value} for patient ${patient.namaPasien}`);
-      } catch (error) {
-        // Error already handled in updateComplianceData, just log
-        console.error('Failed to update checkbox:', error);
-      }
+    if (!patient) return;
+    try {
+      await updateComplianceData(patient.id, field, value);
+    } catch (error) {
+      console.error('Failed to update checkbox:', error);
     }
   };
+
 
   const generateSummary = async () => {
     if (selectedMonth && selectedMonth !== "all") {
