@@ -1,12 +1,15 @@
+import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, User, LogOut } from "lucide-react";
+import { Bell, LogOut, User, HeartPulse } from "lucide-react";
 import { IconButton } from "@/components/common";
 import { useAuthContext } from "@/hooks/useAuth";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -14,49 +17,79 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+const PAGE_TITLES: Record<string, string> = {
+  "/dashboard": "Dashboard Kepatuhan",
+  "/clinical-pathway": "Clinical Pathway",
+  "/clinical-pathway-form": "Form Identitas Pasien",
+  "/clinical-pathway-checklist": "Checklist Clinical Pathway",
+  "/rekap-data": "Rekap Data",
+  "/pengaturan": "Pengaturan",
+};
+
 export function Layout({ children }: LayoutProps) {
   const { user, signOut } = useAuthContext();
-  
+  const { pathname } = useLocation();
+  const pageTitle = PAGE_TITLES[pathname] ?? "Sistem Pelaporan Clinical Pathways";
+  const displayName = user?.email?.split("@")[0] ?? "Pengguna";
+
   return (
     <SidebarProvider>
       <div className="flex min-h-dvh w-full bg-background">
         <AppSidebar />
-        
-        <main className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="sticky top-0 z-10 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-            <div className="flex items-center justify-between h-16 px-6">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger className="hover:bg-accent medical-transition" />
-                <div className="hidden sm:block">
-                  <h1 className="text-lg font-semibold text-foreground">
-                    Sistem Pelaporan Clinical Pathways
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
-                    RS PKU Muhammadiyah Wonosobo
-                  </p>
+
+        <main className="flex min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-20 border-b border-border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+            <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6">
+              <div className="flex min-w-0 items-center gap-3">
+                <SidebarTrigger className="h-9 w-9 rounded-lg hover:bg-accent medical-transition" />
+                <div className="hidden h-8 w-px bg-border sm:block" />
+                <div className="hidden min-w-0 sm:flex sm:items-center sm:gap-3">
+                  <span className="icon-chip h-9 w-9">
+                    <HeartPulse className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <h1 className="truncate font-heading text-base font-semibold leading-tight text-foreground">
+                      {pageTitle}
+                    </h1>
+                    <p className="truncate text-xs text-muted-foreground">
+                      RS PKU Muhammadiyah Wonosobo
+                    </p>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <IconButton variant="ghost" label="Notifikasi" className="medical-transition">
+
+              <div className="flex items-center gap-1.5">
+                <IconButton
+                  variant="ghost"
+                  label="Notifikasi"
+                  className="relative rounded-full medical-transition"
+                >
                   <Bell className="h-5 w-5" aria-hidden="true" />
+                  <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary" />
                 </IconButton>
-                
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <IconButton variant="ghost" label="Menu akun pengguna" className="medical-transition">
-                      <User className="h-5 w-5" aria-hidden="true" />
+                    <IconButton
+                      variant="ghost"
+                      label="Menu akun pengguna"
+                      className="rounded-full medical-transition"
+                    >
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 font-heading text-xs font-bold uppercase text-primary">
+                        {displayName.slice(0, 2)}
+                      </span>
                     </IconButton>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {user && (
-                      <DropdownMenuItem disabled>
-                        {user.email?.split('@')[0] || 'User'}
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem onClick={signOut}>
-                      <LogOut className="mr-2 h-4 w-4" />
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel className="flex flex-col">
+                      <span className="truncate text-sm font-semibold">{displayName}</span>
+                      <span className="truncate text-xs font-normal text-muted-foreground">
+                        Staf terverifikasi
+                      </span>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
                       Keluar
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -64,11 +97,8 @@ export function Layout({ children }: LayoutProps) {
               </div>
             </div>
           </header>
-          
-          {/* Main Content */}
-          <div className="flex-1 p-6">
-            {children}
-          </div>
+
+          <div className="flex-1 animate-fade-in-up p-4 sm:p-6 lg:p-8">{children}</div>
         </main>
       </div>
     </SidebarProvider>
