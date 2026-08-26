@@ -95,12 +95,16 @@ export function AppSidebar() {
             <SidebarMenu className="gap-1">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title} className="h-auto p-0">
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.title}
+                    className="!h-auto min-h-[2.75rem] overflow-visible p-0 [&>a]:!truncate-0"
+                  >
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
                         cn(
-                          "group flex items-center gap-3 rounded-lg px-2.5 py-2 medical-transition",
+                          "group flex min-h-[2.75rem] w-full items-center gap-3 rounded-lg px-2.5 py-2 medical-transition",
                           "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                           isActive &&
                             "bg-primary text-primary-foreground shadow-soft hover:bg-primary hover:text-primary-foreground"
@@ -120,7 +124,7 @@ export function AppSidebar() {
                             <item.icon className="h-4 w-4" aria-hidden="true" />
                           </span>
                           {!collapsed && (
-                            <span className="flex min-w-0 flex-col">
+                            <span className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden">
                               <span className="truncate text-sm font-semibold leading-tight">
                                 {item.title}
                               </span>
@@ -138,6 +142,7 @@ export function AppSidebar() {
                       )}
                     </NavLink>
                   </SidebarMenuButton>
+
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
