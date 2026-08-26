@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, LogOut, User, HeartPulse } from "lucide-react";
+import { Bell, LogOut, HeartPulse } from "lucide-react";
 import { IconButton } from "@/components/common";
 import { useAuthContext } from "@/hooks/useAuth";
 import {
