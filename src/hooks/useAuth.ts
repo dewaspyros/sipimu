@@ -2,6 +2,13 @@ import { useState, useEffect, createContext, useContext, createElement, type Rea
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import {
+  clearAttempts,
+  formatRemaining,
+  getLockStatus,
+  registerFailedAttempt,
+} from '@/lib/loginThrottle';
+
 
 interface AuthContextType {
   user: User | null;
@@ -16,6 +23,45 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const toHospitalEmail = (nik: string) => `${nik.trim()}@hospital.local`;
+
+/** Durasi maksimal satu sesi login: 12 jam. */
+const SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+const SESSION_START_KEY = 'sipimu_session_start';
+
+const readSessionStart = (): number | null => {
+  try {
+    const raw = localStorage.getItem(SESSION_START_KEY);
+    if (!raw) return null;
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeSessionStart = (value: number) => {
+  try {
+    localStorage.setItem(SESSION_START_KEY, String(value));
+  } catch {
+    /* abaikan */
+  }
+};
+
+const clearSessionStart = () => {
+  try {
+    localStorage.removeItem(SESSION_START_KEY);
+  } catch {
+    /* abaikan */
+  }
+};
+
+/** true bila sesi sudah melewati batas 12 jam. */
+const isSessionExpired = () => {
+  const start = readSessionStart();
+  if (!start) return false;
+  return Date.now() - start > SESSION_MAX_AGE_MS;
+};
+
 
 const useProvideAuth = (): AuthContextType => {
   const [user, setUser] = useState<User | null>(null);
@@ -36,11 +82,28 @@ const useProvideAuth = (): AuthContextType => {
   useEffect(() => {
     let isMounted = true;
 
+    const expireSession = async () => {
+      clearSessionStart();
+      await signOutLocally();
+      if (!isMounted) return;
+      clearAuthState();
+      toast({
+        title: 'Sesi berakhir',
+        description: 'Sesi login sudah lebih dari 12 jam. Silakan login kembali.',
+      });
+    };
+
     const applySession = async (nextSession: Session | null) => {
       if (!isMounted) return;
 
       if (!nextSession?.user) {
         clearAuthState();
+        return;
+      }
+
+      // Batas 12 jam per sesi login.
+      if (isSessionExpired()) {
+        await expireSession();
         return;
       }
 
@@ -59,6 +122,10 @@ const useProvideAuth = (): AuthContextType => {
         return;
       }
 
+      if (!readSessionStart()) {
+        writeSessionStart(Date.now());
+      }
+
       setSession(nextSession);
       setUser(nextSession.user);
       setLoading(false);
@@ -74,13 +141,38 @@ const useProvideAuth = (): AuthContextType => {
       void applySession(currentSession);
     });
 
+    const checkExpiry = () => {
+      if (isSessionExpired()) {
+        void expireSession();
+      }
+    };
+
+    const intervalId = window.setInterval(checkExpiry, 60 * 1000);
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') checkExpiry();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
     return () => {
       isMounted = false;
       subscription.unsubscribe();
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
 
+
   const signIn = async (nik: string, password: string) => {
+    // Tolak lebih awal bila masih dalam masa kunci 5 menit.
+    const lock = getLockStatus(nik);
+    if (lock.locked) {
+      return {
+        error: new Error(
+          `Terlalu banyak percobaan login. Coba lagi dalam ${formatRemaining(lock.remainingMs)}.`,
+        ),
+      };
+    }
+
     setLoading(true);
 
     try {
@@ -89,7 +181,17 @@ const useProvideAuth = (): AuthContextType => {
 
       if (error) {
         setLoading(false);
-        return { error: new Error('NIK atau password salah') };
+        const status = registerFailedAttempt(nik);
+        if (status.locked) {
+          return {
+            error: new Error(
+              `Terlalu banyak percobaan login. Coba lagi dalam ${formatRemaining(status.remainingMs)}.`,
+            ),
+          };
+        }
+        return {
+          error: new Error(`NIK atau password salah. Percobaan tersisa: ${status.attemptsLeft}`),
+        };
       }
 
       if (!data.user) {
@@ -110,6 +212,8 @@ const useProvideAuth = (): AuthContextType => {
         };
       }
 
+      clearAttempts(nik);
+      writeSessionStart(Date.now());
       setLoading(false);
       return { error: null };
     } catch (error) {
@@ -118,6 +222,7 @@ const useProvideAuth = (): AuthContextType => {
       return { error: error as Error };
     }
   };
+
 
   const signUp = async (nik: string, password: string, fullName: string) => {
     setLoading(true);
@@ -162,9 +267,11 @@ const useProvideAuth = (): AuthContextType => {
 
   const signOut = async () => {
     try {
+      clearSessionStart();
       await signOutLocally();
       clearAuthState();
     } catch {
+
       toast({
         title: 'Error',
         description: 'Gagal logout',

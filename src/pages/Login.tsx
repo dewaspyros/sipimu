@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, UserCheck } from "lucide-react";
 import { AuthLayout } from "@/components/AuthLayout";
+import { formatRemaining, getLockStatus } from "@/lib/loginThrottle";
+
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +19,7 @@ export default function Login() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [lockRemaining, setLockRemaining] = useState(0);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { signIn, user, loading } = useAuth();
@@ -32,9 +35,28 @@ export default function Login() {
     }
   }, [user, navigate, nextPath]);
 
+  // Sinkronkan status kunci login (3x gagal → tunggu 5 menit) dengan hitung mundur.
+  useEffect(() => {
+    const tick = () => {
+      const status = getLockStatus(formData.nik);
+      setLockRemaining(status.locked ? status.remainingMs : 0);
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [formData.nik]);
+
+  const isLocked = lockRemaining > 0;
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (isLocked) {
+      setError(`Terlalu banyak percobaan login. Coba lagi dalam ${formatRemaining(lockRemaining)}.`);
+      return;
+    }
 
     if (!formData.nik || !formData.password) {
       setError("Silakan lengkapi NIK dan password");
@@ -45,10 +67,13 @@ export default function Login() {
 
     if (signInError) {
       setError(signInError.message);
+      const status = getLockStatus(formData.nik);
+      setLockRemaining(status.locked ? status.remainingMs : 0);
     } else {
       navigate(nextPath);
     }
   };
+
 
   return (
     <AuthLayout>
@@ -64,11 +89,20 @@ export default function Login() {
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
-              {error && (
+              {isLocked ? (
                 <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>
+                    Terlalu banyak percobaan login. Coba lagi dalam {formatRemaining(lockRemaining)}.
+                  </AlertDescription>
                 </Alert>
+              ) : (
+                error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )
               )}
+
 
               <div className="space-y-2">
                 <Label htmlFor="nik">NIK </Label>
@@ -123,11 +157,13 @@ export default function Login() {
                 type="submit"
                 className="w-full medical-transition"
                 isLoading={loading}
+                disabled={isLocked}
                 loadingText="Memproses..."
               >
                 <UserCheck className="mr-2 h-4 w-4" aria-hidden="true" />
-                Masuk
+                {isLocked ? `Tunggu ${formatRemaining(lockRemaining)}` : "Masuk"}
               </AsyncButton>
+
 
               <div className="text-center">
                 <span className="text-sm text-muted-foreground">
