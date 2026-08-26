@@ -594,7 +594,7 @@ const ClinicalPathwayForm = () => {
                    )}
                    <AsyncButton type="submit" isLoading={isLoading} loadingText="Menyimpan...">
                      {mode === 'edit' ? 'Simpan Perubahan' : 'Lanjut ke Checklist'}
-                   </Button>
+                   </AsyncButton>
                  </div>
               </form>
             </Form>
