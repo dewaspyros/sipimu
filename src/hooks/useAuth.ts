@@ -78,6 +78,7 @@ const useProvideAuth = (): AuthContextType => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionRemainingMs, setSessionRemainingMs] = useState<number | null>(null);
   const { toast } = useToast();
 
   const clearAuthState = () => {
