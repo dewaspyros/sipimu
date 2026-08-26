@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, LogOut, HeartPulse } from "lucide-react";
+import { Bell, LogOut, HeartPulse, Clock } from "lucide-react";
 import { IconButton } from "@/components/common";
-import { useAuthContext } from "@/hooks/useAuth";
+import { useAuthContext, formatSessionRemaining } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import {
   useNotifications,
@@ -37,7 +37,7 @@ const PAGE_TITLES: Record<string, string> = {
 const LAST_SEEN_KEY = "notifications:lastSeenAt";
 
 export function Layout({ children }: LayoutProps) {
-  const { signOut } = useAuthContext();
+  const { signOut, user, sessionRemainingMs } = useAuthContext();
   const { displayName, initials } = useProfile();
   const { notifications, loading: notifLoading } = useNotifications();
   const { pathname } = useLocation();
@@ -88,6 +88,19 @@ export function Layout({ children }: LayoutProps) {
               </div>
 
               <div className="flex items-center gap-1.5">
+                {user && sessionRemainingMs !== null && (
+                  <div
+                    className="hidden items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground sm:flex"
+                    aria-label="Sisa waktu login"
+                    title="Sisa waktu login"
+                  >
+                    <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span className="font-mono tabular-nums">
+                      {formatSessionRemaining(sessionRemainingMs)}
+                    </span>
+                  </div>
+                )}
+
                 <DropdownMenu onOpenChange={(open) => open && markSeen()}>
                   <DropdownMenuTrigger asChild>
                     <IconButton

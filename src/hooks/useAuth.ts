@@ -14,6 +14,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  sessionRemainingMs: number | null;
   signIn: (nik: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (nik: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -62,11 +63,22 @@ const isSessionExpired = () => {
   return Date.now() - start > SESSION_MAX_AGE_MS;
 };
 
+/** Format sisa waktu sesi menjadi hh:mm:ss. */
+export const formatSessionRemaining = (ms: number | null): string => {
+  if (ms === null || ms <= 0) return '00:00:00';
+  const totalSeconds = Math.ceil(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
+
 
 const useProvideAuth = (): AuthContextType => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionRemainingMs, setSessionRemainingMs] = useState<number | null>(null);
   const { toast } = useToast();
 
   const clearAuthState = () => {
@@ -161,6 +173,26 @@ const useProvideAuth = (): AuthContextType => {
     };
   }, []);
 
+
+  useEffect(() => {
+    const computeRemaining = () => {
+      if (!user) {
+        setSessionRemainingMs(null);
+        return;
+      }
+      const start = readSessionStart();
+      if (!start) {
+        setSessionRemainingMs(null);
+        return;
+      }
+      const remaining = start + SESSION_MAX_AGE_MS - Date.now();
+      setSessionRemainingMs(remaining > 0 ? remaining : 0);
+    };
+
+    computeRemaining();
+    const id = window.setInterval(computeRemaining, 1000);
+    return () => window.clearInterval(id);
+  }, [user]);
 
   const signIn = async (nik: string, password: string) => {
     // Tolak lebih awal bila masih dalam masa kunci 5 menit.
@@ -293,6 +325,7 @@ const useProvideAuth = (): AuthContextType => {
     user,
     session,
     loading,
+    sessionRemainingMs,
     signIn,
     signUp,
     signOut,
