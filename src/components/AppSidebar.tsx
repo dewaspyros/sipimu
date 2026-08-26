@@ -98,7 +98,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     tooltip={item.title}
-                    className="!h-auto min-h-[2.75rem] overflow-visible p-0 [&>a]:!truncate-0"
+                    className="!h-auto min-h-[2.75rem] overflow-visible p-0"
                   >
                     <NavLink
                       to={item.url}
