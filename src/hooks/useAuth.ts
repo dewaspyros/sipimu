@@ -75,11 +75,28 @@ const useProvideAuth = (): AuthContextType => {
   useEffect(() => {
     let isMounted = true;
 
+    const expireSession = async () => {
+      clearSessionStart();
+      await signOutLocally();
+      if (!isMounted) return;
+      clearAuthState();
+      toast({
+        title: 'Sesi berakhir',
+        description: 'Sesi login sudah lebih dari 12 jam. Silakan login kembali.',
+      });
+    };
+
     const applySession = async (nextSession: Session | null) => {
       if (!isMounted) return;
 
       if (!nextSession?.user) {
         clearAuthState();
+        return;
+      }
+
+      // Batas 12 jam per sesi login.
+      if (isSessionExpired()) {
+        await expireSession();
         return;
       }
 
@@ -98,6 +115,10 @@ const useProvideAuth = (): AuthContextType => {
         return;
       }
 
+      if (!readSessionStart()) {
+        writeSessionStart(Date.now());
+      }
+
       setSession(nextSession);
       setUser(nextSession.user);
       setLoading(false);
@@ -113,11 +134,26 @@ const useProvideAuth = (): AuthContextType => {
       void applySession(currentSession);
     });
 
+    const checkExpiry = () => {
+      if (isSessionExpired()) {
+        void expireSession();
+      }
+    };
+
+    const intervalId = window.setInterval(checkExpiry, 60 * 1000);
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') checkExpiry();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
     return () => {
       isMounted = false;
       subscription.unsubscribe();
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
+
 
   const signIn = async (nik: string, password: string) => {
     setLoading(true);
