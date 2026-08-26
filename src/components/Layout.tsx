@@ -57,11 +57,8 @@ export function Layout({ children }: LayoutProps) {
     setLastSeenAt(latestAt);
   };
 
-  useEffect(() => {
-    if (!lastSeenAt && latestAt) {
-      // Jangan tandai otomatis; hanya pastikan state konsisten setelah hydration.
-    }
-  }, [lastSeenAt, latestAt]);
+
+
 
 
   return (
