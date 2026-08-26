@@ -58,7 +58,7 @@ export function AppSidebar() {
   const currentPath = useLocation().pathname;
   const { user, signOut } = useAuthContext();
   const collapsed = state === "collapsed";
-  const displayName = user?.email?.split("@")[0] ?? "Pengguna";
+  const { displayName, initials } = useProfile();
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
