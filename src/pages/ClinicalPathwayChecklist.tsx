@@ -492,7 +492,7 @@ const ClinicalPathwayChecklist = () => {
             description: "Data clinical pathway tidak ditemukan",
             variant: "destructive",
           });
-          setTimeout(() => navigate("/clinical-pathway"), 2000);
+          redirectTimer = setTimeout(() => navigate("/clinical-pathway"), 2000);
           return;
         }
 
