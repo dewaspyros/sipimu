@@ -267,9 +267,11 @@ const useProvideAuth = (): AuthContextType => {
 
   const signOut = async () => {
     try {
+      clearSessionStart();
       await signOutLocally();
       clearAuthState();
     } catch {
+
       toast({
         title: 'Error',
         description: 'Gagal logout',
