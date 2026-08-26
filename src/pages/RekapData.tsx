@@ -490,7 +490,7 @@ export default function RekapData() {
                             <td className="p-3">
                               <IconButton
                                 variant={isEditing ? "default" : "outline"}
-                                label={isEditing ? `Simpan perubahan ${item.nama_pasien}` : `Edit data ${item.nama_pasien}`}
+                                label={isEditing ? `Simpan perubahan ${item.namaPasien}` : `Edit data ${item.namaPasien}`}
                                 onClick={() => toggleEdit(rowKey)}
                                 className="medical-transition"
                               >
