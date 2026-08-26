@@ -211,8 +211,10 @@ export default function RekapData() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={FileBarChart}
+        eyebrow="Laporan"
         title="Rekap Data"
-        description="Laporan dan rekap data Clinical Pathways per bulan"
+        description="Laporan dan rekap data Clinical Pathways per bulan."
         actions={
           <>
             {selectedMonth && selectedMonth !== "all" && (

@@ -178,8 +178,10 @@ Silakan cek sistem untuk detail lebih lanjut.`
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={Settings}
+        eyebrow="Sistem"
         title="Pengaturan"
-        description="Kelola konfigurasi sistem dan pengaturan akun"
+        description="Kelola konfigurasi sistem dan pengaturan akun."
       />
 
       <Tabs defaultValue="password" className="space-y-6">

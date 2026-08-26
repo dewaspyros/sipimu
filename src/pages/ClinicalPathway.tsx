@@ -204,8 +204,10 @@ export default function ClinicalPathway() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={ClipboardPlus}
+        eyebrow="Data Pasien"
         title="Clinical Pathway"
-        description="Kelola data input Clinical Pathways RS PKU Muhammadiyah Wonosobo"
+        description="Kelola data input Clinical Pathways RS PKU Muhammadiyah Wonosobo."
       />
 
       <Tabs defaultValue="data-list" className="space-y-6">
