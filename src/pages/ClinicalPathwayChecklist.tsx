@@ -10,6 +10,8 @@ import { AsyncButton } from "@/components/common";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useChecklist, useClinicalPathways } from "@/hooks/useClinicalPathways";
+import { useNotifications } from "@/hooks/useNotifications";
+
 
 interface PatientFormData {
   clinicalPathway: string;
@@ -446,6 +448,8 @@ const ClinicalPathwayChecklist = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const { saveChecklist, loading: checklistLoading, getChecklistByPathwayId } = useChecklist();
+  const { logActivity } = useNotifications();
+
   const { pathways, loading: pathwaysLoading } = useClinicalPathways();
   const [patientData, setPatientData] = useState<PatientFormData | null>(null);
   const [checklistData, setChecklistData] = useState<ChecklistData>({});
@@ -726,6 +730,15 @@ const ClinicalPathwayChecklist = () => {
       }));
 
       await saveChecklist(patientData.pathwayId, checklistItems);
+
+      await logActivity({
+        action: "save_checklist",
+        pathwayId: patientData.pathwayId,
+        namaPasien: patientData.patientNameAge,
+        noRM: patientData.noRM,
+        jenisClinicalPathway: patientData.clinicalPathway,
+      });
+
 
       sessionStorage.removeItem("clinicalPathwayFormData");
       navigate("/clinical-pathway");

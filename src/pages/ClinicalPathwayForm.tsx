@@ -14,6 +14,8 @@ import { useClinicalPathways } from "@/hooks/useClinicalPathways";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { getPathwayOptions } from "@/constants/pathwayOptions";
+import { useNotifications } from "@/hooks/useNotifications";
+
 
 interface PatientFormData {
   clinicalPathway: string;
@@ -69,6 +71,8 @@ const ClinicalPathwayForm = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { createPathway, updatePathway } = useClinicalPathways();
+  const { logActivity } = useNotifications();
+
   const [customVerifikator, setCustomVerifikator] = useState("");
   const [customDPJP, setCustomDPJP] = useState("");
   const [useCustomVerifikator, setUseCustomVerifikator] = useState(false);
@@ -278,6 +282,13 @@ const ClinicalPathwayForm = () => {
       if (mode === 'edit' && patientId) {
         // Update existing pathway
         pathway = await updatePathway(patientId, pathwayData);
+        await logActivity({
+          action: 'update_pathway',
+          pathwayId: patientId,
+          namaPasien: data.patientNameAge,
+          noRM: data.noRM,
+          jenisClinicalPathway: data.clinicalPathway,
+        });
         toast({
           title: "Berhasil",
           description: "Data pasien berhasil diperbarui",
@@ -287,6 +298,14 @@ const ClinicalPathwayForm = () => {
       } else {
         // Create new pathway
         pathway = await createPathway(pathwayData);
+        await logActivity({
+          action: 'create_pathway',
+          pathwayId: pathway?.id ?? null,
+          namaPasien: data.patientNameAge,
+          noRM: data.noRM,
+          jenisClinicalPathway: data.clinicalPathway,
+        });
+
         
         // Store form data and pathway ID in session storage for the checklist step
         sessionStorage.setItem('clinicalPathwayFormData', JSON.stringify({

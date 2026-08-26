@@ -1,9 +1,16 @@
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Bell, LogOut, HeartPulse } from "lucide-react";
 import { IconButton } from "@/components/common";
 import { useAuthContext } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import {
+  useNotifications,
+  ACTION_LABELS,
+  formatRelativeTime,
+} from "@/hooks/useNotifications";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -26,11 +34,32 @@ const PAGE_TITLES: Record<string, string> = {
   "/pengaturan": "Pengaturan",
 };
 
+const LAST_SEEN_KEY = "notifications:lastSeenAt";
+
 export function Layout({ children }: LayoutProps) {
-  const { user, signOut } = useAuthContext();
+  const { signOut } = useAuthContext();
+  const { displayName } = useProfile();
+  const { notifications, loading: notifLoading } = useNotifications();
   const { pathname } = useLocation();
   const pageTitle = PAGE_TITLES[pathname] ?? "Sistem Pelaporan Clinical Pathways";
-  const displayName = user?.email?.split("@")[0] ?? "Pengguna";
+
+  const [lastSeenAt, setLastSeenAt] = useState<string | null>(() =>
+    typeof window === "undefined" ? null : localStorage.getItem(LAST_SEEN_KEY)
+  );
+
+  const latestAt = notifications[0]?.created_at ?? null;
+  const hasUnread =
+    !!latestAt && (!lastSeenAt || new Date(latestAt).getTime() > new Date(lastSeenAt).getTime());
+
+  const markSeen = () => {
+    if (!latestAt) return;
+    localStorage.setItem(LAST_SEEN_KEY, latestAt);
+    setLastSeenAt(latestAt);
+  };
+
+
+
+
 
   return (
     <SidebarProvider>
@@ -59,14 +88,63 @@ export function Layout({ children }: LayoutProps) {
               </div>
 
               <div className="flex items-center gap-1.5">
-                <IconButton
-                  variant="ghost"
-                  label="Notifikasi"
-                  className="relative rounded-full medical-transition"
-                >
-                  <Bell className="h-5 w-5" aria-hidden="true" />
-                  <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary" />
-                </IconButton>
+                <DropdownMenu onOpenChange={(open) => open && markSeen()}>
+                  <DropdownMenuTrigger asChild>
+                    <IconButton
+                      variant="ghost"
+                      label="Notifikasi"
+                      className="relative rounded-full medical-transition"
+                    >
+                      <Bell className="h-5 w-5" aria-hidden="true" />
+                      {hasUnread && (
+                        <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary" />
+                      )}
+                    </IconButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80">
+                    <DropdownMenuLabel className="font-heading">
+                      Aktivitas Terakhir
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <div role="status" aria-live="polite">
+                      {notifLoading ? (
+                        <p className="px-2 py-6 text-center text-sm text-muted-foreground">
+                          Memuat notifikasi...
+                        </p>
+                      ) : notifications.length === 0 ? (
+                        <p className="px-2 py-6 text-center text-sm text-muted-foreground">
+                          Belum ada aktivitas
+                        </p>
+                      ) : (
+                        <ul className="max-h-80 overflow-y-auto">
+                          {notifications.map((n) => (
+                            <li
+                              key={n.id}
+                              className="flex flex-col gap-0.5 rounded-md px-2 py-2 text-sm hover:bg-accent medical-transition"
+                            >
+                              <span className="font-medium text-foreground">
+                                {n.actor_name}{" "}
+                                <span className="font-normal text-muted-foreground">
+                                  {ACTION_LABELS[n.action_type] ?? n.action_type}
+                                </span>
+                              </span>
+                              {n.nama_pasien && (
+                                <span className="truncate text-xs text-muted-foreground">
+                                  {n.nama_pasien}
+                                  {n.no_rm ? ` · RM ${n.no_rm}` : ""}
+                                </span>
+                              )}
+                              <span className="text-xs text-muted-foreground/80">
+                                {formatRelativeTime(n.created_at)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

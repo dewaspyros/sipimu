@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_notifications: {
+        Row: {
+          action_type: string
+          actor_id: string
+          actor_name: string
+          created_at: string
+          id: string
+          jenis_clinical_pathway: string | null
+          nama_pasien: string | null
+          no_rm: string | null
+          pathway_id: string | null
+        }
+        Insert: {
+          action_type: string
+          actor_id: string
+          actor_name: string
+          created_at?: string
+          id?: string
+          jenis_clinical_pathway?: string | null
+          nama_pasien?: string | null
+          no_rm?: string | null
+          pathway_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          actor_id?: string
+          actor_name?: string
+          created_at?: string
+          id?: string
+          jenis_clinical_pathway?: string | null
+          nama_pasien?: string | null
+          no_rm?: string | null
+          pathway_id?: string | null
+        }
+        Relationships: []
+      }
       checklist_summary: {
         Row: {
           bulan: number
