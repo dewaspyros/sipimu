@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/common";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -591,9 +592,9 @@ const ClinicalPathwayForm = () => {
                        Lanjutkan ke Checklist
                      </Button>
                    )}
-                   <Button type="submit" disabled={isLoading}>
-                     {isLoading ? 'Menyimpan...' : mode === 'edit' ? 'Simpan Perubahan' : 'Lanjut ke Checklist'}
-                   </Button>
+                   <AsyncButton type="submit" isLoading={isLoading} loadingText="Menyimpan...">
+                     {mode === 'edit' ? 'Simpan Perubahan' : 'Lanjut ke Checklist'}
+                   </AsyncButton>
                  </div>
               </form>
             </Form>

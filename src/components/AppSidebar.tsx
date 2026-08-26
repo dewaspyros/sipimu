@@ -84,7 +84,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-3 rounded-lg px-3 py-2 transition-all medical-transition hover:bg-accent text-black hover:text-foreground"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2 transition-all medical-transition hover:bg-accent text-sidebar-foreground hover:text-accent-foreground"
                     >
                       <item.icon className="h-4 w-4" />
                       {!collapsed && (
@@ -106,7 +106,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <button className="flex items-center gap-3 rounded-lg px-3 py-2 text-black transition-all medical-transition hover:bg-accent hover:text-foreground w-full">
+                  <button className="flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all medical-transition hover:bg-accent hover:text-accent-foreground w-full">
                     <LogOut className="h-4 w-4" />
                     {!collapsed && <span className="text-sm">Keluar</span>}
                   </button>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ChartCard, PageHeader, SelectFilter } from "@/components/common";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from "recharts";
 import { Activity, TrendingUp, Users, FileCheck } from "lucide-react";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -108,13 +108,10 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Monitoring Kepatuhan Clinical Pathways RS PKU Muhammadiyah Wonosobo
-        </p>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description="Monitoring Kepatuhan Clinical Pathways RS PKU Muhammadiyah Wonosobo"
+      />
 
       {/* Welcome Section */}
       <Card className="medical-card">
@@ -147,123 +144,96 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Grafik Kepatuhan LOS, CP dan Avg LOS */}
-      <Card className="medical-card">
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-            <div>
-              <CardTitle>Grafik Kepatuhan LOS, CP dan Avg LOS</CardTitle>
-              <CardDescription>
-                Presentase kepatuhan Clinical Pathways per bulan
-              </CardDescription>
+      <ChartCard
+        title="Grafik Kepatuhan LOS, CP dan Avg LOS"
+        description="Presentase kepatuhan Clinical Pathways per bulan"
+        isLoading={loading}
+        isEmpty={monthlyChartData.length === 0}
+        toolbar={
+          <>
+            <SelectFilter
+              label="Tahun"
+              value={selectedYear}
+              onValueChange={setSelectedYear}
+              options={yearOptions}
+              placeholder="Pilih Tahun"
+              widthClassName="md:w-[130px]"
+            />
+            <SelectFilter
+              label="Diagnosis"
+              value={selectedDiagnosis}
+              onValueChange={setSelectedDiagnosis}
+              options={diagnosisOptions}
+              placeholder="Pilih Diagnosis"
+              widthClassName="md:w-[250px]"
+            />
+            <div className="flex flex-wrap gap-2 pb-1">
+              <Badge variant="outline">Target: {targetInfo.target}</Badge>
+              <Badge variant="outline">Kepatuhan: {targetInfo.compliance}</Badge>
             </div>
-            <div className="flex flex-col md:flex-row gap-4">
-              <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger className="w-full md:w-[120px]">
-                  <SelectValue placeholder="Pilih Tahun" />
-                </SelectTrigger>
-                <SelectContent>
-                  {yearOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedDiagnosis} onValueChange={setSelectedDiagnosis}>
-                <SelectTrigger className="w-full md:w-[250px]">
-                  <SelectValue placeholder="Pilih Diagnosis" />
-                </SelectTrigger>
-                <SelectContent>
-                  {diagnosisOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex gap-2">
-                <Badge variant="outline">Target: {targetInfo.target}</Badge>
-                <Badge variant="outline">Kepatuhan: {targetInfo.compliance}</Badge>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={monthlyChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis yAxisId="left" domain={[0, 100]} label={{ value: 'Kepatuhan (%)', angle: -90, position: 'insideLeft' }} />
-              <YAxis yAxisId="right" orientation="right" domain={[0, 6]} label={{ value: 'Rata-rata LOS (hari)', angle: 90, position: 'insideRight' }} />
-              <Tooltip />
-              <Bar yAxisId="left" dataKey="losCompliance" fill="hsl(var(--primary))" name="LOS (%)" label={<CustomBarLabel />} />
-              <Bar yAxisId="left" dataKey="cpCompliance" fill="hsl(var(--primary-light))" name="CP (%)" label={<CustomBarLabel />} />
-              <Line 
-                yAxisId="right"
-                type="monotone" 
-                dataKey="avgLos" 
-                stroke="hsl(var(--destructive))" 
-                strokeWidth={3}
-                name="Avg LOS (hari)"
-                dot={{ fill: "hsl(var(--destructive))", strokeWidth: 2, r: 4 }}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+          </>
+        }
+      >
+        <ResponsiveContainer width="100%" height={400}>
+          <ComposedChart data={monthlyChartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis yAxisId="left" domain={[0, 100]} label={{ value: 'Kepatuhan (%)', angle: -90, position: 'insideLeft' }} />
+            <YAxis yAxisId="right" orientation="right" domain={[0, 6]} label={{ value: 'Rata-rata LOS (hari)', angle: 90, position: 'insideRight' }} />
+            <Tooltip />
+            <Bar yAxisId="left" dataKey="losCompliance" fill="hsl(var(--primary))" name="LOS (%)" label={<CustomBarLabel />} />
+            <Bar yAxisId="left" dataKey="cpCompliance" fill="hsl(var(--primary-light))" name="CP (%)" label={<CustomBarLabel />} />
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="avgLos"
+              stroke="hsl(var(--destructive))"
+              strokeWidth={3}
+              name="Avg LOS (hari)"
+              dot={{ fill: "hsl(var(--destructive))", strokeWidth: 2, r: 4 }}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </ChartCard>
 
-      {/* Grafik Kepatuhan Komponen CP */}
-      <Card className="medical-card">
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-            <div>
-              <CardTitle>Grafik Kepatuhan Komponen CP</CardTitle>
-              <CardDescription>
-                Presentase kepatuhan komponen Clinical Pathways per bulan
-              </CardDescription>
-            </div>
-            <div className="flex flex-col md:flex-row gap-4">
-              <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger className="w-full md:w-[120px]">
-                  <SelectValue placeholder="Pilih Tahun" />
-                </SelectTrigger>
-                <SelectContent>
-                  {yearOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedDiagnosis} onValueChange={setSelectedDiagnosis}>
-                <SelectTrigger className="w-full md:w-[250px]">
-                  <SelectValue placeholder="Pilih Diagnosis" />
-                </SelectTrigger>
-                <SelectContent>
-                  {diagnosisOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={componentChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis domain={[0, 100]} label={{ value: 'Kepatuhan (%)', angle: -90, position: 'insideLeft' }} />
-              <Tooltip />
-              <Bar dataKey="kepatuhanTerapi" fill="hsl(var(--primary))" name="Kepatuhan Terapi (%)" label={<CustomBarLabel />} />
-              <Bar dataKey="kepatuhanPenunjang" fill="hsl(var(--primary-light))" name="Kepatuhan Penunjang (%)" label={<CustomBarLabel />} />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      <ChartCard
+        title="Grafik Kepatuhan Komponen CP"
+        description="Presentase kepatuhan komponen Clinical Pathways per bulan"
+        isLoading={loading}
+        isEmpty={componentChartData.length === 0}
+        toolbar={
+          <>
+            <SelectFilter
+              label="Tahun"
+              value={selectedYear}
+              onValueChange={setSelectedYear}
+              options={yearOptions}
+              placeholder="Pilih Tahun"
+              widthClassName="md:w-[130px]"
+            />
+            <SelectFilter
+              label="Diagnosis"
+              value={selectedDiagnosis}
+              onValueChange={setSelectedDiagnosis}
+              options={diagnosisOptions}
+              placeholder="Pilih Diagnosis"
+              widthClassName="md:w-[250px]"
+            />
+          </>
+        }
+      >
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={componentChartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis domain={[0, 100]} label={{ value: 'Kepatuhan (%)', angle: -90, position: 'insideLeft' }} />
+            <Tooltip />
+            <Bar dataKey="kepatuhanTerapi" fill="hsl(var(--primary))" name="Kepatuhan Terapi (%)" label={<CustomBarLabel />} />
+            <Bar dataKey="kepatuhanPenunjang" fill="hsl(var(--primary-light))" name="Kepatuhan Penunjang (%)" label={<CustomBarLabel />} />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartCard>
+
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/common";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -126,19 +127,15 @@ export default function Login() {
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full medical-transition" disabled={loading}>
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Memproses...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <UserCheck className="h-4 w-4" />
-                    <span>Masuk</span>
-                  </div>
-                )}
-              </Button>
+              <AsyncButton
+                type="submit"
+                className="w-full medical-transition"
+                isLoading={loading}
+                loadingText="Memproses..."
+              >
+                <UserCheck className="mr-2 h-4 w-4" aria-hidden="true" />
+                Masuk
+              </AsyncButton>
 
               <div className="text-center">
                 <span className="text-sm text-muted-foreground">

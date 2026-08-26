@@ -1,46 +1,212 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2, Eye, FileText, Search } from "lucide-react";
-import { useClinicalPathways } from "@/hooks/useClinicalPathways";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Edit, Eye, FileText, Trash2 } from "lucide-react";
+import {
+  ALL_VALUE,
+  DataTable,
+  FilterBar,
+  IconButton,
+  MONTH_OPTIONS,
+  PageHeader,
+  SearchFilter,
+  SelectFilter,
+  WARD_OPTIONS,
+  type DataTableColumn,
+} from "@/components/common";
+import { useClinicalPathways, type ClinicalPathway as Pathway } from "@/hooks/useClinicalPathways";
 import { yearOptions } from "@/constants/yearOptions";
 import { getPathwayOptions } from "@/constants/pathwayOptions";
+
+const formatDate = (value?: string | null) =>
+  value ? new Date(value).toLocaleDateString("id-ID") : "-";
 
 export default function ClinicalPathway() {
   const navigate = useNavigate();
   const { pathways, loading, deletePathway } = useClinicalPathways();
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>(ALL_VALUE);
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
-  const [selectedPathway, setSelectedPathway] = useState<string>("");
-  const [selectedWard, setSelectedWard] = useState<string>("");
+  const [selectedPathway, setSelectedPathway] = useState<string>(ALL_VALUE);
+  const [selectedWard, setSelectedWard] = useState<string>(ALL_VALUE);
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const pathwayOptions = useMemo(
+    () => getPathwayOptions(selectedYear, { includeAll: true }),
+    [selectedYear]
+  );
 
   // Reset filter pathway jika nilai saat ini tidak ada di opsi tahun terpilih
   useEffect(() => {
-    const valid = getPathwayOptions(selectedYear, { includeAll: true }).some(
-      (opt) => opt.value === selectedPathway
-    );
+    const valid = pathwayOptions.some((opt) => opt.value === selectedPathway);
     if (selectedPathway && !valid) {
-      setSelectedPathway("all");
+      setSelectedPathway(ALL_VALUE);
     }
-  }, [selectedYear, selectedPathway]);
+  }, [pathwayOptions, selectedPathway]);
+
+  const yearFilterOptions = useMemo(
+    () => [{ value: ALL_VALUE, label: "Semua Tahun" }, ...yearOptions],
+    []
+  );
+
+  const filteredPathways = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return pathways.filter((item) => {
+      if (query) {
+        const matches =
+          item.nama_pasien.toLowerCase().includes(query) ||
+          item.no_rm.toLowerCase().includes(query);
+        if (!matches) return false;
+      }
+      if (selectedYear && selectedYear !== ALL_VALUE) {
+        if (item.tanggal_masuk?.slice(0, 4) !== selectedYear) return false;
+      }
+      if (selectedMonth && selectedMonth !== ALL_VALUE) {
+        const month = Number(item.tanggal_masuk?.slice(5, 7));
+        if (String(month) !== selectedMonth) return false;
+      }
+      if (selectedPathway && selectedPathway !== ALL_VALUE) {
+        if (item.jenis_clinical_pathway !== selectedPathway) return false;
+      }
+      if (selectedWard && selectedWard !== ALL_VALUE) {
+        if ((item as Pathway & { bangsal?: string }).bangsal !== selectedWard) return false;
+      }
+      return true;
+    });
+  }, [pathways, searchQuery, selectedYear, selectedMonth, selectedPathway, selectedWard]);
+
+  const isFiltered =
+    Boolean(searchQuery.trim()) ||
+    [selectedMonth, selectedPathway, selectedWard].some((v) => v && v !== ALL_VALUE) ||
+    (selectedYear !== ALL_VALUE && pathways.length > 0);
+
+  const columns = useMemo<DataTableColumn<Pathway>[]>(
+    () => [
+      {
+        id: "no_rm",
+        header: "No. RM",
+        sortValue: (row) => row.no_rm,
+        cell: (row) => <span className="font-mono">{row.no_rm}</span>,
+      },
+      {
+        id: "nama_pasien",
+        header: "Nama Pasien",
+        sortValue: (row) => row.nama_pasien,
+        cell: (row) => <span className="font-medium">{row.nama_pasien}</span>,
+      },
+      {
+        id: "tanggal_masuk",
+        header: "Tanggal Masuk",
+        sortValue: (row) => row.tanggal_masuk,
+        cell: (row) => formatDate(row.tanggal_masuk),
+      },
+      {
+        id: "tanggal_keluar",
+        header: "Tanggal Keluar",
+        hideBelowMd: true,
+        sortValue: (row) => row.tanggal_keluar ?? "",
+        cell: (row) => formatDate(row.tanggal_keluar),
+      },
+      {
+        id: "diagnosis",
+        header: "Diagnosis",
+        sortValue: (row) => row.jenis_clinical_pathway,
+        cell: (row) => (
+          <span className="inline-block rounded-md bg-primary/10 px-2 py-1 text-sm text-primary">
+            {row.jenis_clinical_pathway}
+          </span>
+        ),
+      },
+      {
+        id: "dpjp",
+        header: "DPJP",
+        hideBelowMd: true,
+        sortValue: (row) => row.dpjp,
+        cell: (row) => <span className="text-sm">{row.dpjp}</span>,
+      },
+      {
+        id: "los",
+        header: "LOS",
+        align: "center",
+        sortValue: (row) => row.los_hari ?? null,
+        cell: (row) => (row.los_hari ? `${row.los_hari} hari` : "-"),
+      },
+      {
+        id: "aksi",
+        header: "Aksi",
+        srLabel: "Aksi",
+        cell: (row) => (
+          <div className="flex flex-wrap gap-2">
+            <IconButton
+              variant="outline"
+              label={`Lihat detail ${row.nama_pasien}`}
+              onClick={() => navigate(`/clinical-pathway-checklist?id=${row.id}&mode=view`)}
+            >
+              <Eye className="h-4 w-4" aria-hidden="true" />
+            </IconButton>
+            <IconButton
+              variant="outline"
+              label={`Edit data ${row.nama_pasien}`}
+              onClick={() => navigate(`/clinical-pathway-form?id=${row.id}&mode=edit`)}
+            >
+              <Edit className="h-4 w-4" aria-hidden="true" />
+            </IconButton>
+            <IconButton
+              label={`Lanjut ke checklist ${row.nama_pasien}`}
+              onClick={() => navigate(`/clinical-pathway-checklist?id=${row.id}`)}
+            >
+              <FileText className="h-4 w-4" aria-hidden="true" />
+            </IconButton>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <IconButton variant="destructive" label={`Hapus data ${row.nama_pasien}`}>
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                </IconButton>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Hapus Data Clinical Pathway</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Apakah Anda yakin ingin menghapus data clinical pathway untuk pasien{" "}
+                    {row.nama_pasien}? Tindakan ini tidak dapat dibatalkan.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deletePathway(row.id)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Hapus
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        ),
+      },
+    ],
+    [navigate, deletePathway]
+  );
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-        <div>
-          <h1 className="text-3xl font-bold">Clinical Pathway</h1>
-          <p className="text-muted-foreground">
-            Kelola data input Clinical Pathways RS PKU Muhammadiyah Wonosobo
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Clinical Pathway"
+        description="Kelola data input Clinical Pathways RS PKU Muhammadiyah Wonosobo"
+      />
 
       <Tabs defaultValue="data-list" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
@@ -55,241 +221,63 @@ export default function ClinicalPathway() {
               <CardDescription>
                 Daftar semua data Clinical Pathways yang telah diinput
               </CardDescription>
-              <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mt-4">
-                <div className="w-full md:w-64">
-                  <label className="text-sm font-medium mb-2 block">Cari Data:</label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Nama pasien atau No. RM"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <div className="w-full md:w-48">
-                  <label className="text-sm font-medium mb-2 block">Filter Tahun:</label>
-                  <Select value={selectedYear} onValueChange={setSelectedYear}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih tahun" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua Tahun</SelectItem>
-                      {yearOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-full md:w-48">
-                  <label className="text-sm font-medium mb-2 block">Filter Bulan:</label>
-                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih bulan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua Bulan</SelectItem>
-                      <SelectItem value="1">Januari</SelectItem>
-                      <SelectItem value="2">Februari</SelectItem>
-                      <SelectItem value="3">Maret</SelectItem>
-                      <SelectItem value="4">April</SelectItem>
-                      <SelectItem value="5">Mei</SelectItem>
-                      <SelectItem value="6">Juni</SelectItem>
-                      <SelectItem value="7">Juli</SelectItem>
-                      <SelectItem value="8">Agustus</SelectItem>
-                      <SelectItem value="9">September</SelectItem>
-                      <SelectItem value="10">Oktober</SelectItem>
-                      <SelectItem value="11">November</SelectItem>
-                      <SelectItem value="12">Desember</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-full md:w-64">
-                  <label className="text-sm font-medium mb-2 block">Filter Jenis Clinical Pathway:</label>
-                  <Select value={selectedPathway} onValueChange={setSelectedPathway}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih jenis" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getPathwayOptions(selectedYear, { includeAll: true }).map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-full md:w-48">
-                  <label className="text-sm font-medium mb-2 block">Filter Bangsal:</label>
-                  <Select value={selectedWard} onValueChange={setSelectedWard}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih bangsal" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua Bangsal</SelectItem>
-                      <SelectItem value="Perinatal">Perinatal</SelectItem>
-                      <SelectItem value="Khadijah 2">Khadijah 2</SelectItem>
-                      <SelectItem value="Khadijah 3">Khadijah 3</SelectItem>
-                      <SelectItem value="Aisyah 3">Aisyah 3</SelectItem>
-                      <SelectItem value="Hafshoh 3">Hafshoh 3</SelectItem>
-                      <SelectItem value="Hafshoh 4">Hafshoh 4</SelectItem>
-                      <SelectItem value="ICU">ICU</SelectItem>
-                      <SelectItem value="Multazam">Multazam</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              <FilterBar className="mt-4" label="Filter data clinical pathway">
+                <SearchFilter
+                  label="Cari Data"
+                  value={searchQuery}
+                  onValueChange={setSearchQuery}
+                  placeholder="Nama pasien atau No. RM"
+                />
+                <SelectFilter
+                  label="Filter Tahun"
+                  value={selectedYear}
+                  onValueChange={setSelectedYear}
+                  options={yearFilterOptions}
+                  placeholder="Pilih tahun"
+                />
+                <SelectFilter
+                  label="Filter Bulan"
+                  value={selectedMonth}
+                  onValueChange={setSelectedMonth}
+                  options={MONTH_OPTIONS}
+                  placeholder="Pilih bulan"
+                />
+                <SelectFilter
+                  label="Filter Jenis Clinical Pathway"
+                  value={selectedPathway}
+                  onValueChange={setSelectedPathway}
+                  options={pathwayOptions}
+                  placeholder="Pilih jenis"
+                  widthClassName="md:w-64"
+                />
+                <SelectFilter
+                  label="Filter Bangsal"
+                  value={selectedWard}
+                  onValueChange={setSelectedWard}
+                  options={WARD_OPTIONS}
+                  placeholder="Pilih bangsal"
+                />
+              </FilterBar>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-4">No. RM</th>
-                      <th className="text-left p-4">Nama Pasien</th>
-                      <th className="text-left p-4">Tanggal Masuk</th>
-                      <th className="text-left p-4">Tanggal Keluar</th>
-                      <th className="text-left p-4">Diagnosis</th>
-                      <th className="text-left p-4">DPJP</th>
-                      <th className="text-left p-4">LOS</th>
-                      <th className="text-left p-4">Kepatuhan</th>
-                      <th className="text-left p-4">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      <tr>
-                        <td colSpan={9} className="p-4 text-center">Loading...</td>
-                      </tr>
-                    ) : pathways.length === 0 ? (
-                      <tr>
-                        <td colSpan={9} className="p-4 text-center text-muted-foreground">
-                          Belum ada data clinical pathway
-                        </td>
-                      </tr>
-                    ) : (
-                      pathways
-                        .filter(item => {
-                          // Filter by search query (patient name or medical record number)
-                          if (searchQuery) {
-                            const query = searchQuery.toLowerCase();
-                            const matchesName = item.nama_pasien.toLowerCase().includes(query);
-                            const matchesRM = item.no_rm.toLowerCase().includes(query);
-                            if (!matchesName && !matchesRM) return false;
-                          }
-                          // Filter by year
-                          if (selectedYear && selectedYear !== "all") {
-                            const admissionYear = new Date(item.tanggal_masuk).getFullYear();
-                            if (admissionYear.toString() !== selectedYear) return false;
-                          }
-                          // Filter by month
-                          if (selectedMonth && selectedMonth !== "all") {
-                            const admissionMonth = new Date(item.tanggal_masuk).getMonth() + 1;
-                            if (admissionMonth.toString() !== selectedMonth) return false;
-                          }
-                          // Filter by clinical pathway type
-                          if (selectedPathway && selectedPathway !== "all") {
-                            if (item.jenis_clinical_pathway !== selectedPathway) return false;
-                          }
-                          // Filter by ward
-                          if (selectedWard && selectedWard !== "all") {
-                            if ((item as any).bangsal !== selectedWard) return false;
-                          }
-                          return true;
-                        })
-                        .map((item) => (
-                          <tr key={item.id} className="border-b hover:bg-muted/50 medical-transition">
-                            <td className="p-4 font-mono">{item.no_rm}</td>
-                            <td className="p-4">{item.nama_pasien}</td>
-                            <td className="p-4">{new Date(item.tanggal_masuk).toLocaleDateString('id-ID')}</td>
-                            <td className="p-4">
-                              {item.tanggal_keluar 
-                                ? new Date(item.tanggal_keluar).toLocaleDateString('id-ID')
-                                : '-'
-                              }
-                            </td>
-                            <td className="p-4">
-                              <span className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm">
-                                {item.jenis_clinical_pathway}
-                              </span>
-                            </td>
-                            <td className="p-4 text-sm">{item.dpjp}</td>
-                            <td className="p-4 text-center">
-                              {item.los_hari ? `${item.los_hari} hari` : '-'}
-                            </td>
-                            <td className="p-4">
-                              <span className="bg-muted px-2 py-1 rounded-md text-sm">
-                                -
-                              </span>
-                            </td>
-                            <td className="p-4">
-                              <div className="flex gap-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  title="Lihat Detail"
-                                  onClick={() => navigate(`/clinical-pathway-checklist?id=${item.id}&mode=view`)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  title="Edit Data"
-                                  onClick={() => navigate(`/clinical-pathway-form?id=${item.id}&mode=edit`)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="default"
-                                  title="Lanjut ke Checklist"
-                                  onClick={() => {
-                                    navigate(`/clinical-pathway-checklist?id=${item.id}`);
-                                  }}
-                                >
-                                  <FileText className="h-4 w-4" />
-                                </Button>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button 
-                                      size="sm" 
-                                      variant="destructive"
-                                      title="Hapus Data"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Hapus Data Clinical Pathway</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Apakah Anda yakin ingin menghapus data clinical pathway untuk pasien {item.nama_pasien}? 
-                                        Tindakan ini tidak dapat dibatalkan.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Batal</AlertDialogCancel>
-                                      <AlertDialogAction 
-                                        onClick={() => deletePathway(item.id)}
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                      >
-                                        Hapus
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable
+                caption="Daftar data clinical pathway pasien beserta aksi kelola data"
+                data={filteredPathways}
+                columns={columns}
+                getRowId={(row) => row.id}
+                isLoading={loading}
+                emptyTitle={isFiltered ? "Tidak ada data yang cocok" : "Belum ada data clinical pathway"}
+                emptyDescription={
+                  isFiltered
+                    ? "Coba ubah kata kunci pencarian atau atur ulang filter."
+                    : "Tambahkan data pertama melalui tab \u201cTambah Data Clinical Pathways\u201d."
+                }
+                emptyAction={
+                  !isFiltered ? (
+                    <Button onClick={() => navigate("/clinical-pathway-form")}>Tambah Data</Button>
+                  ) : undefined
+                }
+              />
             </CardContent>
           </Card>
         </TabsContent>
