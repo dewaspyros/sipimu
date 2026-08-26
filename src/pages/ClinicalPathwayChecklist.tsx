@@ -456,16 +456,9 @@ const ClinicalPathwayChecklist = () => {
   const mode = searchParams.get("mode") || "edit"; // 'view' or 'edit'
   const isReadOnly = mode === "view";
 
-  console.log("ClinicalPathwayChecklist - Debug Info:", {
-    pathwayId,
-    mode,
-    isReadOnly,
-    pathwaysCount: pathways.length,
-    pathwaysLoading,
-    patientData: patientData?.noRM,
-  });
-
   useEffect(() => {
+    let redirectTimer: ReturnType<typeof setTimeout> | undefined;
+
     const loadData = async () => {
       try {
         setIsLoading(true);
