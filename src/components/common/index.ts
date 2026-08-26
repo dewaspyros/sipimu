@@ -33,4 +33,5 @@ export {
   type IconButtonProps,
 } from "./async-button";
 export { Field, type FieldProps } from "./form-field";
+export { ChartCard, type ChartCardProps } from "./chart-card";
 export { MONTH_OPTIONS, WARD_OPTIONS, ALL_VALUE } from "./options";
