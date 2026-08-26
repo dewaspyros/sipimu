@@ -22,6 +22,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuthContext } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
 
 const hospitalLogo = "/lovable-uploads/52e51664-283f-4073-94f9-3d65a68fa748.png";
@@ -58,7 +59,7 @@ export function AppSidebar() {
   const currentPath = useLocation().pathname;
   const { user, signOut } = useAuthContext();
   const collapsed = state === "collapsed";
-  const displayName = user?.email?.split("@")[0] ?? "Pengguna";
+  const { displayName, initials } = useProfile();
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -163,7 +164,7 @@ export function AppSidebar() {
             <SidebarMenuItem>
               <div className="flex items-center gap-3 rounded-lg px-2 py-2">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 font-heading text-sm font-bold uppercase text-primary">
-                  {displayName.slice(0, 2)}
+                  {initials}
                 </span>
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-semibold text-sidebar-foreground">

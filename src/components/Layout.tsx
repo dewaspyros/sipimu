@@ -38,7 +38,7 @@ const LAST_SEEN_KEY = "notifications:lastSeenAt";
 
 export function Layout({ children }: LayoutProps) {
   const { signOut } = useAuthContext();
-  const { displayName } = useProfile();
+  const { displayName, initials } = useProfile();
   const { notifications, loading: notifLoading } = useNotifications();
   const { pathname } = useLocation();
   const pageTitle = PAGE_TITLES[pathname] ?? "Sistem Pelaporan Clinical Pathways";
@@ -154,7 +154,7 @@ export function Layout({ children }: LayoutProps) {
                       className="rounded-full medical-transition"
                     >
                       <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 font-heading text-xs font-bold uppercase text-primary">
-                        {displayName.slice(0, 2)}
+                        {initials}
                       </span>
                     </IconButton>
                   </DropdownMenuTrigger>
