@@ -71,6 +71,8 @@ const ClinicalPathwayForm = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { createPathway, updatePathway } = useClinicalPathways();
+  const { logActivity } = useNotifications();
+
   const [customVerifikator, setCustomVerifikator] = useState("");
   const [customDPJP, setCustomDPJP] = useState("");
   const [useCustomVerifikator, setUseCustomVerifikator] = useState(false);
