@@ -174,6 +174,26 @@ const useProvideAuth = (): AuthContextType => {
   }, []);
 
 
+  useEffect(() => {
+    const computeRemaining = () => {
+      if (!user) {
+        setSessionRemainingMs(null);
+        return;
+      }
+      const start = readSessionStart();
+      if (!start) {
+        setSessionRemainingMs(null);
+        return;
+      }
+      const remaining = start + SESSION_MAX_AGE_MS - Date.now();
+      setSessionRemainingMs(remaining > 0 ? remaining : 0);
+    };
+
+    computeRemaining();
+    const id = window.setInterval(computeRemaining, 1000);
+    return () => window.clearInterval(id);
+  }, [user]);
+
   const signIn = async (nik: string, password: string) => {
     // Tolak lebih awal bila masih dalam masa kunci 5 menit.
     const lock = getLockStatus(nik);
