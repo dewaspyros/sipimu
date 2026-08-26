@@ -51,24 +51,16 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 medical-gradient">
-      <div className="w-full max-w-md space-y-6">
-        {/* Logo and Title */}
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <img src={hospitalLogo} alt="PKU Muhammadiyah Wonosobo" className="w-20 h-20 rounded-full medical-shadow" />
-          </div>
-          <h1 className="text-3xl font-bold text-white">SiPi-Mu</h1>
-          <p className="text-white/90 text-sm">Sistem Pelaporan Clinical Pathways</p>
-          <p className="text-white/80 text-xs mt-1">RS PKU Muhammadiyah Wonosobo</p>
-        </div>
+    <AuthLayout>
+      <Card className="medical-card border-border/70">
+        <CardHeader className="space-y-1.5">
+          <span className="icon-chip h-11 w-11 rounded-2xl" aria-hidden="true">
+            <UserCheck className="h-5 w-5" />
+          </span>
+          <CardTitle className="font-heading text-2xl">Masuk ke SiPi-Mu</CardTitle>
+          <CardDescription>Gunakan NIK dan password akun staf Anda.</CardDescription>
+        </CardHeader>
 
-        {/* Login Form */}
-        <Card className="medical-card medical-shadow">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Masuk</CardTitle>
-            <CardDescription className="text-center">Masukkan NIK dan password Anda</CardDescription>
-          </CardHeader>
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
