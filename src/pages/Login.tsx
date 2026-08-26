@@ -157,11 +157,13 @@ export default function Login() {
                 type="submit"
                 className="w-full medical-transition"
                 isLoading={loading}
+                disabled={isLocked}
                 loadingText="Memproses..."
               >
                 <UserCheck className="mr-2 h-4 w-4" aria-hidden="true" />
-                Masuk
+                {isLocked ? `Tunggu ${formatRemaining(lockRemaining)}` : "Masuk"}
               </AsyncButton>
+
 
               <div className="text-center">
                 <span className="text-sm text-muted-foreground">
