@@ -18,6 +18,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+				heading: ['Sora', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -75,18 +79,21 @@ export default {
 			},
 			backgroundImage: {
 				'medical-gradient': 'var(--gradient-primary)',
-				'secondary-gradient': 'var(--gradient-secondary)',
+				'hero-gradient': 'var(--gradient-hero)',
+				'surface-gradient': 'var(--gradient-surface)',
 				'accent-gradient': 'var(--gradient-accent)'
 			},
 			boxShadow: {
 				'medical': 'var(--shadow-medical)',
+				'soft': 'var(--shadow-soft)',
 				'card': 'var(--shadow-card)',
 				'elevated': 'var(--shadow-elevated)'
 			},
 			borderRadius: {
+				xl: 'calc(var(--radius) + 4px)',
 				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				md: 'calc(var(--radius) - 4px)',
+				sm: 'calc(var(--radius) - 8px)'
 			},
 			keyframes: {
 				'accordion-down': {
@@ -104,11 +111,16 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in-up': {
+					from: { opacity: '0', transform: 'translateY(8px)' },
+					to: { opacity: '1', transform: 'translateY(0)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in-up': 'fade-in-up 0.35s cubic-bezier(0.4, 0, 0.2, 1) both'
 			}
 		}
 	},

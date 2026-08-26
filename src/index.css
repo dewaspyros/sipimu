@@ -2,189 +2,204 @@
 @tailwind components;
 @tailwind utilities;
 
-/* SiPi-Mu Design System - Medical Blue Theme
-All colors MUST be HSL for consistency.
+/* SiPi-Mu Design System — "Arctic Frost" Modern Hospital
+   Semua warna WAJIB HSL. Jangan hardcode warna di komponen.
 */
 
 @layer base {
   :root {
-    /* Medical Blue Theme - Light Mode */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* Surfaces — biru es bersih */
+    --background: 205 45% 97%;
+    --foreground: 202 40% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 202 40% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 202 40% 14%;
 
-    /* Medical Blue Primary - Professional hospital colors */
-    --primary: 210 85% 45%;
+    /* Primary — biru klinis #2e6b8a */
+    --primary: 199 50% 36%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 210 85% 60%;
-    --primary-dark: 210 85% 35%;
-    
-    /* Medical Secondary - Soft medical tones */
-    --secondary: 210 20% 94%;
-    --secondary-foreground: 215 25% 25%;
-    
-    /* Soft Medical Gray */
-    --muted: 210 15% 92%;
-    --muted-foreground: 215 15% 45%;
+    --primary-light: 202 47% 60%;
+    --primary-dark: 200 56% 25%;
 
-    /* Medical Accent - Light blue for highlights */
-    --accent: 200 80% 88%;
-    --accent-foreground: 210 85% 25%;
+    /* Secondary — permukaan biru pucat */
+    --secondary: 205 45% 93%;
+    --secondary-foreground: 200 45% 24%;
 
-    /* Medical Success - Soft green for positive indicators */
-    --success: 145 60% 45%;
+    --muted: 205 38% 93%;
+    --muted-foreground: 203 18% 44%;
+
+    /* Accent — #b8d4e8 */
+    --accent: 203 50% 90%;
+    --accent-foreground: 199 55% 24%;
+
+    /* Status klinis */
+    --success: 162 55% 36%;
     --success-foreground: 0 0% 100%;
-    
-    /* Medical Warning - Soft amber for caution */
-    --warning: 40 95% 55%;
+
+    --warning: 36 92% 48%;
     --warning-foreground: 0 0% 100%;
-    
-    /* Medical Error - Soft red for alerts */
-    --destructive: 0 70% 55%;
+
+    --destructive: 356 66% 50%;
     --destructive-foreground: 0 0% 100%;
 
     /* UI Elements */
-    --border: 210 25% 88%;
-    --input: 210 25% 92%;
-    --ring: 210 85% 45%;
+    --border: 203 38% 87%;
+    --input: 203 38% 89%;
+    --ring: 199 50% 36%;
 
-    /* Medical gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210, 85%, 45%), hsl(210, 85%, 60%));
-    --gradient-secondary: linear-gradient(135deg, hsl(210, 20%, 98%), hsl(210, 20%, 94%));
-    --gradient-accent: linear-gradient(135deg, hsl(200, 80%, 88%), hsl(200, 80%, 92%));
-    
-    /* Shadows */
-    --shadow-medical: 0 4px 20px -2px hsl(210, 85%, 45%, 0.15);
-    --shadow-card: 0 2px 8px -1px hsl(215, 25%, 15%, 0.08);
-    --shadow-elevated: 0 8px 32px -4px hsl(210, 85%, 45%, 0.2);
-    
-    /* Animation */
-    --transition-medical: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(199 50% 36%), hsl(202 47% 60%));
+    --gradient-hero: linear-gradient(160deg, hsl(200 56% 25%) 0%, hsl(199 50% 36%) 45%, hsl(202 47% 60%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%), hsl(205 45% 97%));
+    --gradient-accent: linear-gradient(135deg, hsl(203 50% 90%), hsl(205 45% 96%));
 
-    --radius: 0.75rem;
+    /* Shadows — lembut & kebiruan */
+    --shadow-soft: 0 1px 2px hsl(202 40% 20% / 0.04), 0 4px 16px -6px hsl(199 50% 36% / 0.14);
+    --shadow-card: 0 1px 2px hsl(202 40% 20% / 0.05), 0 8px 24px -12px hsl(199 50% 36% / 0.22);
+    --shadow-elevated: 0 12px 40px -12px hsl(199 50% 36% / 0.32);
+    --shadow-medical: var(--shadow-card);
 
-    --sidebar-background: 0 0% 98%;
+    /* Motion */
+    --transition-medical: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --radius: 0.9rem;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 202 30% 30%;
+    --sidebar-primary: 199 50% 36%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 203 50% 93%;
+    --sidebar-accent-foreground: 199 55% 24%;
+    --sidebar-border: 203 38% 89%;
+    --sidebar-ring: 199 50% 36%;
   }
 
   .dark {
-    /* Medical Blue Theme - Dark Mode */
-    --background: 215 25% 8%;
-    --foreground: 210 20% 92%;
+    --background: 202 42% 8%;
+    --foreground: 203 30% 92%;
 
-    --card: 215 25% 10%;
-    --card-foreground: 210 20% 92%;
+    --card: 202 38% 11%;
+    --card-foreground: 203 30% 92%;
 
-    --popover: 215 25% 10%;
-    --popover-foreground: 210 20% 92%;
+    --popover: 202 38% 11%;
+    --popover-foreground: 203 30% 92%;
 
-    --primary: 210 85% 60%;
-    --primary-foreground: 215 25% 8%;
-    --primary-light: 210 85% 70%;
-    --primary-dark: 210 85% 45%;
+    --primary: 202 55% 62%;
+    --primary-foreground: 202 42% 8%;
+    --primary-light: 203 55% 74%;
+    --primary-dark: 199 50% 36%;
 
-    --secondary: 215 25% 15%;
-    --secondary-foreground: 210 20% 85%;
+    --secondary: 202 30% 16%;
+    --secondary-foreground: 203 30% 88%;
 
-    --muted: 215 25% 12%;
-    --muted-foreground: 215 15% 60%;
+    --muted: 202 30% 14%;
+    --muted-foreground: 203 18% 62%;
 
-    --accent: 200 80% 25%;
-    --accent-foreground: 200 80% 90%;
+    --accent: 200 40% 22%;
+    --accent-foreground: 203 55% 85%;
 
-    --success: 145 60% 50%;
-    --success-foreground: 215 25% 8%;
-    
-    --warning: 40 95% 60%;
-    --warning-foreground: 215 25% 8%;
-    
-    --destructive: 0 70% 60%;
-    --destructive-foreground: 215 25% 8%;
+    --success: 162 50% 46%;
+    --success-foreground: 202 42% 8%;
 
-    --border: 215 25% 20%;
-    --input: 215 25% 15%;
-    --ring: 210 85% 60%;
-    
-    --sidebar-background: 215 25% 12%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 210 85% 55%;
-    --sidebar-primary-foreground: 215 25% 8%;
-    --sidebar-accent: 215 25% 18%;
-    --sidebar-accent-foreground: 210 20% 85%;
-    --sidebar-border: 215 25% 20%;
-    --sidebar-ring: 210 85% 60%;
+    --warning: 36 90% 58%;
+    --warning-foreground: 202 42% 8%;
+
+    --destructive: 356 65% 58%;
+    --destructive-foreground: 202 42% 8%;
+
+    --border: 202 28% 22%;
+    --input: 202 28% 18%;
+    --ring: 202 55% 62%;
+
+    --gradient-hero: linear-gradient(160deg, hsl(202 42% 10%) 0%, hsl(200 45% 18%) 55%, hsl(199 50% 30%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(202 38% 12%), hsl(202 42% 9%));
+
+    --sidebar-background: 202 40% 10%;
+    --sidebar-foreground: 203 25% 82%;
+    --sidebar-primary: 202 55% 62%;
+    --sidebar-primary-foreground: 202 42% 8%;
+    --sidebar-accent: 202 32% 17%;
+    --sidebar-accent-foreground: 203 40% 88%;
+    --sidebar-border: 202 28% 20%;
+    --sidebar-ring: 202 55% 62%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border transition-colors;
+    @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  
-  /* Medical themed scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+
+  h1, h2, h3, h4 {
+    @apply font-heading tracking-tight;
   }
-  
+
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
   ::-webkit-scrollbar-track {
     background: hsl(var(--muted));
-    border-radius: 4px;
   }
-  
+
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.3);
-    border-radius: 4px;
+    background: hsl(var(--primary) / 0.28);
+    border-radius: 999px;
+    border: 3px solid hsl(var(--muted));
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.5);
+    background: hsl(var(--primary) / 0.45);
   }
 }
 
 @layer components {
-  /* Medical themed components */
+  /* Kartu utama: bersih, garis tipis, bayangan biru lembut */
   .medical-card {
-    @apply bg-card border border-border rounded-lg shadow-sm;
+    @apply rounded-xl border border-border bg-card;
     box-shadow: var(--shadow-card);
   }
-  
+
+  .medical-panel {
+    @apply rounded-xl border border-border/70;
+    background-image: var(--gradient-surface);
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Dipakai halaman auth: panel biru klinis */
   .medical-gradient {
-    background-image: url('/lovable-uploads/e86a41aa-ffb3-410a-a516-244f3946ec8a.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-image: var(--gradient-hero);
   }
-  
+
   .medical-shadow {
-    box-shadow: var(--shadow-medical);
+    box-shadow: var(--shadow-card);
   }
-  
+
   .medical-transition {
     transition: var(--transition-medical);
+  }
+
+  /* Wadah ikon bulat bernuansa biru muda */
+  .icon-chip {
+    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground;
+  }
+
+  /* Pola halus bernuansa medis untuk panel hero */
+  .medical-grid-pattern {
+    background-image:
+      linear-gradient(hsl(0 0% 100% / 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(0 0% 100% / 0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
   }
 }

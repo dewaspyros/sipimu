@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, FileText, TrendingUp, Download, Edit, Save, BarChart3 } from "lucide-react";
+import { Calendar, FileText, TrendingUp, Download, Edit, Save, BarChart3, FileBarChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -211,8 +211,10 @@ export default function RekapData() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={FileBarChart}
+        eyebrow="Laporan"
         title="Rekap Data"
-        description="Laporan dan rekap data Clinical Pathways per bulan"
+        description="Laporan dan rekap data Clinical Pathways per bulan."
         actions={
           <>
             {selectedMonth && selectedMonth !== "all" && (

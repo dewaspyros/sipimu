@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, Phone, IdCard, Send } from "lucide-react";
-const hospitalLogo = "/lovable-uploads/52e51664-283f-4073-94f9-3d65a68fa748.png";
+import { AuthLayout } from "@/components/AuthLayout";
 
 export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
@@ -39,23 +39,9 @@ export default function ForgotPassword() {
 
   if (step === 2) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 medical-gradient">
-        <div className="w-full max-w-md space-y-6">
-          <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <img 
-                src={hospitalLogo} 
-                alt="PKU Muhammadiyah Wonosobo" 
-                className="w-20 h-20 rounded-full medical-shadow"
-              />
-            </div>
-            <h1 className="text-3xl font-bold text-white">SiPi-Mu</h1>
-            <p className="text-white/90 text-sm">
-              Sistem Pelaporan Clinical Pathways
-            </p>
-          </div>
+      <AuthLayout>
+          <Card className="medical-card border-border/70">
 
-          <Card className="medical-card medical-shadow">
             <CardHeader className="text-center">
               <div className="mx-auto w-12 h-12 bg-success/20 rounded-full flex items-center justify-center mb-4">
                 <Send className="h-6 w-6 text-success" />
@@ -96,40 +82,24 @@ export default function ForgotPassword() {
               </Button>
             </CardFooter>
           </Card>
-        </div>
-      </div>
+      </AuthLayout>
+
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 medical-gradient">
-      <div className="w-full max-w-md space-y-6">
-        {/* Logo and Title */}
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <img 
-              src={hospitalLogo} 
-              alt="PKU Muhammadiyah Wonosobo" 
-              className="w-20 h-20 rounded-full medical-shadow"
-            />
-          </div>
-          <h1 className="text-3xl font-bold text-white">SiPi-Mu</h1>
-          <p className="text-white/90 text-sm">
-            Sistem Pelaporan Clinical Pathways
-          </p>
-          <p className="text-white/80 text-xs mt-1">
-            RS PKU Muhammadiyah Wonosobo
-          </p>
-        </div>
-
-        {/* Forgot Password Form */}
-        <Card className="medical-card medical-shadow">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Lupa Password</CardTitle>
-            <CardDescription className="text-center">
-              Masukkan NIK Anda untuk mereset password
+    <AuthLayout>
+        <Card className="medical-card border-border/70">
+          <CardHeader className="space-y-1.5">
+            <span className="icon-chip h-11 w-11 rounded-2xl" aria-hidden="true">
+              <IdCard className="h-5 w-5" />
+            </span>
+            <CardTitle className="font-heading text-2xl">Lupa Password</CardTitle>
+            <CardDescription>
+              Masukkan NIK Anda untuk mereset password.
             </CardDescription>
           </CardHeader>
+
           
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
@@ -181,12 +151,10 @@ export default function ForgotPassword() {
           </form>
         </Card>
 
-        <div className="text-center">
-          <p className="text-white/70 text-xs">
-            © 2024 RS PKU Muhammadiyah Wonosobo. Semua hak dilindungi.
-          </p>
-        </div>
-      </div>
-    </div>
+        <p className="text-center text-xs text-muted-foreground">
+          © 2026 RS PKU Muhammadiyah Wonosobo. Semua hak dilindungi.
+        </p>
+    </AuthLayout>
+
   );
 }

@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Edit, Eye, FileText, Trash2 } from "lucide-react";
+import { Edit, Eye, FileText, Trash2, ClipboardPlus } from "lucide-react";
 import {
   ALL_VALUE,
   DataTable,
@@ -204,8 +204,10 @@ export default function ClinicalPathway() {
   return (
     <div className="space-y-6">
       <PageHeader
+        icon={ClipboardPlus}
+        eyebrow="Data Pasien"
         title="Clinical Pathway"
-        description="Kelola data input Clinical Pathways RS PKU Muhammadiyah Wonosobo"
+        description="Kelola data input Clinical Pathways RS PKU Muhammadiyah Wonosobo."
       />
 
       <Tabs defaultValue="data-list" className="space-y-6">
