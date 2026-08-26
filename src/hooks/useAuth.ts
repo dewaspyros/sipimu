@@ -17,6 +17,45 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const toHospitalEmail = (nik: string) => `${nik.trim()}@hospital.local`;
 
+/** Durasi maksimal satu sesi login: 12 jam. */
+const SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+const SESSION_START_KEY = 'sipimu_session_start';
+
+const readSessionStart = (): number | null => {
+  try {
+    const raw = localStorage.getItem(SESSION_START_KEY);
+    if (!raw) return null;
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeSessionStart = (value: number) => {
+  try {
+    localStorage.setItem(SESSION_START_KEY, String(value));
+  } catch {
+    /* abaikan */
+  }
+};
+
+const clearSessionStart = () => {
+  try {
+    localStorage.removeItem(SESSION_START_KEY);
+  } catch {
+    /* abaikan */
+  }
+};
+
+/** true bila sesi sudah melewati batas 12 jam. */
+const isSessionExpired = () => {
+  const start = readSessionStart();
+  if (!start) return false;
+  return Date.now() - start > SESSION_MAX_AGE_MS;
+};
+
+
 const useProvideAuth = (): AuthContextType => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
