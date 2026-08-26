@@ -456,16 +456,9 @@ const ClinicalPathwayChecklist = () => {
   const mode = searchParams.get("mode") || "edit"; // 'view' or 'edit'
   const isReadOnly = mode === "view";
 
-  console.log("ClinicalPathwayChecklist - Debug Info:", {
-    pathwayId,
-    mode,
-    isReadOnly,
-    pathwaysCount: pathways.length,
-    pathwaysLoading,
-    patientData: patientData?.noRM,
-  });
-
   useEffect(() => {
+    let redirectTimer: ReturnType<typeof setTimeout> | undefined;
+
     const loadData = async () => {
       try {
         setIsLoading(true);
@@ -499,7 +492,7 @@ const ClinicalPathwayChecklist = () => {
             description: "Data clinical pathway tidak ditemukan",
             variant: "destructive",
           });
-          setTimeout(() => navigate("/clinical-pathway"), 2000);
+          redirectTimer = setTimeout(() => navigate("/clinical-pathway"), 2000);
           return;
         }
 
@@ -561,8 +554,13 @@ const ClinicalPathwayChecklist = () => {
       }
     };
 
-    loadData();
+    void loadData();
+
+    return () => {
+      if (redirectTimer) clearTimeout(redirectTimer);
+    };
   }, [pathwayId, pathwaysLoading, pathways.length]); // Simplified dependencies
+
 
   // Single loading state check
   if (isLoading || (pathwayId && pathwaysLoading)) {

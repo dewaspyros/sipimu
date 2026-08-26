@@ -42,8 +42,7 @@ export const useComplianceData = () => {
     try {
       // Check authentication state
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Auth session for compliance update:', session?.user?.id);
-      
+
       if (!session?.user) {
         throw new Error('User not authenticated');
       }

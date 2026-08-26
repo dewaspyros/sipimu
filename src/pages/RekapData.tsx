@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ export default function RekapData() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedPathway, setSelectedPathway] = useState("all");
   const [selectedDPJP, setSelectedDPJP] = useState("all");
-  const [filteredData, setFilteredData] = useState<RekapDataItem[]>([]);
+  
   const [editingRows, setEditingRows] = useState<{[key: string]: boolean}>({});
   const [checklistData, setChecklistData] = useState<AggregatedChecklistData[]>([]);
   
@@ -83,25 +83,26 @@ export default function RekapData() {
   };
 
   // Get unique DPJP list from data
-  const dpjpOptions = [
-    { value: "all", label: "Semua DPJP" },
-    ...Array.from(new Set(data.map(item => item.dpjp).filter(Boolean)))
-      .map(dpjp => ({ value: dpjp, label: dpjp }))
-  ];
+  const dpjpOptions = useMemo(
+    () => [
+      { value: "all", label: "Semua DPJP" },
+      ...Array.from(new Set(data.map((item) => item.dpjp).filter(Boolean))).map((dpjp) => ({
+        value: dpjp,
+        label: dpjp,
+      })),
+    ],
+    [data]
+  );
 
-  // Update filtered data when main data changes
-  useEffect(() => {
-    if (data.length > 0) {
-      let filtered = filterDataByPathway(selectedPathway);
-      
-      // Apply DPJP filter
-      if (selectedDPJP !== "all") {
-        filtered = filtered.filter(item => item.dpjp === selectedDPJP);
-      }
-      
-      setFilteredData(filtered);
+  // Derived filter — dihitung saat render, tanpa state ganda + render ekstra
+  const filteredData = useMemo(() => {
+    let filtered = selectedPathway === "all" ? data : data.filter((item) => item.diagnosis === selectedPathway);
+    if (selectedDPJP !== "all") {
+      filtered = filtered.filter((item) => item.dpjp === selectedDPJP);
     }
-  }, [data, selectedPathway, selectedDPJP, filterDataByPathway]);
+    return filtered;
+  }, [data, selectedPathway, selectedDPJP]);
+
 
   const getTargetInfo = (diagnosis: string) => {
     const target = getTargetLOS(diagnosis);
@@ -165,59 +166,31 @@ export default function RekapData() {
 
   const updateLOS = async (index: number, newLOS: number) => {
     const patient = filteredData[index];
-    if (patient) {
-      const updatedData = [...filteredData];
-      updatedData[index] = { ...patient, los: newLOS, sesuaiTarget: newLOS <= getTargetLOS(patient.diagnosis) };
-      setFilteredData(updatedData);
-      
-      // Update in database
-      await updatePatientData(patient.id, { los: newLOS });
-    }
+    if (!patient) return;
+    // State sumber (data) diperbarui di hook; filteredData ikut otomatis.
+    await updatePatientData(patient.id, { los: newLOS });
   };
 
   const updateKeterangan = async (index: number, newKeterangan: string) => {
     const patient = filteredData[index];
-    if (patient) {
-      try {
-        // Update keterangan in database immediately
-        await updatePatientData(patient.id, { keterangan: newKeterangan });
-        
-        // Update local state after successful database update
-        setFilteredData(prev => {
-          const updatedData = [...prev];
-          updatedData[index] = { ...updatedData[index], keterangan: newKeterangan };
-          return updatedData;
-        });
-        
-        console.log(`Updated keterangan for patient ${patient.namaPasien}`);
-      } catch (error) {
-        console.error('Failed to update keterangan:', error);
-      }
+    if (!patient) return;
+    try {
+      await updatePatientData(patient.id, { keterangan: newKeterangan });
+    } catch (error) {
+      console.error('Failed to update keterangan:', error);
     }
   };
 
   const updateCheckbox = async (index: number, field: string, value: boolean) => {
     const patient = filteredData[index];
-    if (patient) {
-      try {
-        // Update compliance data in database first
-        await updateComplianceData(patient.id, field, value);
-        
-        // CRITICAL: Update filteredData immediately after successful database update
-        // This ensures the change is visible immediately and persists when switching months
-        setFilteredData(prev => {
-          const updatedData = [...prev];
-          updatedData[index] = { ...updatedData[index], [field]: value };
-          return updatedData;
-        });
-        
-        console.log(`Updated ${field} to ${value} for patient ${patient.namaPasien}`);
-      } catch (error) {
-        // Error already handled in updateComplianceData, just log
-        console.error('Failed to update checkbox:', error);
-      }
+    if (!patient) return;
+    try {
+      await updateComplianceData(patient.id, field, value);
+    } catch (error) {
+      console.error('Failed to update checkbox:', error);
     }
   };
+
 
   const generateSummary = async () => {
     if (selectedMonth && selectedMonth !== "all") {

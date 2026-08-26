@@ -248,7 +248,6 @@ export default function ClinicalPathway() {
                                   variant="default"
                                   title="Lanjut ke Checklist"
                                   onClick={() => {
-                                    console.log(`Navigating to checklist for patient: ${item.nama_pasien} (ID: ${item.id})`);
                                     navigate(`/clinical-pathway-checklist?id=${item.id}`);
                                   }}
                                 >
