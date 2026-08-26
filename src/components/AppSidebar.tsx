@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   ClipboardPlus,
@@ -55,6 +55,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const { state } = useSidebar();
+  const currentPath = useLocation().pathname;
   const { user, signOut } = useAuthContext();
   const collapsed = state === "collapsed";
   const displayName = user?.email?.split("@")[0] ?? "Pengguna";
