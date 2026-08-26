@@ -51,6 +51,7 @@ const AppContent = () => {
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/" element={<Login />} />
+              <Route path="/__probe" element={<SidebarProbe />} />
               <Route path="/login" element={<Login />} />
               <Route path="/daftar" element={<Register />} />
               <Route path="/lupa-password" element={<ForgotPassword />} />
