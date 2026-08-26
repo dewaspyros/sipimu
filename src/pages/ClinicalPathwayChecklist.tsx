@@ -448,6 +448,8 @@ const ClinicalPathwayChecklist = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const { saveChecklist, loading: checklistLoading, getChecklistByPathwayId } = useChecklist();
+  const { logActivity } = useNotifications();
+
   const { pathways, loading: pathwaysLoading } = useClinicalPathways();
   const [patientData, setPatientData] = useState<PatientFormData | null>(null);
   const [checklistData, setChecklistData] = useState<ChecklistData>({});
