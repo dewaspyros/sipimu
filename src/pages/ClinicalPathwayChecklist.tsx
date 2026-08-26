@@ -10,6 +10,8 @@ import { AsyncButton } from "@/components/common";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useChecklist, useClinicalPathways } from "@/hooks/useClinicalPathways";
+import { useNotifications } from "@/hooks/useNotifications";
+
 
 interface PatientFormData {
   clinicalPathway: string;
