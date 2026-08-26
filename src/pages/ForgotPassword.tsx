@@ -181,12 +181,10 @@ export default function ForgotPassword() {
           </form>
         </Card>
 
-        <div className="text-center">
-          <p className="text-white/70 text-xs">
-            © 2024 RS PKU Muhammadiyah Wonosobo. Semua hak dilindungi.
-          </p>
-        </div>
-      </div>
-    </div>
+        <p className="text-center text-xs text-muted-foreground">
+          © 2026 RS PKU Muhammadiyah Wonosobo. Semua hak dilindungi.
+        </p>
+    </AuthLayout>
+
   );
 }
