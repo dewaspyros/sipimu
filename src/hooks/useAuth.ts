@@ -156,6 +156,16 @@ const useProvideAuth = (): AuthContextType => {
 
 
   const signIn = async (nik: string, password: string) => {
+    // Tolak lebih awal bila masih dalam masa kunci 5 menit.
+    const lock = getLockStatus(nik);
+    if (lock.locked) {
+      return {
+        error: new Error(
+          `Terlalu banyak percobaan login. Coba lagi dalam ${formatRemaining(lock.remainingMs)}.`,
+        ),
+      };
+    }
+
     setLoading(true);
 
     try {
@@ -164,7 +174,17 @@ const useProvideAuth = (): AuthContextType => {
 
       if (error) {
         setLoading(false);
-        return { error: new Error('NIK atau password salah') };
+        const status = registerFailedAttempt(nik);
+        if (status.locked) {
+          return {
+            error: new Error(
+              `Terlalu banyak percobaan login. Coba lagi dalam ${formatRemaining(status.remainingMs)}.`,
+            ),
+          };
+        }
+        return {
+          error: new Error(`NIK atau password salah. Percobaan tersisa: ${status.attemptsLeft}`),
+        };
       }
 
       if (!data.user) {
@@ -185,6 +205,8 @@ const useProvideAuth = (): AuthContextType => {
         };
       }
 
+      clearAttempts(nik);
+      writeSessionStart(Date.now());
       setLoading(false);
       return { error: null };
     } catch (error) {
@@ -193,6 +215,7 @@ const useProvideAuth = (): AuthContextType => {
       return { error: error as Error };
     }
   };
+
 
   const signUp = async (nik: string, password: string, fullName: string) => {
     setLoading(true);
