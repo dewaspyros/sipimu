@@ -7,6 +7,17 @@ export interface CurrentProfile {
   nik: string;
 }
 
+/** Inisial dari nama (maks 2 huruf). Angka/simbol diabaikan. */
+export const getInitials = (name: string): string => {
+  const words = name
+    .replace(/[^A-Za-z\s.]/g, ' ')
+    .split(/[\s.]+/)
+    .filter(Boolean);
+  if (words.length === 0) return 'US';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+};
+
 /**
  * Profil user yang sedang login (cached). Dipakai untuk menampilkan nama
  * lengkap alih-alih NIK/angka.
