@@ -281,7 +281,9 @@ export default function RekapData() {
               options={dpjpOptions}
               placeholder="Pilih DPJP"
               widthClassName="md:w-64"
+            />
           </div>
+
 
           {summary && (
             <div className="mt-6 grid grid-cols-2 gap-4 border-t border-border/60 pt-5 sm:grid-cols-3 xl:grid-cols-6">
