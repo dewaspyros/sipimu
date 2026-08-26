@@ -282,6 +282,13 @@ const ClinicalPathwayForm = () => {
       if (mode === 'edit' && patientId) {
         // Update existing pathway
         pathway = await updatePathway(patientId, pathwayData);
+        await logActivity({
+          action: 'update_pathway',
+          pathwayId: patientId,
+          namaPasien: data.patientNameAge,
+          noRM: data.noRM,
+          jenisClinicalPathway: data.clinicalPathway,
+        });
         toast({
           title: "Berhasil",
           description: "Data pasien berhasil diperbarui",
@@ -291,6 +298,14 @@ const ClinicalPathwayForm = () => {
       } else {
         // Create new pathway
         pathway = await createPathway(pathwayData);
+        await logActivity({
+          action: 'create_pathway',
+          pathwayId: pathway?.id ?? null,
+          namaPasien: data.patientNameAge,
+          noRM: data.noRM,
+          jenisClinicalPathway: data.clinicalPathway,
+        });
+
         
         // Store form data and pathway ID in session storage for the checklist step
         sessionStorage.setItem('clinicalPathwayFormData', JSON.stringify({
