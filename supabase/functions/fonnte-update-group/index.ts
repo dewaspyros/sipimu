@@ -1,100 +1,60 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import {
+  corsHeadersFor,
+  jsonResponse,
+  requireAdmin,
+  resolveFonnteApiKey,
+  serviceClient,
+} from "../_shared/security.ts";
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const FONNTE_UPDATE_GROUP_URL = 'https://api.fonnte.com/fetch-group';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const FONNTE_UPDATE_GROUP_URL = "https://api.fonnte.com/fetch-group";
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeadersFor(req) });
   }
 
   try {
-    console.log('Updating WhatsApp groups from Fonnte API');
-    
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // Get WhatsApp API key from settings
+    const auth = await requireAdmin(req);
+    if (!auth.ok) {
+      return jsonResponse(req, { error: auth.error }, auth.status);
+    }
+
+    const supabase = serviceClient();
+
     const { data: settings, error: settingsError } = await supabase
-      .from('whatsapp_settings')
-      .select('api_key')
+      .from("whatsapp_settings")
+      .select("id, api_key")
       .maybeSingle();
 
     if (settingsError || !settings) {
-      console.error('Error fetching settings:', settingsError);
-      return new Response(
-        JSON.stringify({ error: 'WhatsApp settings not found' }), 
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      return jsonResponse(req, { error: "Pengaturan WhatsApp tidak ditemukan" }, 500);
     }
 
-    if (!settings.api_key) {
-      return new Response(
-        JSON.stringify({ error: 'WhatsApp API key not configured' }), 
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+    const apiKey = resolveFonnteApiKey(settings.api_key);
+    if (!apiKey) {
+      return jsonResponse(req, { error: "API key Fonnte belum dikonfigurasi" }, 400);
     }
 
-    // Call Fonnte API to update groups
     const fonteResponse = await fetch(FONNTE_UPDATE_GROUP_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': settings.api_key,
-      },
+      method: "POST",
+      headers: { Authorization: apiKey },
     });
 
     const responseData = await fonteResponse.json();
-    console.log('Fonnte update-group response:', responseData);
 
-    if (!fonteResponse.ok) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Failed to update groups from Fonnte', 
-          details: responseData 
-        }), 
-        { 
-          status: fonteResponse.status, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+    if (!fonteResponse.ok || responseData?.status === false) {
+      console.error("Fonnte fetch-group gagal");
+      return jsonResponse(req, { error: "Gagal memperbarui grup dari Fonnte" }, 400);
     }
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Group list updated successfully',
-        details: responseData 
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
-
+    return jsonResponse(req, {
+      success: true,
+      message: "Daftar grup berhasil diperbarui",
+    });
   } catch (error) {
-    console.error('Error in fonnte-update-group function:', error);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: (error as Error).message 
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    );
+    console.error("Error fonnte-update-group:", (error as Error).message);
+    return jsonResponse(req, { success: false, error: "Terjadi kesalahan" }, 500);
   }
 });

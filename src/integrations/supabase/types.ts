@@ -126,6 +126,7 @@ export type Database = {
           tanggal_masuk: string
           updated_at: string
           verifikator_pelaksana: string | null
+          wa_notified_at: string | null
         }
         Insert: {
           bangsal?: Database["public"]["Enums"]["ward_type"] | null
@@ -143,6 +144,7 @@ export type Database = {
           tanggal_masuk: string
           updated_at?: string
           verifikator_pelaksana?: string | null
+          wa_notified_at?: string | null
         }
         Update: {
           bangsal?: Database["public"]["Enums"]["ward_type"] | null
@@ -160,6 +162,7 @@ export type Database = {
           tanggal_masuk?: string
           updated_at?: string
           verifikator_pelaksana?: string | null
+          wa_notified_at?: string | null
         }
         Relationships: []
       }

@@ -1,282 +1,155 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import {
+  corsHeadersFor,
+  isSafeWhatsappTarget,
+  jsonResponse,
+  resolveFonnteApiKey,
+  serviceClient,
+} from "../_shared/security.ts";
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-const FONTE_API_URL = 'https://api.fonnte.com/send'; // Fonnte API URL
+const FONTE_API_URL = "https://api.fonnte.com/send";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+/** Notifikasi hanya boleh dikirim untuk pasien yang baru saja dibuat oleh trigger database. */
+const MAX_RECORD_AGE_MS = 10 * 60 * 1000;
+const DELAY_BETWEEN_MESSAGES_MS = 30_000;
 
-interface ClinicalPathwayData {
-  id: string;
-  nama_pasien: string;
-  no_rm: string;
-  jenis_clinical_pathway: string;
-  tanggal_masuk: string;
-  jam_masuk: string;
-  dpjp?: string;
-  verifikator_pelaksana?: string;
-  bangsal?: string;
-}
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-interface WhatsappGroup {
-  id: string;
-  name?: string;
-  subject?: string;
-}
-
-interface WhatsappSettings {
-  id: string;
-  api_key: string;
-  notification_phones: string[];
-  message_template: string;
-  group_list?: WhatsappGroup[];
-}
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeadersFor(req) });
   }
 
   try {
-    console.log('WhatsApp notification function triggered');
-    
-    // Initialize Supabase client
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // Get WhatsApp settings from database
-    const { data: settings, error: settingsError } = await supabase
-      .from('whatsapp_settings')
-      .select('*')
+    // Fungsi ini dipanggil oleh trigger database. Isi pesan TIDAK pernah diambil dari
+    // body permintaan — hanya id pasien yang dipakai, lalu datanya dibaca ulang dari database.
+    let body: { record?: { id?: unknown } };
+    try {
+      body = await req.json();
+    } catch {
+      return jsonResponse(req, { error: "Body tidak valid" }, 400);
+    }
+
+    const pathwayId = body?.record?.id;
+    if (typeof pathwayId !== "string" || !UUID_RE.test(pathwayId)) {
+      return jsonResponse(req, { error: "ID pasien tidak valid" }, 400);
+    }
+
+    const supabase = serviceClient();
+
+    const { data: pathway, error: pathwayError } = await supabase
+      .from("clinical_pathways")
+      .select(
+        "id, nama_pasien, no_rm, jenis_clinical_pathway, tanggal_masuk, jam_masuk, dpjp, verifikator_pelaksana, bangsal, created_at, wa_notified_at",
+      )
+      .eq("id", pathwayId)
       .maybeSingle();
 
-    if (settingsError) {
-      console.error('Error fetching WhatsApp settings:', settingsError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch WhatsApp settings' }), 
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+    if (pathwayError || !pathway) {
+      return jsonResponse(req, { error: "Data pasien tidak ditemukan" }, 404);
+    }
+
+    // Idempoten + anti penyalahgunaan: satu pasien hanya menghasilkan satu notifikasi,
+    // dan hanya dalam jendela waktu singkat setelah data dibuat.
+    if (pathway.wa_notified_at) {
+      return jsonResponse(req, { success: true, skipped: "already_notified" });
+    }
+
+    const age = Date.now() - new Date(pathway.created_at as string).getTime();
+    if (age > MAX_RECORD_AGE_MS) {
+      return jsonResponse(req, { success: true, skipped: "record_too_old" });
+    }
+
+    const { data: settings, error: settingsError } = await supabase
+      .from("whatsapp_settings")
+      .select("api_key, notification_phones, message_template, group_list")
+      .maybeSingle();
+
+    if (settingsError || !settings) {
+      return jsonResponse(req, { error: "Pengaturan WhatsApp tidak ditemukan" }, 500);
+    }
+
+    const apiKey = resolveFonnteApiKey(settings.api_key);
+    if (!apiKey) {
+      return jsonResponse(req, { error: "API key Fonnte belum dikonfigurasi" }, 500);
+    }
+
+    const groupList = (settings.group_list ?? []) as Array<{ id: string }>;
+    const validGroupIds = new Set(
+      groupList.map((g) => g?.id).filter(isSafeWhatsappTarget),
+    );
+
+    const targets = ((settings.notification_phones ?? []) as unknown[])
+      .filter(isSafeWhatsappTarget)
+      .filter((target) => validGroupIds.has(target));
+
+    if (targets.length === 0) {
+      return jsonResponse(
+        req,
+        { error: "Tidak ada grup tujuan valid yang dikonfigurasi" },
+        400,
       );
     }
 
-    if (!settings) {
-      console.error('No WhatsApp settings found');
-      return new Response(
-        JSON.stringify({ error: 'WhatsApp settings not configured' }), 
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
+    const message = (settings.message_template as string)
+      .replace(/{nama_pasien}/g, pathway.nama_pasien ?? "")
+      .replace(/{no_rm}/g, pathway.no_rm ?? "")
+      .replace(/{jenis_clinical_pathway}/g, pathway.jenis_clinical_pathway ?? "")
+      .replace(/{tanggal_masuk}/g, String(pathway.tanggal_masuk ?? ""))
+      .replace(/{jam_masuk}/g, String(pathway.jam_masuk ?? ""))
+      .replace(/{dpjp}/g, pathway.dpjp ?? "Tidak diisi")
+      .replace(
+        /{verifikator_pelaksana}/g,
+        pathway.verifikator_pelaksana ?? "Tidak diisi",
+      )
+      .replace(/{bangsal}/g, pathway.bangsal ?? "Tidak diisi")
+      .slice(0, 4000);
 
-    const whatsappSettings = settings as WhatsappSettings;
-    
-    if (!whatsappSettings.api_key) {
-      console.error('WhatsApp API key not configured');
-      return new Response(
-        JSON.stringify({ error: 'WhatsApp API key not configured' }), 
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
+    // Tandai lebih dulu agar permintaan berulang tidak menghasilkan pesan ganda.
+    await supabase
+      .from("clinical_pathways")
+      .update({ wa_notified_at: new Date().toISOString() })
+      .eq("id", pathway.id);
 
-    if (!whatsappSettings.notification_phones || whatsappSettings.notification_phones.length === 0) {
-      console.error('No notification groups configured');
-      return new Response(
-        JSON.stringify({ error: 'No notification groups configured' }), 
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
+    const sendResults: Array<{ group: string; status: string }> = [];
 
-    if (!whatsappSettings.group_list || whatsappSettings.group_list.length === 0) {
-      console.error('Group list is empty. Please fetch groups first.');
-      return new Response(
-        JSON.stringify({ error: 'Group list is empty. Please fetch groups using the settings page.' }), 
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    // Parse request body
-    const { record, phone_number } = await req.json();
-    
-    if (!record) {
-      console.error('Missing required clinical pathway record');
-      return new Response(
-        JSON.stringify({ error: 'Missing clinical pathway record' }), 
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-    
-    // Use targets from request or from settings (group IDs only)
-    const targetGroups = phone_number ? [phone_number] : whatsappSettings.notification_phones;
-    
-    console.log('Target groups:', targetGroups);
-    console.log('Available groups:', whatsappSettings.group_list);
-    console.log('Clinical pathway data:', record);
-    
-    // Create a Set of valid group IDs for quick lookup
-    const validGroupIds = new Set(whatsappSettings.group_list.map(g => g.id));
-    
-    // Validate that target is in the group list
-    const validateGroupId = (groupId: string): boolean => {
-      const isValid = validGroupIds.has(groupId);
-      if (!isValid) {
-        console.error(`Group ID ${groupId} not found in group list. Available groups:`, Array.from(validGroupIds));
-      }
-      return isValid;
-    };
-
-    const clinicalPathwayData = record as ClinicalPathwayData;
-
-    // Format the message using the template from settings
-    let message = whatsappSettings.message_template
-      .replace(/{nama_pasien}/g, clinicalPathwayData.nama_pasien)
-      .replace(/{no_rm}/g, clinicalPathwayData.no_rm)
-      .replace(/{jenis_clinical_pathway}/g, clinicalPathwayData.jenis_clinical_pathway)
-      .replace(/{tanggal_masuk}/g, clinicalPathwayData.tanggal_masuk)
-      .replace(/{jam_masuk}/g, clinicalPathwayData.jam_masuk)
-      .replace(/{dpjp}/g, clinicalPathwayData.dpjp || 'Tidak diisi')
-      .replace(/{verifikator_pelaksana}/g, clinicalPathwayData.verifikator_pelaksana || 'Tidak diisi')
-      .replace(/{bangsal}/g, clinicalPathwayData.bangsal || 'Tidak diisi');
-
-    console.log('Formatted message:', message);
-
-    // Helper function to add delay between messages
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    
-    // Send WhatsApp message to each configured group with delay
-    const sendResults = [];
-    const delayBetweenMessages = 30000; // 30 seconds delay between messages
-    
-    for (let i = 0; i < targetGroups.length; i++) {
-      const groupId = targetGroups[i];
-      
-      // Validate group ID
-      if (!validateGroupId(groupId)) {
-        console.error(`Invalid group ID: ${groupId} - not found in fetched group list`);
-        sendResults.push({
-          group: groupId,
-          status: 'error',
-          error: 'Group ID not found in available groups. Please refresh group list.'
-        });
-        continue;
-      }
-      
+    for (let i = 0; i < targets.length; i++) {
+      const groupId = targets[i];
       try {
-        console.log(`Sending WhatsApp message to group: ${groupId} (${i + 1}/${targetGroups.length})`);
-        
-        // Prepare form data for Fonnte API
         const formData = new FormData();
-        formData.append('target', groupId);
-        formData.append('message', message);
+        formData.append("target", groupId);
+        formData.append("message", message);
 
         const fonteResponse = await fetch(FONTE_API_URL, {
-          method: 'POST',
-          headers: {
-            'Authorization': whatsappSettings.api_key,
-          },
+          method: "POST",
+          headers: { Authorization: apiKey },
           body: formData,
         });
 
         const responseData = await fonteResponse.json();
-        console.log(`Fonte API response for group ${groupId}:`, responseData);
-
-        // Check response status from Fonnte
-        if (responseData.status === false) {
-          const errorMsg = responseData.reason || 'Unknown error';
-          sendResults.push({
-            group: groupId,
-            status: 'error',
-            error: errorMsg
-          });
-          console.error(`Fonte API error for group ${groupId}:`, errorMsg);
-          
-          // Provide helpful error messages
-          if (errorMsg.includes('invalid group id')) {
-            console.error('Hint: Group ID may be invalid or outdated. Try refreshing group list in settings page.');
-          } else if (errorMsg.includes('disconnected device')) {
-            console.error('Hint: WhatsApp device is disconnected. Please reconnect your device in Fonnte dashboard');
-          }
-        } else if (fonteResponse.ok) {
-          sendResults.push({
-            group: groupId,
-            status: 'success',
-            data: responseData
-          });
-          console.log(`WhatsApp message sent successfully to group: ${groupId}`);
-        } else {
-          sendResults.push({
-            group: groupId,
-            status: 'error',
-            error: responseData
-          });
-          console.error(`Fonte API error for group ${groupId}:`, responseData);
-        }
-        
-        // Add delay between messages, except for the last one
-        if (i < targetGroups.length - 1) {
-          console.log(`Waiting ${delayBetweenMessages}ms before sending to next group...`);
-          await delay(delayBetweenMessages);
-        }
-        
-      } catch (error) {
         sendResults.push({
           group: groupId,
-          status: 'error',
-          error: (error as Error).message
+          status:
+            fonteResponse.ok && responseData?.status !== false
+              ? "success"
+              : "error",
         });
-        console.error(`Error sending to group ${groupId}:`, error);
-        
-        // Still add delay even on error, except for the last one
-        if (i < targetGroups.length - 1) {
-          console.log(`Error occurred, still waiting ${delayBetweenMessages}ms before next attempt...`);
-          await delay(delayBetweenMessages);
-        }
+      } catch (_error) {
+        sendResults.push({ group: groupId, status: "error" });
+      }
+
+      if (i < targets.length - 1) {
+        await delay(DELAY_BETWEEN_MESSAGES_MS);
       }
     }
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'WhatsApp notifications processed',
-        results: sendResults
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
-
+    return jsonResponse(req, { success: true, results: sendResults });
   } catch (error) {
-    console.error('Error in WhatsApp notification function:', error);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: (error as Error).message 
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    );
+    console.error("Error whatsapp-notification:", (error as Error).message);
+    return jsonResponse(req, { success: false, error: "Terjadi kesalahan" }, 500);
   }
 });
