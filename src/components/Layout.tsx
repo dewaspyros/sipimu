@@ -88,6 +88,19 @@ export function Layout({ children }: LayoutProps) {
               </div>
 
               <div className="flex items-center gap-1.5">
+                {user && sessionRemainingMs !== null && (
+                  <div
+                    className="hidden items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground sm:flex"
+                    aria-label="Sisa waktu login"
+                    title="Sisa waktu login"
+                  >
+                    <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span className="font-mono tabular-nums">
+                      {formatSessionRemaining(sessionRemainingMs)}
+                    </span>
+                  </div>
+                )}
+
                 <DropdownMenu onOpenChange={(open) => open && markSeen()}>
                   <DropdownMenuTrigger asChild>
                     <IconButton
