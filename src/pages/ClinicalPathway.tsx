@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Edit, Eye, FileText, Trash2 } from "lucide-react";
+import { Edit, Eye, FileText, Trash2, ClipboardPlus } from "lucide-react";
 import {
   ALL_VALUE,
   DataTable,
