@@ -4,7 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import SidebarProbe from "./pages/__SidebarProbe";
 import Login from "./pages/Login";
 import { Layout } from "./components/Layout";
 import { AuthProvider } from "./hooks/useAuth";
@@ -52,7 +51,6 @@ const AppContent = () => {
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/" element={<Login />} />
-              <Route path="/__probe" element={<SidebarProbe />} />
               <Route path="/login" element={<Login />} />
               <Route path="/daftar" element={<Register />} />
               <Route path="/lupa-password" element={<ForgotPassword />} />
