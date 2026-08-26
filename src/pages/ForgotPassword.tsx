@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { AsyncButton } from "@/components/common";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -157,23 +158,15 @@ export default function ForgotPassword() {
             </CardContent>
             
             <CardFooter className="flex flex-col space-y-4">
-              <Button
+              <AsyncButton
                 type="submit"
                 className="w-full medical-transition"
-                disabled={loading}
+                isLoading={loading}
+                loadingText="Mengirim Link..."
               >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Mengirim Link...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Send className="h-4 w-4" />
-                    <span>Reset Password</span>
-                  </div>
-                )}
-              </Button>
+                <Send className="mr-2 h-4 w-4" aria-hidden="true" />
+                Reset Password
+              </AsyncButton>
               
               <Button
                 type="button"
