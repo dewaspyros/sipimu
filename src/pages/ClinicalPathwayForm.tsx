@@ -171,26 +171,35 @@ const ClinicalPathwayForm = () => {
     setDraftRestored(true);
   }, [draftKey, mode, form]);
 
-  // Simpan setiap perubahan ke localStorage
+  // Simpan perubahan ke localStorage (debounce agar tidak menulis tiap keystroke)
   useEffect(() => {
     if (!draftRestored) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
     const subscription = form.watch((values) => {
-      try {
-        localStorage.setItem(
-          draftKey,
-          JSON.stringify({
-            values,
-            customVerifikator,
-            customDPJP,
-            useCustomVerifikator,
-            useCustomDPJP,
-          })
-        );
-      } catch (e) {
-        console.error('Gagal menyimpan draft form:', e);
-      }
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        try {
+          localStorage.setItem(
+            draftKey,
+            JSON.stringify({
+              values,
+              customVerifikator,
+              customDPJP,
+              useCustomVerifikator,
+              useCustomDPJP,
+            })
+          );
+        } catch (e) {
+          console.error('Gagal menyimpan draft form:', e);
+        }
+      }, 400);
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      subscription.unsubscribe();
+    };
   }, [
     form,
     draftKey,
@@ -208,6 +217,7 @@ const ClinicalPathwayForm = () => {
       console.error('Gagal menghapus draft form:', e);
     }
   };
+
 
 
   // Pathway options dinamis: pakai tahun dari tanggal_masuk (default tahun berjalan)
