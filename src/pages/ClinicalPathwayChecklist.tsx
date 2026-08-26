@@ -554,8 +554,13 @@ const ClinicalPathwayChecklist = () => {
       }
     };
 
-    loadData();
+    void loadData();
+
+    return () => {
+      if (redirectTimer) clearTimeout(redirectTimer);
+    };
   }, [pathwayId, pathwaysLoading, pathways.length]); // Simplified dependencies
+
 
   // Single loading state check
   if (isLoading || (pathwayId && pathwaysLoading)) {
