@@ -79,18 +79,21 @@ export default {
 			},
 			backgroundImage: {
 				'medical-gradient': 'var(--gradient-primary)',
-				'secondary-gradient': 'var(--gradient-secondary)',
+				'hero-gradient': 'var(--gradient-hero)',
+				'surface-gradient': 'var(--gradient-surface)',
 				'accent-gradient': 'var(--gradient-accent)'
 			},
 			boxShadow: {
 				'medical': 'var(--shadow-medical)',
+				'soft': 'var(--shadow-soft)',
 				'card': 'var(--shadow-card)',
 				'elevated': 'var(--shadow-elevated)'
 			},
 			borderRadius: {
+				xl: 'calc(var(--radius) + 4px)',
 				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				md: 'calc(var(--radius) - 4px)',
+				sm: 'calc(var(--radius) - 8px)'
 			},
 			keyframes: {
 				'accordion-down': {
