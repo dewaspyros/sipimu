@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, UserCheck } from "lucide-react";
-const hospitalLogo = "/lovable-uploads/52e51664-283f-4073-94f9-3d65a68fa748.png";
+import { AuthLayout } from "@/components/AuthLayout";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -139,12 +139,12 @@ export default function Login() {
               </div>
             </CardFooter>
           </form>
-        </Card>
+      </Card>
 
-        <div className="text-center">
-          <p className="text-white/70 text-xs">© 2026 RS PKU Muhammadiyah Wonosobo. Tim Case Manajer.</p>
-        </div>
-      </div>
-    </div>
+      <p className="text-center text-xs text-muted-foreground">
+        © 2026 RS PKU Muhammadiyah Wonosobo. Tim Case Manajer.
+      </p>
+    </AuthLayout>
+
   );
 }
