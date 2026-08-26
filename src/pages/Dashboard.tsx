@@ -109,40 +109,41 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Dashboard"
-        description="Monitoring Kepatuhan Clinical Pathways RS PKU Muhammadiyah Wonosobo"
+        icon={LayoutDashboard}
+        eyebrow="Monitoring"
+        title="Dashboard Kepatuhan"
+        description="Ringkasan kepatuhan Clinical Pathways RS PKU Muhammadiyah Wonosobo."
       />
 
-      {/* Welcome Section */}
-      <Card className="medical-card">
-        <CardHeader>
-          <CardTitle>Selamat Datang di Dashboard</CardTitle>
-          <CardDescription>
-            Monitoring sistem Clinical Pathways RS PKU Muhammadiyah Wonosobo
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div className="text-center p-6 rounded-lg bg-primary/5 border border-primary/20">
-              <Users className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <div className="text-2xl font-bold">
-                {loading ? "..." : (totalPatients?.total_patients || 0).toLocaleString()}
-              </div>
-              <div className="text-sm text-muted-foreground">Total Pasien Terdaftar</div>
-            </div>
-            <div className="text-center p-6 rounded-lg bg-success/5 border border-success/20">
-              <Activity className="h-12 w-12 mx-auto mb-4 text-success" />
-              <div className="text-2xl font-bold text-success">Aktif</div>
-              <div className="text-sm text-muted-foreground">Sistem Monitoring</div>
-            </div>
-            <div className="text-center p-6 rounded-lg bg-primary/5 border border-primary/20">
-              <FileCheck className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <div className="text-2xl font-bold">5</div>
-              <div className="text-sm text-muted-foreground">Jenis Clinical Pathway</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Ringkasan KPI */}
+      <section
+        aria-label="Ringkasan sistem"
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <StatCard
+          label="Total Pasien Terdaftar"
+          value={(totalPatients?.total_patients || 0).toLocaleString("id-ID")}
+          hint="Seluruh pasien clinical pathway"
+          icon={Users}
+          tone="primary"
+          isLoading={loading}
+        />
+        <StatCard
+          label="Sistem Monitoring"
+          value="Aktif"
+          hint="Sinkronisasi data berjalan normal"
+          icon={Activity}
+          tone="success"
+        />
+        <StatCard
+          label="Jenis Clinical Pathway"
+          value={diagnosisOptions.length}
+          hint="Diagnosis yang dipantau tahun ini"
+          icon={FileCheck}
+          tone="primary"
+        />
+      </section>
+
 
       <ChartCard
         title="Grafik Kepatuhan LOS, CP dan Avg LOS"
