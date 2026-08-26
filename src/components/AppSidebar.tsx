@@ -104,12 +104,12 @@ export function AppSidebar() {
                     tooltip={item.title}
                     className={cn(
                       "!h-auto min-h-[2.75rem] gap-3 rounded-lg px-2.5 py-2",
-                      "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                      "text-sidebar-foreground transition-[background-color,color,transform,box-shadow] duration-200 ease-out hover:translate-x-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                       isActive &&
-                        "bg-primary !text-primary-foreground shadow-soft hover:bg-primary hover:!text-primary-foreground"
+                        "!bg-primary !text-primary-foreground shadow-soft hover:!bg-primary hover:!text-primary-foreground data-[active=true]:!bg-primary data-[active=true]:!text-primary-foreground"
                     )}
                   >
-                    <NavLink to={item.url} className="group">
+                    <NavLink to={item.url} className="group text-inherit">
                       <span
                         className={cn(
                           "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg medical-transition",
@@ -122,7 +122,7 @@ export function AppSidebar() {
                       </span>
                       {!collapsed && (
                         <span className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden">
-                          <span className="truncate text-sm font-semibold leading-tight">
+                          <span className="truncate text-sm font-semibold leading-tight text-inherit">
                             {item.title}
                           </span>
                           <span
