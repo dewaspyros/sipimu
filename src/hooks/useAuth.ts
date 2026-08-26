@@ -14,6 +14,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  sessionRemainingMs: number | null;
   signIn: (nik: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (nik: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
