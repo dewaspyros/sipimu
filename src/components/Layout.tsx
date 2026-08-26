@@ -38,7 +38,7 @@ const LAST_SEEN_KEY = "notifications:lastSeenAt";
 
 export function Layout({ children }: LayoutProps) {
   const { signOut } = useAuthContext();
-  const { displayName } = useProfile();
+  const { displayName, initials } = useProfile();
   const { notifications, loading: notifLoading } = useNotifications();
   const { pathname } = useLocation();
   const pageTitle = PAGE_TITLES[pathname] ?? "Sistem Pelaporan Clinical Pathways";
