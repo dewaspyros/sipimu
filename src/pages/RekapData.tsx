@@ -1,12 +1,19 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, FileText, TrendingUp, Download, Edit, Save, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AsyncButton,
+  EmptyState,
+  IconButton,
+  LoadingState,
+  PageHeader,
+  SelectFilter,
+} from "@/components/common";
 import { useRekapData, type RekapDataItem } from "@/hooks/useRekapData";
 import { useChecklistSummary, type AggregatedChecklistData } from "@/hooks/useChecklistSummary";
 import { yearOptions } from "@/constants/yearOptions";
@@ -203,33 +210,31 @@ export default function RekapData() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-        <div>
-          <h1 className="text-3xl font-bold">Rekap Data</h1>
-          <p className="text-muted-foreground">
-            Laporan dan rekap data Clinical Pathways per bulan
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {selectedMonth && selectedMonth !== "all" && (
-            <Button 
-              onClick={generateSummary}
-              disabled={checklistLoading}
-              className="medical-transition"
-            >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Generate Checklist Summary
-            </Button>
-          )}
-          {filteredData.length > 0 && (
-            <Button className="medical-transition">
-              <Download className="h-4 w-4 mr-2" />
-              Export Excel
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title="Rekap Data"
+        description="Laporan dan rekap data Clinical Pathways per bulan"
+        actions={
+          <>
+            {selectedMonth && selectedMonth !== "all" && (
+              <AsyncButton
+                onClick={generateSummary}
+                isLoading={checklistLoading}
+                loadingText="Memproses..."
+                className="medical-transition"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" aria-hidden="true" />
+                Generate Checklist Summary
+              </AsyncButton>
+            )}
+            {filteredData.length > 0 && (
+              <Button className="medical-transition">
+                <Download className="h-4 w-4 mr-2" aria-hidden="true" />
+                Export Excel
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {/* Month Selection */}
       <Card className="medical-card">
@@ -244,69 +249,38 @@ export default function RekapData() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
-            <div className="w-full md:w-48">
-              <label className="text-sm font-medium mb-2 block">Pilih Tahun:</label>
-              <Select value={selectedYear} onValueChange={handleYearChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih tahun" />
-                </SelectTrigger>
-                <SelectContent>
-                  {yearOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-full md:w-64">
-              <label className="text-sm font-medium mb-2 block">Pilih Bulan:</label>
-              <Select value={selectedMonth} onValueChange={handleMonthChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih bulan" />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="w-full md:w-64">
-              <label className="text-sm font-medium mb-2 block">Jenis Clinical Pathway:</label>
-              <Select value={selectedPathway} onValueChange={handlePathwayChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih jenis" />
-                </SelectTrigger>
-                <SelectContent>
-                   {pathwayOptions.map((option) => (
-                     <SelectItem key={option.value} value={option.value}>
-                       {option.label}
-                     </SelectItem>
-                   ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <SelectFilter
+              label="Pilih Tahun"
+              value={selectedYear}
+              onValueChange={handleYearChange}
+              options={yearOptions}
+              placeholder="Pilih tahun"
+            />
+            <SelectFilter
+              label="Pilih Bulan"
+              value={selectedMonth}
+              onValueChange={handleMonthChange}
+              options={monthOptions}
+              placeholder="Pilih bulan"
+              widthClassName="md:w-64"
+            />
+            <SelectFilter
+              label="Jenis Clinical Pathway"
+              value={selectedPathway}
+              onValueChange={handlePathwayChange}
+              options={pathwayOptions}
+              placeholder="Pilih jenis"
+              widthClassName="md:w-64"
+            />
+            <SelectFilter
+              label="DPJP"
+              value={selectedDPJP}
+              onValueChange={handleDPJPChange}
+              options={dpjpOptions}
+              placeholder="Pilih DPJP"
+              widthClassName="md:w-64"
+            />
 
-            <div className="w-full md:w-64">
-              <label className="text-sm font-medium mb-2 block">DPJP:</label>
-              <Select value={selectedDPJP} onValueChange={handleDPJPChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih DPJP" />
-                </SelectTrigger>
-                <SelectContent>
-                   {dpjpOptions.map((option) => (
-                     <SelectItem key={option.value} value={option.value}>
-                       {option.label}
-                     </SelectItem>
-                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
             {summary && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1">
                 <div className="text-center">
@@ -351,7 +325,7 @@ export default function RekapData() {
           {loading ? (
             <Card className="medical-card">
               <CardContent className="p-6">
-                <div className="text-center">Loading data...</div>
+                <LoadingState label="Memuat rekap data..." />
               </CardContent>
             </Card>
           ) : filteredData.length > 0 ? (
@@ -514,14 +488,14 @@ export default function RekapData() {
                               )}
                             </td>
                             <td className="p-3">
-                              <Button
-                                size="sm"
+                              <IconButton
                                 variant={isEditing ? "default" : "outline"}
+                                label={isEditing ? `Simpan perubahan ${item.nama_pasien}` : `Edit data ${item.nama_pasien}`}
                                 onClick={() => toggleEdit(rowKey)}
                                 className="medical-transition"
                               >
-                                {isEditing ? <Save className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
-                              </Button>
+                                {isEditing ? <Save className="h-4 w-4" aria-hidden="true" /> : <Edit className="h-4 w-4" aria-hidden="true" />}
+                              </IconButton>
                             </td>
                           </tr>
                         );
@@ -533,22 +507,22 @@ export default function RekapData() {
             </Card>
           ) : selectedMonth ? (
             <Card className="medical-card">
-              <CardContent className="text-center py-12">
-                <div className="text-muted-foreground">
-                  <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Tidak Ada Data</h3>
-                  <p>Belum ada data Clinical Pathways untuk bulan {monthOptions.find(m => m.value === selectedMonth)?.label}</p>
-                </div>
+              <CardContent className="py-6">
+                <EmptyState
+                  icon={FileText}
+                  title="Tidak ada data"
+                  description={`Belum ada data Clinical Pathways untuk bulan ${monthOptions.find(m => m.value === selectedMonth)?.label ?? ''}`}
+                />
               </CardContent>
             </Card>
           ) : (
             <Card className="medical-card">
-              <CardContent className="text-center py-12">
-                <div className="text-muted-foreground">
-                  <Calendar className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Pilih Bulan</h3>
-                  <p>Silakan pilih bulan untuk melihat rekap data Clinical Pathways</p>
-                </div>
+              <CardContent className="py-6">
+                <EmptyState
+                  icon={Calendar}
+                  title="Pilih bulan"
+                  description="Silakan pilih bulan untuk melihat rekap data Clinical Pathways"
+                />
               </CardContent>
             </Card>
           )}
@@ -568,7 +542,7 @@ export default function RekapData() {
               </CardHeader>
               <CardContent>
                 {checklistLoading ? (
-                  <div className="text-center">Loading checklist data...</div>
+                  <LoadingState label="Memuat data checklist..." />
                 ) : checklistData.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -617,18 +591,22 @@ export default function RekapData() {
                     </table>
                   </div>
                 ) : (
-                  <div className="text-center text-muted-foreground">
-                    Belum ada data checklist untuk bulan ini
-                  </div>
+                  <EmptyState
+                    icon={BarChart3}
+                    title="Belum ada data checklist"
+                    description="Belum ada ringkasan checklist untuk bulan ini."
+                  />
                 )}
               </CardContent>
             </Card>
           ) : (
             <Card className="medical-card">
               <CardContent className="p-6">
-                <div className="text-center text-muted-foreground">
-                  Pilih bulan untuk melihat ringkasan checklist
-                </div>
+                <EmptyState
+                  icon={Calendar}
+                  title="Pilih bulan"
+                  description="Pilih bulan untuk melihat ringkasan checklist."
+                />
               </CardContent>
             </Card>
           )}
