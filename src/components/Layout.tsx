@@ -37,7 +37,7 @@ const PAGE_TITLES: Record<string, string> = {
 const LAST_SEEN_KEY = "notifications:lastSeenAt";
 
 export function Layout({ children }: LayoutProps) {
-  const { signOut } = useAuthContext();
+  const { signOut, user, sessionRemainingMs } = useAuthContext();
   const { displayName, initials } = useProfile();
   const { notifications, loading: notifLoading } = useNotifications();
   const { pathname } = useLocation();
