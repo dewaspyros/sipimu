@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AsyncButton } from "@/components/common";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useChecklist, useClinicalPathways } from "@/hooks/useClinicalPathways";
@@ -859,9 +860,9 @@ const ClinicalPathwayChecklist = () => {
             Kembali
           </Button>
           {!isReadOnly && (
-            <Button onClick={handleSubmit} disabled={checklistLoading}>
-              {checklistLoading ? "Menyimpan..." : "Kirim Data"}
-            </Button>
+            <AsyncButton onClick={handleSubmit} isLoading={checklistLoading} loadingText="Menyimpan...">
+              Kirim Data
+            </AsyncButton>
           )}
         </div>
       </div>
