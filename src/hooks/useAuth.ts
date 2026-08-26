@@ -2,6 +2,13 @@ import { useState, useEffect, createContext, useContext, createElement, type Rea
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import {
+  clearAttempts,
+  formatRemaining,
+  getLockStatus,
+  registerFailedAttempt,
+} from '@/lib/loginThrottle';
+
 
 interface AuthContextType {
   user: User | null;
