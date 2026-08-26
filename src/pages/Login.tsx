@@ -89,11 +89,20 @@ export default function Login() {
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
-              {error && (
+              {isLocked ? (
                 <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>
+                    Terlalu banyak percobaan login. Coba lagi dalam {formatRemaining(lockRemaining)}.
+                  </AlertDescription>
                 </Alert>
+              ) : (
+                error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )
               )}
+
 
               <div className="space-y-2">
                 <Label htmlFor="nik">NIK </Label>
