@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   ClipboardPlus,
@@ -55,6 +55,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const { state } = useSidebar();
+  const currentPath = useLocation().pathname;
   const { user, signOut } = useAuthContext();
   const collapsed = state === "collapsed";
   const displayName = user?.email?.split("@")[0] ?? "Pengguna";
@@ -93,53 +94,52 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {menuItems.map((item) => (
+              {menuItems.map((item) => {
+                const isActive = currentPath.startsWith(item.url);
+                return (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title} className="h-auto p-0">
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) =>
-                        cn(
-                          "group flex items-center gap-3 rounded-lg px-2.5 py-2 medical-transition",
-                          "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                          isActive &&
-                            "bg-primary text-primary-foreground shadow-soft hover:bg-primary hover:text-primary-foreground"
-                        )
-                      }
-                    >
-                      {({ isActive }) => (
-                        <>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.title}
+                    className={cn(
+                      "!h-auto min-h-[2.75rem] gap-3 rounded-lg px-2.5 py-2",
+                      "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                      isActive &&
+                        "bg-primary !text-primary-foreground shadow-soft hover:bg-primary hover:!text-primary-foreground"
+                    )}
+                  >
+                    <NavLink to={item.url} className="group">
+                      <span
+                        className={cn(
+                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg medical-transition",
+                          isActive
+                            ? "bg-primary-foreground/15 text-primary-foreground"
+                            : "bg-accent text-accent-foreground"
+                        )}
+                      >
+                        <item.icon className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      {!collapsed && (
+                        <span className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden">
+                          <span className="truncate text-sm font-semibold leading-tight">
+                            {item.title}
+                          </span>
                           <span
                             className={cn(
-                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg medical-transition",
-                              isActive
-                                ? "bg-primary-foreground/15 text-primary-foreground"
-                                : "bg-accent text-accent-foreground group-hover:bg-sidebar-background"
+                              "truncate text-[11px] leading-tight",
+                              isActive ? "text-primary-foreground/75" : "text-muted-foreground"
                             )}
                           >
-                            <item.icon className="h-4 w-4" aria-hidden="true" />
+                            {item.description}
                           </span>
-                          {!collapsed && (
-                            <span className="flex min-w-0 flex-col">
-                              <span className="truncate text-sm font-semibold leading-tight">
-                                {item.title}
-                              </span>
-                              <span
-                                className={cn(
-                                  "truncate text-[11px] leading-tight",
-                                  isActive ? "text-primary-foreground/75" : "text-muted-foreground"
-                                )}
-                              >
-                                {item.description}
-                              </span>
-                            </span>
-                          )}
-                        </>
+                        </span>
                       )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
