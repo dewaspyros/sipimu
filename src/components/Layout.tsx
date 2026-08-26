@@ -34,11 +34,35 @@ const PAGE_TITLES: Record<string, string> = {
   "/pengaturan": "Pengaturan",
 };
 
+const LAST_SEEN_KEY = "notifications:lastSeenAt";
+
 export function Layout({ children }: LayoutProps) {
-  const { user, signOut } = useAuthContext();
+  const { signOut } = useAuthContext();
+  const { displayName } = useProfile();
+  const { notifications, loading: notifLoading } = useNotifications();
   const { pathname } = useLocation();
   const pageTitle = PAGE_TITLES[pathname] ?? "Sistem Pelaporan Clinical Pathways";
-  const displayName = user?.email?.split("@")[0] ?? "Pengguna";
+
+  const [lastSeenAt, setLastSeenAt] = useState<string | null>(() =>
+    typeof window === "undefined" ? null : localStorage.getItem(LAST_SEEN_KEY)
+  );
+
+  const latestAt = notifications[0]?.created_at ?? null;
+  const hasUnread =
+    !!latestAt && (!lastSeenAt || new Date(latestAt).getTime() > new Date(lastSeenAt).getTime());
+
+  const markSeen = () => {
+    if (!latestAt) return;
+    localStorage.setItem(LAST_SEEN_KEY, latestAt);
+    setLastSeenAt(latestAt);
+  };
+
+  useEffect(() => {
+    if (!lastSeenAt && latestAt) {
+      // Jangan tandai otomatis; hanya pastikan state konsisten setelah hydration.
+    }
+  }, [lastSeenAt, latestAt]);
+
 
   return (
     <SidebarProvider>
