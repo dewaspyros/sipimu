@@ -160,9 +160,16 @@ const ClinicalPathwayForm = () => {
       return;
     }
     try {
-      const raw = localStorage.getItem(draftKey);
+      const raw = sessionStorage.getItem(draftKey);
       if (raw) {
         const parsed = JSON.parse(raw);
+        const isFresh =
+          typeof parsed?.savedAt === 'number' && Date.now() - parsed.savedAt < 2 * 60 * 60 * 1000;
+        if (!isFresh) {
+          sessionStorage.removeItem(draftKey);
+          setDraftRestored(true);
+          return;
+        }
         if (parsed?.values) form.reset(parsed.values);
         if (parsed?.customVerifikator) setCustomVerifikator(parsed.customVerifikator);
         if (parsed?.customDPJP) setCustomDPJP(parsed.customDPJP);
@@ -184,9 +191,10 @@ const ClinicalPathwayForm = () => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         try {
-          localStorage.setItem(
+          sessionStorage.setItem(
             draftKey,
             JSON.stringify({
+              savedAt: Date.now(),
               values,
               customVerifikator,
               customDPJP,
@@ -216,7 +224,7 @@ const ClinicalPathwayForm = () => {
 
   const clearDraft = () => {
     try {
-      localStorage.removeItem(draftKey);
+      sessionStorage.removeItem(draftKey);
     } catch (e) {
       console.error('Gagal menghapus draft form:', e);
     }
@@ -313,7 +321,7 @@ const ClinicalPathwayForm = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/clinical-pathway')}
+            onClick={() => { clearDraft(); navigate('/clinical-pathway'); }}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -581,7 +589,7 @@ const ClinicalPathwayForm = () => {
                    <Button
                      type="button"
                      variant="outline"
-                     onClick={() => navigate('/clinical-pathway')}
+                     onClick={() => { clearDraft(); navigate('/clinical-pathway'); }}
                    >
                      Batal
                    </Button>
