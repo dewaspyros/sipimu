@@ -79,6 +79,7 @@ const ClinicalPathwayForm = () => {
   const mode = searchParams.get('mode') || 'create';
   
   const form = useForm<PatientFormData>({
+    resolver: zodResolver(patientFormSchema) as never,
     defaultValues: {
       clinicalPathway: "",
       verifikator: "",
