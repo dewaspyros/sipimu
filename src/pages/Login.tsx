@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, UserCheck } from "lucide-react";
 import { AuthLayout } from "@/components/AuthLayout";
+import { formatRemaining, getLockStatus } from "@/lib/loginThrottle";
+
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
