@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChartCard, PageHeader, SelectFilter } from "@/components/common";
+import { ChartCard, PageHeader, SelectFilter, StatCard } from "@/components/common";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from "recharts";
-import { Activity, TrendingUp, Users, FileCheck } from "lucide-react";
+import { Activity, TrendingUp, Users, FileCheck, LayoutDashboard } from "lucide-react";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { yearOptions } from "@/constants/yearOptions";
 import { getPathwayOptions } from "@/constants/pathwayOptions";
