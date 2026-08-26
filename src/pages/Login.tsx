@@ -17,6 +17,7 @@ export default function Login() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [lockRemaining, setLockRemaining] = useState(0);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { signIn, user, loading } = useAuth();
@@ -31,6 +32,20 @@ export default function Login() {
       navigate(nextPath);
     }
   }, [user, navigate, nextPath]);
+
+  // Sinkronkan status kunci login (3x gagal → tunggu 5 menit) dengan hitung mundur.
+  useEffect(() => {
+    const tick = () => {
+      const status = getLockStatus(formData.nik);
+      setLockRemaining(status.locked ? status.remainingMs : 0);
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [formData.nik]);
+
+  const isLocked = lockRemaining > 0;
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
