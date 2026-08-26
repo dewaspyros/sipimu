@@ -88,14 +88,63 @@ export function Layout({ children }: LayoutProps) {
               </div>
 
               <div className="flex items-center gap-1.5">
-                <IconButton
-                  variant="ghost"
-                  label="Notifikasi"
-                  className="relative rounded-full medical-transition"
-                >
-                  <Bell className="h-5 w-5" aria-hidden="true" />
-                  <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary" />
-                </IconButton>
+                <DropdownMenu onOpenChange={(open) => open && markSeen()}>
+                  <DropdownMenuTrigger asChild>
+                    <IconButton
+                      variant="ghost"
+                      label="Notifikasi"
+                      className="relative rounded-full medical-transition"
+                    >
+                      <Bell className="h-5 w-5" aria-hidden="true" />
+                      {hasUnread && (
+                        <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary" />
+                      )}
+                    </IconButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80">
+                    <DropdownMenuLabel className="font-heading">
+                      Aktivitas Terakhir
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <div role="status" aria-live="polite">
+                      {notifLoading ? (
+                        <p className="px-2 py-6 text-center text-sm text-muted-foreground">
+                          Memuat notifikasi...
+                        </p>
+                      ) : notifications.length === 0 ? (
+                        <p className="px-2 py-6 text-center text-sm text-muted-foreground">
+                          Belum ada aktivitas
+                        </p>
+                      ) : (
+                        <ul className="max-h-80 overflow-y-auto">
+                          {notifications.map((n) => (
+                            <li
+                              key={n.id}
+                              className="flex flex-col gap-0.5 rounded-md px-2 py-2 text-sm hover:bg-accent medical-transition"
+                            >
+                              <span className="font-medium text-foreground">
+                                {n.actor_name}{" "}
+                                <span className="font-normal text-muted-foreground">
+                                  {ACTION_LABELS[n.action_type] ?? n.action_type}
+                                </span>
+                              </span>
+                              {n.nama_pasien && (
+                                <span className="truncate text-xs text-muted-foreground">
+                                  {n.nama_pasien}
+                                  {n.no_rm ? ` · RM ${n.no_rm}` : ""}
+                                </span>
+                              )}
+                              <span className="text-xs text-muted-foreground/80">
+                                {formatRelativeTime(n.created_at)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
