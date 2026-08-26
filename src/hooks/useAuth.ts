@@ -325,6 +325,7 @@ const useProvideAuth = (): AuthContextType => {
     user,
     session,
     loading,
+    sessionRemainingMs,
     signIn,
     signUp,
     signOut,
