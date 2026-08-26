@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { whatsappSettingsSchema, firstZodMessage } from '@/lib/validation';
 
 export interface WhatsappGroup {
   id: string;
@@ -80,11 +81,22 @@ export function useWhatsappSettings() {
       // Filter out empty phone numbers
       const filteredPhones = updatedSettings.notification_phones.filter(phone => phone.trim() !== '');
       
-      const dataToSave = {
-        api_key: updatedSettings.api_key,
+      const parsed = whatsappSettingsSchema.safeParse({
+        api_key: updatedSettings.api_key ?? '',
         notification_phones: filteredPhones,
-        message_template: updatedSettings.message_template
-      };
+        message_template: updatedSettings.message_template ?? ''
+      });
+
+      if (!parsed.success) {
+        toast({
+          title: 'Data tidak valid',
+          description: firstZodMessage(parsed.error),
+          variant: 'destructive'
+        });
+        return false;
+      }
+
+      const dataToSave = parsed.data;
 
       const { error } = settings.id 
         ? await supabase
