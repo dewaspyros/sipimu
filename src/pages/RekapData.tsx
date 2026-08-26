@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ export default function RekapData() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedPathway, setSelectedPathway] = useState("all");
   const [selectedDPJP, setSelectedDPJP] = useState("all");
-  const [filteredData, setFilteredData] = useState<RekapDataItem[]>([]);
+  
   const [editingRows, setEditingRows] = useState<{[key: string]: boolean}>({});
   const [checklistData, setChecklistData] = useState<AggregatedChecklistData[]>([]);
   
