@@ -53,6 +53,11 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
+    if (isLocked) {
+      setError(`Terlalu banyak percobaan login. Coba lagi dalam ${formatRemaining(lockRemaining)}.`);
+      return;
+    }
+
     if (!formData.nik || !formData.password) {
       setError("Silakan lengkapi NIK dan password");
       return;
@@ -62,10 +67,13 @@ export default function Login() {
 
     if (signInError) {
       setError(signInError.message);
+      const status = getLockStatus(formData.nik);
+      setLockRemaining(status.locked ? status.remainingMs : 0);
     } else {
       navigate(nextPath);
     }
   };
+
 
   return (
     <AuthLayout>
