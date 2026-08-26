@@ -14,6 +14,8 @@ import { useClinicalPathways } from "@/hooks/useClinicalPathways";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { getPathwayOptions } from "@/constants/pathwayOptions";
+import { useNotifications } from "@/hooks/useNotifications";
+
 
 interface PatientFormData {
   clinicalPathway: string;
