@@ -52,6 +52,21 @@ export default function RekapData() {
   const { data, loading, fetchDataByMonth, fetchAllData, filterDataByPathway, updatePatientData, updateComplianceData, getTargetLOS } = useRekapData();
   const { loading: checklistLoading, aggregateChecklistData, generateChecklistSummaryForMonth } = useChecklistSummary();
 
+  // Pulihkan data sesuai filter tersimpan saat halaman dimuat (mis. setelah pindah tab).
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    const yearNum = parseInt(selectedYear);
+    if (selectedMonth && selectedMonth !== "all") {
+      void fetchDataByMonth(parseInt(selectedMonth), yearNum);
+      void aggregateChecklistData(parseInt(selectedMonth), yearNum).then(setChecklistData);
+    } else if (selectedMonth === "all") {
+      void fetchAllData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleMonthChange = async (month: string) => {
     setSelectedMonth(month);
     const yearNum = parseInt(selectedYear);
