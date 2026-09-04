@@ -44,9 +44,9 @@ const CustomBarLabel = (props: any) => {
 // diagnosisOptions dipindah ke dalam komponen agar dinamis berdasarkan tahun
 
 export default function Dashboard() {
-  const [selectedDiagnosis, setSelectedDiagnosis] = useState("Sectio Caesaria");
-  const [selectedMonth, setSelectedMonth] = useState("1");
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [selectedDiagnosis, setSelectedDiagnosis] = usePersistedState("dash:diagnosis", "Sectio Caesaria");
+  const [selectedMonth, setSelectedMonth] = usePersistedState("dash:month", "1");
+  const [selectedYear, setSelectedYear] = usePersistedState("dash:year", new Date().getFullYear().toString());
   const { 
     loading, 
     getComplianceByType, 
