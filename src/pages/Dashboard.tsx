@@ -6,6 +6,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { Activity, TrendingUp, Users, FileCheck, LayoutDashboard } from "lucide-react";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { yearOptions } from "@/constants/yearOptions";
+import { usePersistedState } from "@/hooks/usePersistedState";
 import { getPathwayOptions } from "@/constants/pathwayOptions";
 
 // Custom label function for bars
@@ -44,9 +45,9 @@ const CustomBarLabel = (props: any) => {
 // diagnosisOptions dipindah ke dalam komponen agar dinamis berdasarkan tahun
 
 export default function Dashboard() {
-  const [selectedDiagnosis, setSelectedDiagnosis] = useState("Sectio Caesaria");
-  const [selectedMonth, setSelectedMonth] = useState("1");
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [selectedDiagnosis, setSelectedDiagnosis] = usePersistedState("dash:diagnosis", "Sectio Caesaria");
+  const [selectedMonth, setSelectedMonth] = usePersistedState("dash:month", "1");
+  const [selectedYear, setSelectedYear] = usePersistedState("dash:year", new Date().getFullYear().toString());
   const { 
     loading, 
     getComplianceByType, 

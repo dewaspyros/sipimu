@@ -29,6 +29,7 @@ import {
 } from "@/components/common";
 import { useClinicalPathways, type ClinicalPathway as Pathway } from "@/hooks/useClinicalPathways";
 import { yearOptions } from "@/constants/yearOptions";
+import { usePersistedState } from "@/hooks/usePersistedState";
 import { getPathwayOptions } from "@/constants/pathwayOptions";
 
 const formatDate = (value?: string | null) =>
@@ -37,11 +38,11 @@ const formatDate = (value?: string | null) =>
 export default function ClinicalPathway() {
   const navigate = useNavigate();
   const { pathways, loading, deletePathway } = useClinicalPathways();
-  const [selectedMonth, setSelectedMonth] = useState<string>(ALL_VALUE);
-  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
-  const [selectedPathway, setSelectedPathway] = useState<string>(ALL_VALUE);
-  const [selectedWard, setSelectedWard] = useState<string>(ALL_VALUE);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = usePersistedState<string>("cp:month", ALL_VALUE);
+  const [selectedYear, setSelectedYear] = usePersistedState<string>("cp:year", new Date().getFullYear().toString());
+  const [selectedPathway, setSelectedPathway] = usePersistedState<string>("cp:pathway", ALL_VALUE);
+  const [selectedWard, setSelectedWard] = usePersistedState<string>("cp:ward", ALL_VALUE);
+  const [searchQuery, setSearchQuery] = usePersistedState<string>("cp:search", "");
 
   const pathwayOptions = useMemo(
     () => getPathwayOptions(selectedYear, { includeAll: true }),
