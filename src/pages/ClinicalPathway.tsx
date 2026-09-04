@@ -29,6 +29,7 @@ import {
 } from "@/components/common";
 import { useClinicalPathways, type ClinicalPathway as Pathway } from "@/hooks/useClinicalPathways";
 import { yearOptions } from "@/constants/yearOptions";
+import { usePersistedState } from "@/hooks/usePersistedState";
 import { getPathwayOptions } from "@/constants/pathwayOptions";
 
 const formatDate = (value?: string | null) =>

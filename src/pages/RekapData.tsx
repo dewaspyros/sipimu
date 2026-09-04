@@ -17,6 +17,8 @@ import {
 import { useRekapData, type RekapDataItem } from "@/hooks/useRekapData";
 import { useChecklistSummary, type AggregatedChecklistData } from "@/hooks/useChecklistSummary";
 import { yearOptions } from "@/constants/yearOptions";
+import { usePersistedState } from "@/hooks/usePersistedState";
+import { useEffect, useRef } from "react";
 import { getPathwayOptions } from "@/constants/pathwayOptions";
 
 // Remove dummy data - now using real Supabase data
@@ -39,10 +41,10 @@ const monthOptions = [
 // pathwayOptions dipindah ke dalam komponen agar dinamis berdasarkan tahun
 
 export default function RekapData() {
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-  const [selectedPathway, setSelectedPathway] = useState("all");
-  const [selectedDPJP, setSelectedDPJP] = useState("all");
+  const [selectedMonth, setSelectedMonth] = usePersistedState("rekap:month", "");
+  const [selectedYear, setSelectedYear] = usePersistedState("rekap:year", new Date().getFullYear().toString());
+  const [selectedPathway, setSelectedPathway] = usePersistedState("rekap:pathway", "all");
+  const [selectedDPJP, setSelectedDPJP] = usePersistedState("rekap:dpjp", "all");
   
   const [editingRows, setEditingRows] = useState<{[key: string]: boolean}>({});
   const [checklistData, setChecklistData] = useState<AggregatedChecklistData[]>([]);
