@@ -187,7 +187,9 @@ export default function ClinicalPathway() {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Batal</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={() => deletePathway(row.id)}
+                    onClick={() => {
+                      void deletePathway(row.id).catch(() => {});
+                    }}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     Hapus

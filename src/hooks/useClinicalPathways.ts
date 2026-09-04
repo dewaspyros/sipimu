@@ -122,29 +122,38 @@ export const useClinicalPathways = () => {
 
   const deletePathway = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('clinical_pathways')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select('id');
 
       if (error) throw error;
-      
+
+      if (!data || data.length === 0) {
+        throw new Error(
+          'Data tidak terhapus. Akun Anda mungkin belum disetujui admin atau tidak memiliki izin hapus.'
+        );
+      }
+
       toast({
         title: "Berhasil",
         description: "Data clinical pathway berhasil dihapus"
       });
-      
+
       await fetchPathways();
     } catch (error) {
       console.error('Error deleting clinical pathway:', error);
       toast({
-        title: "Error",
-        description: "Gagal menghapus data clinical pathway",
+        title: "Gagal menghapus",
+        description:
+          error instanceof Error ? error.message : "Gagal menghapus data clinical pathway",
         variant: "destructive"
       });
       throw error;
     }
   };
+
 
   return {
     pathways,
