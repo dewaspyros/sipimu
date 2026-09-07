@@ -43,6 +43,11 @@ export default function ClinicalPathway() {
   const [selectedPathway, setSelectedPathway] = usePersistedState<string>("cp:pathway", ALL_VALUE);
   const [selectedWard, setSelectedWard] = usePersistedState<string>("cp:ward", ALL_VALUE);
   const [searchQuery, setSearchQuery] = usePersistedState<string>("cp:search", "");
+  const [sort, setSort] = usePersistedState<{ columnId: string; direction: "asc" | "desc" } | null>(
+    "cp:sort",
+    null
+  );
+
 
   const pathwayOptions = useMemo(
     () => getPathwayOptions(selectedYear, { includeAll: true }),
