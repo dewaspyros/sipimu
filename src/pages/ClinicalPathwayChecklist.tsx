@@ -502,9 +502,16 @@ const ClinicalPathwayChecklist = () => {
     let redirectTimer: ReturnType<typeof setTimeout> | undefined;
 
     const loadData = async () => {
+      // Sudah dimuat untuk pasien ini — jangan timpa centangan yang sedang dikerjakan
+      // (mis. saat data pasien di-refresh otomatis ketika kembali dari tab lain)
+      if (initializedForRef.current === (pathwayId ?? "new")) {
+        setIsLoading(false);
+        return;
+      }
       try {
         setIsLoading(true);
         setError(null);
+
 
         // Check if coming from form (session storage)
         const storedData = sessionStorage.getItem("clinicalPathwayFormData");
