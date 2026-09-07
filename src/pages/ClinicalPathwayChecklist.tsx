@@ -461,6 +461,24 @@ const ClinicalPathwayChecklist = () => {
   const mode = searchParams.get("mode") || "edit"; // 'view' or 'edit'
   const isReadOnly = mode === "view";
 
+  // Draft centangan sementara (bertahan saat pindah tab/refresh, bersih saat tab ditutup)
+  const draftKey = `sipimu:checklist-draft:${pathwayId ?? "new"}`;
+  const draftReadyRef = useRef(false);
+
+  // Simpan draft setiap ada perubahan centangan/varian
+  useEffect(() => {
+    if (isReadOnly || !draftReadyRef.current) return;
+    try {
+      sessionStorage.setItem(
+        draftKey,
+        JSON.stringify({ checklistData, variantData, savedAt: Date.now() })
+      );
+    } catch {
+      // abaikan bila storage penuh
+    }
+  }, [checklistData, variantData, draftKey, isReadOnly]);
+
+
   useEffect(() => {
     let redirectTimer: ReturnType<typeof setTimeout> | undefined;
 
