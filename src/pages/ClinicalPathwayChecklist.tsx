@@ -534,7 +534,9 @@ const ClinicalPathwayChecklist = () => {
           }
           setIsLoading(false);
           draftReadyRef.current = true;
+          initializedForRef.current = "new";
           return;
+
         }
 
 
