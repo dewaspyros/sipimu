@@ -464,28 +464,54 @@ const ClinicalPathwayChecklist = () => {
   // Draft centangan sementara (bertahan saat pindah tab/refresh, bersih saat tab ditutup)
   const draftKey = `sipimu:checklist-draft:${pathwayId ?? "new"}`;
   const draftReadyRef = useRef(false);
+  const initializedForRef = useRef<string | null>(null);
+  const stateRef = useRef({ checklistData, variantData });
+  stateRef.current = { checklistData, variantData };
 
-  // Simpan draft setiap ada perubahan centangan/varian
-  useEffect(() => {
+  const writeDraft = () => {
     if (isReadOnly || !draftReadyRef.current) return;
     try {
       sessionStorage.setItem(
         draftKey,
-        JSON.stringify({ checklistData, variantData, savedAt: Date.now() })
+        JSON.stringify({ ...stateRef.current, savedAt: Date.now() })
       );
     } catch {
       // abaikan bila storage penuh
     }
+  };
+
+  // Simpan draft setiap ada perubahan centangan/varian
+  useEffect(() => {
+    writeDraft();
   }, [checklistData, variantData, draftKey, isReadOnly]);
+
+  // Simpan juga tepat sebelum tab disembunyikan/ditutup
+  useEffect(() => {
+    const flush = () => writeDraft();
+    document.addEventListener("visibilitychange", flush);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", flush);
+      window.removeEventListener("pagehide", flush);
+    };
+  }, [draftKey, isReadOnly]);
+
 
 
   useEffect(() => {
     let redirectTimer: ReturnType<typeof setTimeout> | undefined;
 
     const loadData = async () => {
+      // Sudah dimuat untuk pasien ini — jangan timpa centangan yang sedang dikerjakan
+      // (mis. saat data pasien di-refresh otomatis ketika kembali dari tab lain)
+      if (initializedForRef.current === (pathwayId ?? "new")) {
+        setIsLoading(false);
+        return;
+      }
       try {
         setIsLoading(true);
         setError(null);
+
 
         // Check if coming from form (session storage)
         const storedData = sessionStorage.getItem("clinicalPathwayFormData");
@@ -508,7 +534,9 @@ const ClinicalPathwayChecklist = () => {
           }
           setIsLoading(false);
           draftReadyRef.current = true;
+          initializedForRef.current = "new";
           return;
+
         }
 
 
@@ -551,49 +579,12 @@ const ClinicalPathwayChecklist = () => {
         };
 
         setPatientData(patientInfo);
+        initializedForRef.current = pathwayId;
 
-        // Pulihkan draft centangan yang belum disimpan (bila ada)
-        let restoredFromDraft = false;
-        if (!isReadOnly) {
-          try {
-            const raw = sessionStorage.getItem(draftKey);
-            if (raw) {
-              const draft = JSON.parse(raw) as {
-                checklistData?: ChecklistData;
-                variantData?: VariantData;
-              };
-              if (draft?.checklistData) {
-                setChecklistData(draft.checklistData);
-                setVariantData(draft.variantData || {});
-                restoredFromDraft = true;
-              }
-            }
-          } catch {
-            // draft rusak — abaikan
-          }
-        }
-
-        // Load existing checklist data in parallel
+        // Ambil checklist tersimpan lebih dulu agar bisa dibandingkan dengan draft
+        let existingChecklist: Awaited<ReturnType<typeof getChecklistByPathwayId>> = [];
         try {
-          const existingChecklist = await getChecklistByPathwayId(pathwayId);
-          if (!restoredFromDraft && existingChecklist && existingChecklist.length > 0) {
-            const checklistMap: ChecklistData = {};
-            const variantMap: VariantData = {};
-
-            existingChecklist.forEach((item, index) => {
-              checklistMap[index.toString()] = {
-                "Hari ke-1": item.checklist_hari_1 || false,
-                "Hari ke-2": item.checklist_hari_2 || false,
-                "Hari ke-3": item.checklist_hari_3 || false,
-                "Hari ke-4": item.checklist_hari_4 || false,
-                "Hari ke-5": item.checklist_hari_5 || false,
-                "Hari ke-6": item.checklist_hari_6 || false,
-              };
-            });
-
-            setChecklistData(checklistMap);
-            setVariantData(variantMap);
-          }
+          existingChecklist = await getChecklistByPathwayId(pathwayId);
         } catch (error) {
           console.error("Error loading checklist:", error);
           toast({
@@ -602,6 +593,59 @@ const ClinicalPathwayChecklist = () => {
             variant: "destructive",
           });
         }
+
+        const serverSavedAt = (existingChecklist || []).reduce((max, item) => {
+          const t = new Date(
+            (item as { updated_at?: string; created_at?: string }).updated_at ||
+              (item as { created_at?: string }).created_at ||
+              0
+          ).getTime();
+          return Number.isFinite(t) && t > max ? t : max;
+        }, 0);
+
+        // Pulihkan draft centangan yang belum disimpan, hanya bila lebih baru dari data tersimpan
+        let restoredFromDraft = false;
+        if (!isReadOnly) {
+          try {
+            const raw = sessionStorage.getItem(draftKey);
+            if (raw) {
+              const draft = JSON.parse(raw) as {
+                checklistData?: ChecklistData;
+                variantData?: VariantData;
+                savedAt?: number;
+              };
+              if (draft?.checklistData && (draft.savedAt || 0) > serverSavedAt) {
+                setChecklistData(draft.checklistData);
+                setVariantData(draft.variantData || {});
+                restoredFromDraft = true;
+              } else {
+                sessionStorage.removeItem(draftKey);
+              }
+            }
+          } catch {
+            // draft rusak — abaikan
+          }
+        }
+
+        if (!restoredFromDraft && existingChecklist && existingChecklist.length > 0) {
+          const checklistMap: ChecklistData = {};
+          const variantMap: VariantData = {};
+
+          existingChecklist.forEach((item, index) => {
+            checklistMap[index.toString()] = {
+              "Hari ke-1": item.checklist_hari_1 || false,
+              "Hari ke-2": item.checklist_hari_2 || false,
+              "Hari ke-3": item.checklist_hari_3 || false,
+              "Hari ke-4": item.checklist_hari_4 || false,
+              "Hari ke-5": item.checklist_hari_5 || false,
+              "Hari ke-6": item.checklist_hari_6 || false,
+            };
+          });
+
+          setChecklistData(checklistMap);
+          setVariantData(variantMap);
+        }
+
       } catch (error) {
         console.error("Error in loadData:", error);
         setError("Terjadi kesalahan saat memuat data");
@@ -799,9 +843,11 @@ const ClinicalPathwayChecklist = () => {
 
 
       sessionStorage.removeItem("clinicalPathwayFormData");
-      sessionStorage.removeItem(draftKey);
       draftReadyRef.current = false;
+      sessionStorage.removeItem(draftKey);
+      initializedForRef.current = null;
       navigate("/clinical-pathway");
+
     } catch (error) {
       console.error("Error saving checklist:", error);
     }
