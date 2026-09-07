@@ -276,6 +276,8 @@ export default function ClinicalPathway() {
                 columns={columns}
                 getRowId={(row) => row.id}
                 isLoading={loading}
+                sort={sort}
+                onSortChange={setSort}
                 emptyTitle={isFiltered ? "Tidak ada data yang cocok" : "Belum ada data clinical pathway"}
                 emptyDescription={
                   isFiltered
