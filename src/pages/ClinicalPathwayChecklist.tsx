@@ -535,10 +535,31 @@ const ClinicalPathwayChecklist = () => {
 
         setPatientData(patientInfo);
 
+        // Pulihkan draft centangan yang belum disimpan (bila ada)
+        let restoredFromDraft = false;
+        if (!isReadOnly) {
+          try {
+            const raw = sessionStorage.getItem(draftKey);
+            if (raw) {
+              const draft = JSON.parse(raw) as {
+                checklistData?: ChecklistData;
+                variantData?: VariantData;
+              };
+              if (draft?.checklistData) {
+                setChecklistData(draft.checklistData);
+                setVariantData(draft.variantData || {});
+                restoredFromDraft = true;
+              }
+            }
+          } catch {
+            // draft rusak — abaikan
+          }
+        }
+
         // Load existing checklist data in parallel
         try {
           const existingChecklist = await getChecklistByPathwayId(pathwayId);
-          if (existingChecklist && existingChecklist.length > 0) {
+          if (!restoredFromDraft && existingChecklist && existingChecklist.length > 0) {
             const checklistMap: ChecklistData = {};
             const variantMap: VariantData = {};
 
@@ -574,7 +595,9 @@ const ClinicalPathwayChecklist = () => {
         });
       } finally {
         setIsLoading(false);
+        draftReadyRef.current = true;
       }
+
     };
 
     void loadData();
