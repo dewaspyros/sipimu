@@ -594,16 +594,9 @@ const ClinicalPathwayChecklist = () => {
           });
         }
 
-        const serverSavedAt = (existingChecklist || []).reduce((max, item) => {
-          const t = new Date(
-            (item as { updated_at?: string; created_at?: string }).updated_at ||
-              (item as { created_at?: string }).created_at ||
-              0
-          ).getTime();
-          return Number.isFinite(t) && t > max ? t : max;
-        }, 0);
-
-        // Pulihkan draft centangan yang belum disimpan, hanya bila lebih baru dari data tersimpan
+        // Keberadaan draft berarti ada perubahan lokal yang belum disimpan.
+        // Draft dihapus setelah penyimpanan berhasil, jadi tidak perlu membandingkan
+        // waktu perangkat dengan waktu server (keduanya bisa berbeda).
         let restoredFromDraft = false;
         if (!isReadOnly) {
           try {
@@ -614,12 +607,10 @@ const ClinicalPathwayChecklist = () => {
                 variantData?: VariantData;
                 savedAt?: number;
               };
-              if (draft?.checklistData && (draft.savedAt || 0) > serverSavedAt) {
+              if (draft?.checklistData) {
                 setChecklistData(draft.checklistData);
                 setVariantData(draft.variantData || {});
                 restoredFromDraft = true;
-              } else {
-                sessionStorage.removeItem(draftKey);
               }
             }
           } catch {
@@ -792,20 +783,41 @@ const ClinicalPathwayChecklist = () => {
   const handleCheckboxChange = (itemIndex: string, day: string, checked: boolean) => {
     if (isReadOnly) return; // Prevent changes in view mode
 
-    setChecklistData((prev) => ({
-      ...prev,
-      [itemIndex]: {
-        ...prev[itemIndex],
-        [day]: checked,
-      },
-    }));
+    setChecklistData((prev) => {
+      const next = {
+        ...prev,
+        [itemIndex]: {
+          ...prev[itemIndex],
+          [day]: checked,
+        },
+      };
+      stateRef.current = { checklistData: next, variantData: stateRef.current.variantData };
+      try {
+        sessionStorage.setItem(
+          draftKey,
+          JSON.stringify({ ...stateRef.current, savedAt: Date.now() })
+        );
+      } catch {
+        // abaikan bila storage penuh
+      }
+      return next;
+    });
   };
 
   const handleVariantChange = (itemIndex: string, value: string) => {
-    setVariantData((prev) => ({
-      ...prev,
-      [itemIndex]: value,
-    }));
+    setVariantData((prev) => {
+      const next = { ...prev, [itemIndex]: value };
+      stateRef.current = { checklistData: stateRef.current.checklistData, variantData: next };
+      try {
+        sessionStorage.setItem(
+          draftKey,
+          JSON.stringify({ ...stateRef.current, savedAt: Date.now() })
+        );
+      } catch {
+        // abaikan bila storage penuh
+      }
+      return next;
+    });
   };
 
   const handleSubmit = async () => {
