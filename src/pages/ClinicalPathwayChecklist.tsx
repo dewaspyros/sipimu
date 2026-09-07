@@ -491,9 +491,26 @@ const ClinicalPathwayChecklist = () => {
         const storedData = sessionStorage.getItem("clinicalPathwayFormData");
         if (storedData && !pathwayId) {
           setPatientData(JSON.parse(storedData));
+          try {
+            const raw = sessionStorage.getItem(draftKey);
+            if (raw) {
+              const draft = JSON.parse(raw) as {
+                checklistData?: ChecklistData;
+                variantData?: VariantData;
+              };
+              if (draft?.checklistData) {
+                setChecklistData(draft.checklistData);
+                setVariantData(draft.variantData || {});
+              }
+            }
+          } catch {
+            // abaikan draft rusak
+          }
           setIsLoading(false);
+          draftReadyRef.current = true;
           return;
         }
+
 
         // If no pathwayId, redirect
         if (!pathwayId) {
