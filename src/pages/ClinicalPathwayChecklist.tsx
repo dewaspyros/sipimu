@@ -464,19 +464,38 @@ const ClinicalPathwayChecklist = () => {
   // Draft centangan sementara (bertahan saat pindah tab/refresh, bersih saat tab ditutup)
   const draftKey = `sipimu:checklist-draft:${pathwayId ?? "new"}`;
   const draftReadyRef = useRef(false);
+  const initializedForRef = useRef<string | null>(null);
+  const stateRef = useRef({ checklistData, variantData });
+  stateRef.current = { checklistData, variantData };
 
-  // Simpan draft setiap ada perubahan centangan/varian
-  useEffect(() => {
+  const writeDraft = () => {
     if (isReadOnly || !draftReadyRef.current) return;
     try {
       sessionStorage.setItem(
         draftKey,
-        JSON.stringify({ checklistData, variantData, savedAt: Date.now() })
+        JSON.stringify({ ...stateRef.current, savedAt: Date.now() })
       );
     } catch {
       // abaikan bila storage penuh
     }
+  };
+
+  // Simpan draft setiap ada perubahan centangan/varian
+  useEffect(() => {
+    writeDraft();
   }, [checklistData, variantData, draftKey, isReadOnly]);
+
+  // Simpan juga tepat sebelum tab disembunyikan/ditutup
+  useEffect(() => {
+    const flush = () => writeDraft();
+    document.addEventListener("visibilitychange", flush);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", flush);
+      window.removeEventListener("pagehide", flush);
+    };
+  }, [draftKey, isReadOnly]);
+
 
 
   useEffect(() => {
