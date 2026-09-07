@@ -799,6 +799,8 @@ const ClinicalPathwayChecklist = () => {
 
 
       sessionStorage.removeItem("clinicalPathwayFormData");
+      sessionStorage.removeItem(draftKey);
+      draftReadyRef.current = false;
       navigate("/clinical-pathway");
     } catch (error) {
       console.error("Error saving checklist:", error);
