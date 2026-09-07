@@ -579,49 +579,12 @@ const ClinicalPathwayChecklist = () => {
         };
 
         setPatientData(patientInfo);
+        initializedForRef.current = pathwayId;
 
-        // Pulihkan draft centangan yang belum disimpan (bila ada)
-        let restoredFromDraft = false;
-        if (!isReadOnly) {
-          try {
-            const raw = sessionStorage.getItem(draftKey);
-            if (raw) {
-              const draft = JSON.parse(raw) as {
-                checklistData?: ChecklistData;
-                variantData?: VariantData;
-              };
-              if (draft?.checklistData) {
-                setChecklistData(draft.checklistData);
-                setVariantData(draft.variantData || {});
-                restoredFromDraft = true;
-              }
-            }
-          } catch {
-            // draft rusak — abaikan
-          }
-        }
-
-        // Load existing checklist data in parallel
+        // Ambil checklist tersimpan lebih dulu agar bisa dibandingkan dengan draft
+        let existingChecklist: Awaited<ReturnType<typeof getChecklistByPathwayId>> = [];
         try {
-          const existingChecklist = await getChecklistByPathwayId(pathwayId);
-          if (!restoredFromDraft && existingChecklist && existingChecklist.length > 0) {
-            const checklistMap: ChecklistData = {};
-            const variantMap: VariantData = {};
-
-            existingChecklist.forEach((item, index) => {
-              checklistMap[index.toString()] = {
-                "Hari ke-1": item.checklist_hari_1 || false,
-                "Hari ke-2": item.checklist_hari_2 || false,
-                "Hari ke-3": item.checklist_hari_3 || false,
-                "Hari ke-4": item.checklist_hari_4 || false,
-                "Hari ke-5": item.checklist_hari_5 || false,
-                "Hari ke-6": item.checklist_hari_6 || false,
-              };
-            });
-
-            setChecklistData(checklistMap);
-            setVariantData(variantMap);
-          }
+          existingChecklist = await getChecklistByPathwayId(pathwayId);
         } catch (error) {
           console.error("Error loading checklist:", error);
           toast({
@@ -630,6 +593,59 @@ const ClinicalPathwayChecklist = () => {
             variant: "destructive",
           });
         }
+
+        const serverSavedAt = (existingChecklist || []).reduce((max, item) => {
+          const t = new Date(
+            (item as { updated_at?: string; created_at?: string }).updated_at ||
+              (item as { created_at?: string }).created_at ||
+              0
+          ).getTime();
+          return Number.isFinite(t) && t > max ? t : max;
+        }, 0);
+
+        // Pulihkan draft centangan yang belum disimpan, hanya bila lebih baru dari data tersimpan
+        let restoredFromDraft = false;
+        if (!isReadOnly) {
+          try {
+            const raw = sessionStorage.getItem(draftKey);
+            if (raw) {
+              const draft = JSON.parse(raw) as {
+                checklistData?: ChecklistData;
+                variantData?: VariantData;
+                savedAt?: number;
+              };
+              if (draft?.checklistData && (draft.savedAt || 0) > serverSavedAt) {
+                setChecklistData(draft.checklistData);
+                setVariantData(draft.variantData || {});
+                restoredFromDraft = true;
+              } else {
+                sessionStorage.removeItem(draftKey);
+              }
+            }
+          } catch {
+            // draft rusak — abaikan
+          }
+        }
+
+        if (!restoredFromDraft && existingChecklist && existingChecklist.length > 0) {
+          const checklistMap: ChecklistData = {};
+          const variantMap: VariantData = {};
+
+          existingChecklist.forEach((item, index) => {
+            checklistMap[index.toString()] = {
+              "Hari ke-1": item.checklist_hari_1 || false,
+              "Hari ke-2": item.checklist_hari_2 || false,
+              "Hari ke-3": item.checklist_hari_3 || false,
+              "Hari ke-4": item.checklist_hari_4 || false,
+              "Hari ke-5": item.checklist_hari_5 || false,
+              "Hari ke-6": item.checklist_hari_6 || false,
+            };
+          });
+
+          setChecklistData(checklistMap);
+          setVariantData(variantMap);
+        }
+
       } catch (error) {
         console.error("Error in loadData:", error);
         setError("Terjadi kesalahan saat memuat data");
