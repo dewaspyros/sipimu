@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -461,6 +461,24 @@ const ClinicalPathwayChecklist = () => {
   const mode = searchParams.get("mode") || "edit"; // 'view' or 'edit'
   const isReadOnly = mode === "view";
 
+  // Draft centangan sementara (bertahan saat pindah tab/refresh, bersih saat tab ditutup)
+  const draftKey = `sipimu:checklist-draft:${pathwayId ?? "new"}`;
+  const draftReadyRef = useRef(false);
+
+  // Simpan draft setiap ada perubahan centangan/varian
+  useEffect(() => {
+    if (isReadOnly || !draftReadyRef.current) return;
+    try {
+      sessionStorage.setItem(
+        draftKey,
+        JSON.stringify({ checklistData, variantData, savedAt: Date.now() })
+      );
+    } catch {
+      // abaikan bila storage penuh
+    }
+  }, [checklistData, variantData, draftKey, isReadOnly]);
+
+
   useEffect(() => {
     let redirectTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -473,9 +491,26 @@ const ClinicalPathwayChecklist = () => {
         const storedData = sessionStorage.getItem("clinicalPathwayFormData");
         if (storedData && !pathwayId) {
           setPatientData(JSON.parse(storedData));
+          try {
+            const raw = sessionStorage.getItem(draftKey);
+            if (raw) {
+              const draft = JSON.parse(raw) as {
+                checklistData?: ChecklistData;
+                variantData?: VariantData;
+              };
+              if (draft?.checklistData) {
+                setChecklistData(draft.checklistData);
+                setVariantData(draft.variantData || {});
+              }
+            }
+          } catch {
+            // abaikan draft rusak
+          }
           setIsLoading(false);
+          draftReadyRef.current = true;
           return;
         }
+
 
         // If no pathwayId, redirect
         if (!pathwayId) {
@@ -517,10 +552,31 @@ const ClinicalPathwayChecklist = () => {
 
         setPatientData(patientInfo);
 
+        // Pulihkan draft centangan yang belum disimpan (bila ada)
+        let restoredFromDraft = false;
+        if (!isReadOnly) {
+          try {
+            const raw = sessionStorage.getItem(draftKey);
+            if (raw) {
+              const draft = JSON.parse(raw) as {
+                checklistData?: ChecklistData;
+                variantData?: VariantData;
+              };
+              if (draft?.checklistData) {
+                setChecklistData(draft.checklistData);
+                setVariantData(draft.variantData || {});
+                restoredFromDraft = true;
+              }
+            }
+          } catch {
+            // draft rusak — abaikan
+          }
+        }
+
         // Load existing checklist data in parallel
         try {
           const existingChecklist = await getChecklistByPathwayId(pathwayId);
-          if (existingChecklist && existingChecklist.length > 0) {
+          if (!restoredFromDraft && existingChecklist && existingChecklist.length > 0) {
             const checklistMap: ChecklistData = {};
             const variantMap: VariantData = {};
 
@@ -556,7 +612,9 @@ const ClinicalPathwayChecklist = () => {
         });
       } finally {
         setIsLoading(false);
+        draftReadyRef.current = true;
       }
+
     };
 
     void loadData();
@@ -741,6 +799,8 @@ const ClinicalPathwayChecklist = () => {
 
 
       sessionStorage.removeItem("clinicalPathwayFormData");
+      sessionStorage.removeItem(draftKey);
+      draftReadyRef.current = false;
       navigate("/clinical-pathway");
     } catch (error) {
       console.error("Error saving checklist:", error);

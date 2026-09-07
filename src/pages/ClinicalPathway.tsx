@@ -43,6 +43,11 @@ export default function ClinicalPathway() {
   const [selectedPathway, setSelectedPathway] = usePersistedState<string>("cp:pathway", ALL_VALUE);
   const [selectedWard, setSelectedWard] = usePersistedState<string>("cp:ward", ALL_VALUE);
   const [searchQuery, setSearchQuery] = usePersistedState<string>("cp:search", "");
+  const [sort, setSort] = usePersistedState<{ columnId: string; direction: "asc" | "desc" } | null>(
+    "cp:sort",
+    null
+  );
+
 
   const pathwayOptions = useMemo(
     () => getPathwayOptions(selectedYear, { includeAll: true }),
@@ -271,6 +276,8 @@ export default function ClinicalPathway() {
                 columns={columns}
                 getRowId={(row) => row.id}
                 isLoading={loading}
+                sort={sort}
+                onSortChange={setSort}
                 emptyTitle={isFiltered ? "Tidak ada data yang cocok" : "Belum ada data clinical pathway"}
                 emptyDescription={
                   isFiltered
