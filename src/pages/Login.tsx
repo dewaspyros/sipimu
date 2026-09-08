@@ -49,6 +49,10 @@ export default function Login() {
 
   const isLocked = lockRemaining > 0;
 
+  useEffect(() => {
+    if (searchParams.get("expired") === "1") setSessionExpired(true);
+  }, [searchParams]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +94,14 @@ export default function Login() {
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
+              {sessionExpired && !error && !isLocked && (
+                <Alert>
+                  <AlertDescription>
+                    Sesi login sudah lebih dari 12 jam. Silakan login kembali.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {isLocked ? (
                 <Alert variant="destructive">
                   <AlertDescription>
