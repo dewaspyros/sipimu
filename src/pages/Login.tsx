@@ -19,6 +19,7 @@ export default function Login() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [lockRemaining, setLockRemaining] = useState(0);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
