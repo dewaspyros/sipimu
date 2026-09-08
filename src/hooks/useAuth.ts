@@ -94,15 +94,23 @@ const useProvideAuth = (): AuthContextType => {
   useEffect(() => {
     let isMounted = true;
 
+    let expiring = false;
     const expireSession = async () => {
+      if (expiring) return;
+      expiring = true;
       clearSessionStart();
       await signOutLocally();
-      if (!isMounted) return;
       clearAuthState();
       toast({
         title: 'Sesi berakhir',
         description: 'Sesi login sudah lebih dari 12 jam. Silakan login kembali.',
       });
+      // Muat ulang penuh ke halaman login agar tidak ada sisa data di layar.
+      window.setTimeout(() => {
+        if (window.location.pathname !== '/login') {
+          window.location.replace('/login?expired=1');
+        }
+      }, 1500);
     };
 
     const applySession = async (nextSession: Session | null) => {
