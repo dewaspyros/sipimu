@@ -19,6 +19,7 @@ export default function Login() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [lockRemaining, setLockRemaining] = useState(0);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -47,6 +48,10 @@ export default function Login() {
   }, [formData.nik]);
 
   const isLocked = lockRemaining > 0;
+
+  useEffect(() => {
+    if (searchParams.get("expired") === "1") setSessionExpired(true);
+  }, [searchParams]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,6 +94,14 @@ export default function Login() {
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
+              {sessionExpired && !error && !isLocked && (
+                <Alert>
+                  <AlertDescription>
+                    Sesi login sudah lebih dari 12 jam. Silakan login kembali.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {isLocked ? (
                 <Alert variant="destructive">
                   <AlertDescription>
