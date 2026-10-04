@@ -105,6 +105,7 @@ export type Database = {
           id: string
           item_index: number
           item_text: string
+          keterangan_varian: string | null
           updated_at: string
         }
         Insert: {
@@ -119,6 +120,7 @@ export type Database = {
           id?: string
           item_index: number
           item_text: string
+          keterangan_varian?: string | null
           updated_at?: string
         }
         Update: {
@@ -133,6 +135,7 @@ export type Database = {
           id?: string
           item_index?: number
           item_text?: string
+          keterangan_varian?: string | null
           updated_at?: string
         }
         Relationships: [

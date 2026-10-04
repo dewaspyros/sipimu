@@ -623,7 +623,8 @@ const ClinicalPathwayChecklist = () => {
           const variantMap: VariantData = {};
 
           existingChecklist.forEach((item, index) => {
-            checklistMap[index.toString()] = {
+            const key = String(item.item_index ?? index);
+            checklistMap[key] = {
               "Hari ke-1": item.checklist_hari_1 || false,
               "Hari ke-2": item.checklist_hari_2 || false,
               "Hari ke-3": item.checklist_hari_3 || false,
@@ -631,6 +632,8 @@ const ClinicalPathwayChecklist = () => {
               "Hari ke-5": item.checklist_hari_5 || false,
               "Hari ke-6": item.checklist_hari_6 || false,
             };
+            const v = (item as { keterangan_varian?: string | null }).keterangan_varian;
+            if (v) variantMap[key] = v;
           });
 
           setChecklistData(checklistMap);
