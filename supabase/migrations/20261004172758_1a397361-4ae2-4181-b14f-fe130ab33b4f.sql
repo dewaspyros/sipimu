@@ -1,0 +1,1 @@
+ALTER TABLE public.clinical_pathway_checklist ADD COLUMN IF NOT EXISTS keterangan_varian TEXT NULL;
