@@ -191,7 +191,8 @@ export const useChecklist = () => {
           checklist_hari_3: item.day3 || false,
           checklist_hari_4: item.day4 || false,
           checklist_hari_5: item.day5 || false,
-          checklist_hari_6: item.day6 || false
+          checklist_hari_6: item.day6 || false,
+          keterangan_varian: item.variant?.trim() ? item.variant : null
         })));
 
       if (error) throw error;
